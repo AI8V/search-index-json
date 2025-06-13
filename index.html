@@ -4,422 +4,197 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>مولد فهرس البحث المتطور - Ultimate Edition</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
+        /* CSS is now significantly simplified, relying on Bootstrap variables and utilities */
+
+        /* Custom properties for reusable gradients */
         :root {
-            --bg-primary: #ffffff;
-            --bg-secondary: #f8f9fa;
-            --text-primary: #212529;
-            --text-secondary: #6c757d;
-            --border-color: #dee2e6;
-            --card-bg: #ffffff;
-            --input-bg: #ffffff;
-            --accent-color: #0d6efd;
+            --gradient-sitemap: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-robots: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            --gradient-manifest: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            --gradient-github: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%);
+            --gradient-spa: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+            --gradient-seo-crawler: linear-gradient(135deg, #5ee7df 0%, #b490ca 100%); /* New Gradient for SEO Crawler */
+            --gradient-feature: linear-gradient(45deg, #28a745, #20c997);
+            --gradient-pro: linear-gradient(45deg, #6f42c1, #e83e8c);
+            --gradient-ultimate: linear-gradient(45deg, #fd7e14, #dc3545);
+            --gradient-dark-toggle: linear-gradient(45deg, #667eea, #764ba2);
+            --gradient-live-counter: linear-gradient(45deg, #28a745, #20c997);
         }
 
-        [data-theme="dark"] {
-            --bg-primary: #1a1a1a;
-            --bg-secondary: #2d2d2d;
-            --text-primary: #ffffff;
-            --text-secondary: #b0b0b0;
-            --border-color: #404040;
-            --card-bg: #2d2d2d;
-            --input-bg: #3d3d3d;
-            --accent-color: #4dabf7;
-        }
-
-        body {
-            background-color: var(--bg-primary);
-            color: var(--text-primary);
-            transition: all 0.3s ease;
-        }
-
-        .card {
-            background-color: var(--card-bg);
-            border-color: var(--border-color);
-        }
-
-        .form-control, .form-select {
-            background-color: var(--input-bg);
-            border-color: var(--border-color);
-            color: var(--text-primary);
-        }
-
-        .form-control:focus, .form-select:focus {
-            background-color: var(--input-bg);
-            border-color: var(--accent-color);
-            color: var(--text-primary);
-        }
-
-        .result-box {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 20px;
-            margin: 20px 0;
-            max-height: 500px;
-            overflow-y: auto;
-        }
-        
-        .page-item {
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 15px;
-            margin: 10px 0;
-            background: var(--card-bg);
-            position: relative;
-            transition: all 0.3s ease;
-        }
-
-        .page-item:hover {
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        
-        .page-title {
-            color: var(--accent-color);
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        
-        .page-url {
-            color: var(--text-secondary);
-            font-size: 0.9em;
-        }
-        
-        .file-drop-zone {
-            border: 2px dashed var(--border-color);
-            border-radius: 8px;
-            padding: 30px;
-            text-align: center;
-            margin: 15px 0;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            background: var(--bg-secondary);
-        }
-        
-        .file-drop-zone:hover {
-            border-color: var(--accent-color);
-            background-color: rgba(13, 110, 253, 0.1);
-        }
+        /* Keep custom styles for components that require unique aesthetics not covered by Bootstrap */
         
         .file-drop-zone.dragover {
-            border-color: var(--accent-color);
-            background-color: rgba(13, 110, 253, 0.2);
+            border-color: var(--bs-primary) !important;
+            background-color: rgba(var(--bs-primary-rgb), 0.1);
         }
-
-        .url-textarea-container {
-            position: relative;
-        }
-
-        .url-textarea-drop {
-            border: 2px dashed transparent;
-            transition: all 0.3s ease;
-        }
-
+        
         .url-textarea-drop.dragover {
-            border-color: #28a745;
-            background-color: rgba(40, 167, 69, 0.1);
+            border-color: var(--bs-success) !important;
+            background-color: rgba(var(--bs-success-rgb), 0.1);
         }
         
-        .progress-container {
-            display: none;
-            margin: 15px 0;
-        }
-        
-        .feature-badge {
-            background: linear-gradient(45deg, #28a745, #20c997);
-            color: white;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 0.8em;
-            margin-left: 5px;
-        }
-
-        .pro-badge {
-            background: linear-gradient(45deg, #6f42c1, #e83e8c);
-            color: white;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 0.8em;
-            margin-left: 5px;
-        }
-
-        .ultimate-badge {
-            background: linear-gradient(45deg, #fd7e14, #dc3545);
-            color: white;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 0.8em;
-            margin-left: 5px;
+        /* Custom Badges with Gradients */
+        .badge.feature-badge { background: var(--gradient-feature); }
+        .badge.pro-badge { background: var(--gradient-pro); }
+        .badge.ultimate-badge {
+            background: var(--gradient-ultimate);
             animation: pulse 2s infinite;
         }
 
         @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(var(--bs-warning-rgb), 0.7); }
+            50% { transform: scale(1.05); box-shadow: 0 0 10px 5px rgba(var(--bs-warning-rgb), 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(var(--bs-warning-rgb), 0); }
         }
-        
-        .edit-btn {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            padding: 2px 6px;
-            font-size: 0.7em;
-        }
-        
-        .editable-content {
-            border: 1px dashed #ccc;
-            padding: 5px;
-            border-radius: 4px;
+
+        /* In-place editing styles */
+        .editable-content[contenteditable="true"] {
+            outline: 2px solid var(--bs-primary);
+            background-color: var(--bs-warning-bg-subtle);
+            padding: 0.25rem;
+            border-radius: 0.25rem;
             cursor: text;
         }
         
-        .editable-content:focus {
-            outline: 2px solid var(--accent-color);
-            background-color: var(--input-bg);
-        }
-        
-        .sitemap-section {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 15px 0;
-        }
-        
-        .robots-section {
-            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
-            color: #333;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 15px 0;
-        }
+        /* Gradient Sections */
+        .sitemap-section { background: var(--gradient-sitemap); color: white; }
+        .robots-section { background: var(--gradient-robots); color: #333; }
+        .manifest-section { background: var(--gradient-manifest); color: #333; }
+        .github-section { background: var(--gradient-github); color: #333; }
+        .spa-section { background: var(--gradient-spa); color: #333; }
+        .seo-crawler-section { background: var(--gradient-seo-crawler); color: #333; } /* New Style for SEO Crawler section */
 
-        .manifest-section {
-            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-            color: #333;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 15px 0;
-        }
 
-        .github-section {
-            background: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%);
-            color: #333;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 15px 0;
-        }
-        
         .drop-zone {
-            border: 2px dashed rgba(255,255,255,0.5);
-            border-radius: 8px;
-            padding: 20px;
-            text-align: center;
-            cursor: pointer;
+            border: 2px dashed rgba(255, 255, 255, 0.6);
             transition: all 0.3s ease;
         }
-        
         .drop-zone:hover {
             border-color: white;
-            background-color: rgba(255,255,255,0.1);
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .robots-section .drop-zone, .manifest-section .drop-zone, .github-section .drop-zone, .spa-section .drop-zone, .seo-crawler-section .drop-zone {
+            border-color: rgba(0, 0, 0, 0.3);
+        }
+        .robots-section .drop-zone:hover, .manifest-section .drop-zone:hover, .github-section .drop-zone:hover, .spa-section .drop-zone:hover, .seo-crawler-section .drop-zone:hover {
+            border-color: #333;
+            background-color: rgba(0, 0, 0, 0.05);
         }
 
         .dark-mode-toggle {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 1000;
-            border-radius: 50px;
-            padding: 8px 16px;
-            border: none;
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-            cursor: pointer;
+            background: var(--gradient-dark-toggle);
             transition: all 0.3s ease;
         }
-
         .dark-mode-toggle:hover {
             transform: scale(1.05);
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
 
-        .export-buttons {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-top: 15px;
-        }
-
-        .export-buttons .btn {
-            flex: 1;
-            min-width: 120px;
-        }
-
-        .copy-options {
-            display: none;
-            margin-top: 10px;
-            padding: 15px;
-            background: var(--bg-secondary);
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-        }
-
-        .zip-progress {
-            display: none;
-            margin-top: 10px;
-        }
-
-        .stats-panel {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 15px 0;
-        }
-
-        .stat-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.2);
-        }
-
-        .stat-item:last-child {
-            border-bottom: none;
-        }
-
         .live-counter {
-            position: fixed;
-            top: 80px;
-            left: 20px;
-            z-index: 999;
-            background: linear-gradient(45deg, #28a745, #20c997);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: bold;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            background: var(--gradient-live-counter);
             transition: all 0.3s ease;
         }
 
-        .filter-section {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 15px;
-            margin: 15px 0;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        @media (max-width: 768px) {
-            .export-buttons {
-                flex-direction: column;
-            }
-            
-            .export-buttons .btn {
-                width: 100%;
-                margin-bottom: 5px;
-            }
-
-            .live-counter {
-                position: relative;
-                top: auto;
-                left: auto;
-                margin: 10px 0;
-                display: inline-block;
-            }
-        }
+        .seo-summary-item { display: inline-block; margin-inline-end: 0.75rem; font-size: 0.8rem; }
+        .seo-summary-item .badge { font-size: 0.75rem; }
     </style>
 </head>
 <body>
-    <button class="dark-mode-toggle" onclick="toggleDarkMode()">
+    <button class="dark-mode-toggle position-fixed top-0 start-0 m-3 z-3 rounded-pill py-2 px-3 border-0 text-white shadow-sm" onclick="toggleDarkMode()">
         🌙 الوضع الليلي
     </button>
 
-    <div class="live-counter" id="liveCounter" style="display: none;">
+    <div class="live-counter position-fixed d-none shadow-sm fw-bold text-white rounded-pill py-2 px-3 z-2" id="liveCounter" style="top: 80px; left: 20px;">
         📊 العناصر: <span id="counterValue">0</span>
     </div>
 
-    <div class="container mt-5">
-        <h1 class="text-center mb-5">🔍 مولد فهرس البحث المتطور <span class="ultimate-badge">Ultimate</span></h1>
+    <div class="container mt-5 pt-4">
+        <h1 class="text-center mb-4 display-6">🔍 مولد فهرس البحث المتطور <span class="badge ultimate-badge align-middle">Ultimate</span></h1>
         
-        <div class="row">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h3>📝 إدخال صفحات الموقع</h3>
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-header bg-transparent">
+                        <h3 class="h5 mb-0">📝 إدخال صفحات الموقع</h3>
                     </div>
                     <div class="card-body">
-                        <!-- GitHub Pages Section -->
-                        <div class="github-section">
-                            <h5>🐙 استيراد من GitHub Pages <span class="feature-badge">جديد</span></h5>
-                            <div class="row">
-                                <div class="col-8">
-                                    <input type="url" class="form-control" id="githubUrl" placeholder="https://username.github.io/repository">
-                                </div>
-                                <div class="col-4">
-                                    <button class="btn btn-outline-dark w-100" onclick="fetchFromGitHub()">
-                                        🚀 جلب
-                                    </button>
-                                </div>
+                        <!-- NEW: SEO Crawler Section -->
+                        <div class="seo-crawler-section rounded-3 p-3 my-3">
+                            <h5 class="h6">🔬 زاحف SEO وتحليل الموقع <span class="badge ultimate-badge">جديد</span></h5>
+                            <div class="input-group">
+                                <input type="url" class="form-control" id="seoCrawlerUrl" placeholder="https://example.com">
+                                <input type="number" class="form-control flex-grow-0" id="seoCrawlerDepth" value="1" min="0" max="5" style="width: 100px;" title="عمق الزحف (0 = الصفحة الحالية فقط)">
+                                <button class="btn btn-dark" onclick="startSeoCrawler()">
+                                    🚀 زحف وتحليل
+                                </button>
                             </div>
-                            <small class="d-block mt-2">سيتم جلب وتحليل جميع صفحات HTML من الموقع تلقائياً</small>
+                            <div class="mt-2">
+                                <label for="customProxyUrl" class="form-label small opacity-75">بروكسي مخصص (اختياري)</label>
+                                <input type="url" class="form-control form-control-sm" id="customProxyUrl" placeholder="https://my-proxy.com/?url={url}">
+                                <small class="d-block mt-1 opacity-75" style="font-size: .75rem;">استخدم <code>{url}</code> كعنصر نائب للرابط المستهدف. سيتم استخدام allorigins.win كخيار افتراضي.</small>
+                            </div>
+                        </div>
+
+                        <!-- SPA / Headless Analysis Section -->
+                        <div class="spa-section rounded-3 p-3 my-3">
+                            <h5 class="h6">⚡ تحليل مواقع SPA (React/Vue) <span class="badge pro-badge">تجريبي</span></h5>
+                             <div class="input-group">
+                                <input type="url" class="form-control" id="spaUrl" placeholder="https://my-react-app.com">
+                                <button class="btn btn-dark" onclick="analyzeSpaSite()">
+                                    🔬 تحليل
+                                </button>
+                            </div>
+                            <small class="d-block mt-2 opacity-75">
+                                محاولة لاستخراج البيانات الأولية من المواقع المعتمدة على JS. قد لا يتمكن من قراءة المحتوى الديناميكي بالكامل.
+                            </small>
                         </div>
 
                         <!-- Robots.txt Section -->
-                        <div class="robots-section">
-                            <h5>🤖 استيراد من robots.txt <span class="feature-badge">جديد</span></h5>
-                            <div class="drop-zone" id="robotsDropZone">
-                                <i class="fas fa-robot fa-2x mb-2"></i>
-                                <p class="mb-2">اسحب وأفلت ملف robots.txt هنا أو انقر للاختيار</p>
-                                <small>سيتم استخراج الصفحات المستبعدة والمسموحة</small>
-                                <input type="file" id="robotsFileInput" accept=".txt" style="display: none;">
+                        <div class="robots-section rounded-3 p-3 my-3">
+                            <h5 class="h6">🤖 استيراد من robots.txt <span class="badge feature-badge">جديد</span></h5>
+                            <div class="drop-zone rounded-3 p-3 text-center cursor-pointer" id="robotsDropZone">
+                                <p class="mb-1">اسحب وأفلت ملف robots.txt هنا أو انقر للاختيار</p>
+                                <small class="opacity-75">سيتم استخراج الصفحات المستبعدة والمسموحة</small>
+                                <input type="file" id="robotsFileInput" accept=".txt" class="d-none">
                             </div>
                         </div>
 
                         <!-- Manifest.json Section -->
-                        <div class="manifest-section">
-                            <h5>📱 استيراد من manifest.json <span class="feature-badge">PWA</span></h5>
-                            <div class="drop-zone" id="manifestDropZone">
-                                <i class="fas fa-mobile-alt fa-2x mb-2"></i>
-                                <p class="mb-2">اسحب وأفلت ملف manifest.json هنا أو انقر للاختيار</p>
-                                <small>سيتم استخراج أسماء الأقسام من تطبيق PWA</small>
-                                <input type="file" id="manifestFileInput" accept=".json" style="display: none;">
+                        <div class="manifest-section rounded-3 p-3 my-3">
+                            <h5 class="h6">📱 استيراد من manifest.json <span class="badge feature-badge">PWA</span></h5>
+                            <div class="drop-zone rounded-3 p-3 text-center cursor-pointer" id="manifestDropZone">
+                                <p class="mb-1">اسحب وأفلت ملف manifest.json هنا أو انقر للاختيار</p>
+                                <small class="opacity-75">سيتم استخراج أسماء الأقسام من تطبيق PWA</small>
+                                <input type="file" id="manifestFileInput" accept=".json" class="d-none">
                             </div>
                         </div>
 
                         <!-- Sitemap.xml Section -->
-                        <div class="sitemap-section">
-                            <h5>🗺️ استيراد من Sitemap.xml <span class="feature-badge">ذكي</span></h5>
-                            <div class="drop-zone" id="sitemapDropZone">
-                                <i class="fas fa-sitemap fa-2x mb-2"></i>
-                                <p class="mb-2">اسحب وأفلت ملف sitemap.xml هنا أو انقر للاختيار</p>
-                                <small>سيتم استخراج جميع الروابط تلقائياً من خريطة الموقع</small>
-                                <input type="file" id="sitemapFileInput" accept=".xml" style="display: none;">
+                        <div class="sitemap-section rounded-3 p-3 my-3">
+                            <h5 class="h6">🗺️ استيراد من Sitemap.xml <span class="badge feature-badge">ذكي</span></h5>
+                            <div class="drop-zone rounded-3 p-3 text-center cursor-pointer" id="sitemapDropZone">
+                                <p class="mb-1">اسحب وأفلت ملف sitemap.xml هنا أو انقر للاختيار</p>
+                                <small class="opacity-75">سيتم استخراج جميع الروابط تلقائياً</small>
+                                <input type="file" id="sitemapFileInput" accept=".xml" class="d-none">
                             </div>
                         </div>
 
                         <!-- HTML File Analysis Section -->
                         <div class="mb-4">
                             <label class="form-label">
-                                📄 تحليل ملفات HTML تلقائيًا <span class="feature-badge">محسن</span>
+                                📄 تحليل ملفات HTML <span class="badge feature-badge">محسن</span>
                             </label>
-                            <div class="file-drop-zone" id="fileDropZone">
-                                <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
-                                <p class="mb-2">اسحب وأفلت ملفات HTML هنا أو انقر للاختيار</p>
-                                <small class="text-muted">سيتم استخراج العنوان والوصف تلقائيًا من كل ملف</small>
-                                <input type="file" id="htmlFileInput" multiple accept=".html,.htm" style="display: none;">
+                            <div class="file-drop-zone border border-2 border-dashed rounded-3 p-4 text-center bg-body-secondary cursor-pointer" id="fileDropZone">
+                                <p class="mb-1">اسحب وأفلت ملفات HTML هنا أو انقر للاختيار</p>
+                                <small class="text-muted">سيتم استخراج العنوان والوصف وبيانات SEO تلقائيًا</small>
+                                <input type="file" id="htmlFileInput" multiple accept=".html,.htm" class="d-none">
                             </div>
-                            <div class="progress-container" id="progressContainer">
-                                <div class="progress">
-                                    <div class="progress-bar" id="progressBar" role="progressbar" style="width: 0%"></div>
+                            <div class="d-none my-3" id="progressContainer">
+                                <div class="progress" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                                    <div class="progress-bar" id="progressBar" style="width: 0%"></div>
                                 </div>
                                 <small class="text-muted" id="progressText">جاري المعالجة...</small>
                             </div>
@@ -428,55 +203,44 @@
                         <!-- Bulk Import Section -->
                         <div class="mb-4">
                             <label class="form-label">
-                                📂 استيراد جماعي <span class="feature-badge">محسن</span>
+                                📂 استيراد جماعي <span class="badge feature-badge">محسن</span>
                             </label>
-                            <div class="row">
-                                <div class="col-6">
-                                    <input type="file" class="form-control" id="urlsFileInput" accept=".txt,.json">
-                                    <small class="text-muted">ملف .txt أو .json</small>
-                                </div>
-                                <div class="col-6">
-                                    <button class="btn btn-outline-primary w-100" onclick="importUrlsFile()">
-                                        📥 استيراد الروابط
-                                    </button>
-                                </div>
+                            <div class="input-group">
+                                <input type="file" class="form-control" id="urlsFileInput" accept=".txt,.json">
+                                <button class="btn btn-outline-primary" onclick="importUrlsFile()">
+                                    📥 استيراد
+                                </button>
                             </div>
                         </div>
                         
                         <div class="mb-3">
                             <label class="form-label">
-                                روابط صفحات موقعك <span class="pro-badge">Drag & Drop</span>
+                                روابط صفحات موقعك <span class="badge pro-badge">Drag & Drop</span>
                             </label>
-                            <div class="url-textarea-container">
-                                <textarea class="form-control url-textarea-drop" id="urlInput" rows="6" 
-                                    placeholder="index.html
+                            <div class="position-relative">
+                                <textarea class="form-control url-textarea-drop" id="urlInput" rows="6" placeholder="index.html
 about.html
 services.html
-contact.html
-blog/article1.html
-blog/article2.html
+...
 
-💡 يمكنك سحب وإفلات ملفات النصوص هنا مباشرة!"></textarea>
+💡 يمكنك سحب وإفلات ملفات النصوص هنا!" dir="ltr"></textarea>
                             </div>
                         </div>
                         
-                        <div class="mb-3">
-                            <label class="form-label">أو أدخل قائمة يدوية:</label>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="manualInput">
-                                <label class="form-check-label" for="manualInput">
-                                    إدخال يدوي للصفحات
-                                </label>
-                            </div>
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" role="switch" id="manualInput">
+                            <label class="form-check-label" for="manualInput">
+                                إدخال يدوي للصفحات
+                            </label>
                         </div>
                         
-                        <div id="manualInputSection" style="display: none;">
-                            <div class="mb-3">
-                                <input type="text" class="form-control mb-2" id="pageTitle" placeholder="عنوان الصفحة">
-                                <input type="text" class="form-control mb-2" id="pageUrl" placeholder="رابط الصفحة">
-                                <input type="text" class="form-control mb-2" id="pageDescription" placeholder="وصف الصفحة">
-                                <input type="text" class="form-control mb-2" id="pageCategory" placeholder="فئة الصفحة">
-                                <input type="text" class="form-control mb-2" id="pageTags" placeholder="الكلمات المفتاحية (مفصولة بفواصل)">
+                        <div id="manualInputSection" class="d-none border rounded p-3 mb-3">
+                            <div class="d-grid gap-2">
+                                <input type="text" class="form-control" id="pageTitle" placeholder="عنوان الصفحة">
+                                <input type="text" class="form-control" id="pageUrl" placeholder="رابط الصفحة">
+                                <input type="text" class="form-control" id="pageDescription" placeholder="وصف الصفحة">
+                                <input type="text" class="form-control" id="pageCategory" placeholder="فئة الصفحة">
+                                <input type="text" class="form-control" id="pageTags" placeholder="الكلمات المفتاحية (مفصولة بفواصل)">
                                 <button class="btn btn-success btn-sm" onclick="addManualPage()">إضافة صفحة</button>
                             </div>
                         </div>
@@ -486,119 +250,68 @@ blog/article2.html
                         </button>
                         
                         <!-- Data Management -->
-                        <div class="mt-3">
-                            <div class="row">
-                                <div class="col-4">
-                                    <button class="btn btn-outline-success w-100 btn-sm" onclick="saveToLocalStorage()">
-                                        💾 حفظ
-                                    </button>
-                                </div>
-                                <div class="col-4">
-                                    <button class="btn btn-outline-info w-100 btn-sm" onclick="loadFromLocalStorage()">
-                                        📂 تحميل
-                                    </button>
-                                </div>
-                                <div class="col-4">
-                                    <button class="btn btn-outline-danger w-100 btn-sm" onclick="deleteAllData()">
-                                        🗑️ حذف الكل
-                                    </button>
-                                </div>
-                            </div>
-                            <small class="text-muted d-block mt-1">البيانات محفوظة محليًا في المتصفح</small>
+                        <div class="mt-3 d-flex gap-2">
+                            <button class="btn btn-outline-success w-100 btn-sm" onclick="saveToLocalStorage()">💾 حفظ</button>
+                            <button class="btn btn-outline-info w-100 btn-sm" onclick="loadFromLocalStorage()">📂 تحميل</button>
+                            <button class="btn btn-outline-danger w-100 btn-sm" onclick="deleteAllData()">🗑️ حذف الكل</button>
                         </div>
+                        <small class="text-muted d-block mt-1 text-center">البيانات محفوظة محليًا في المتصفح</small>
                     </div>
                 </div>
             </div>
             
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h3>📊 النتائج <span class="pro-badge">قابل للتحرير</span></h3>
+            <div class="col-lg-6">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-header bg-transparent">
+                        <h3 class="h5 mb-0">📊 النتائج <span class="badge pro-badge">قابل للتحرير</span></h3>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body d-flex flex-column">
                         <!-- Statistics Panel -->
-                        <div class="stats-panel" id="statsPanel" style="display: none;">
-                            <h6>📈 إحصائيات داخلية</h6>
-                            <div class="stat-item">
-                                <span>عدد الصفحات:</span>
-                                <strong id="statPages">0</strong>
-                            </div>
-                            <div class="stat-item">
-                                <span>إجمالي الكلمات المفتاحية:</span>
-                                <strong id="statKeywords">0</strong>
-                            </div>
-                            <div class="stat-item">
-                                <span>الفئات المختلفة:</span>
-                                <strong id="statCategories">0</strong>
-                            </div>
-                            <div class="stat-item">
-                                <span>أكثر الكلمات تكراراً:</span>
-                                <strong id="statTopKeyword">-</strong>
-                            </div>
+                        <div id="statsPanel" class="d-none rounded-3 p-3 my-3 text-white" style="background: var(--gradient-sitemap);">
+                            <h6 class="h6">📈 إحصائيات داخلية</h6>
+                            <div class="d-flex justify-content-between align-items-center py-1 border-bottom border-white border-opacity-25"><span>عدد الصفحات:</span><strong id="statPages">0</strong></div>
+                            <div class="d-flex justify-content-between align-items-center py-1 border-bottom border-white border-opacity-25"><span>إجمالي الكلمات المفتاحية:</span><strong id="statKeywords">0</strong></div>
+                            <div class="d-flex justify-content-between align-items-center py-1 border-bottom border-white border-opacity-25"><span>الفئات المختلفة:</span><strong id="statCategories">0</strong></div>
+                            <div class="d-flex justify-content-between align-items-center py-1"><span>أكثر الكلمات تكراراً:</span><strong id="statTopKeyword">-</strong></div>
                         </div>
 
                         <!-- Filter Section -->
-                        <div class="filter-section" id="filterSection" style="display: none;">
-                            <h6>🔍 تصفية النتائج</h6>
-                            <div class="row">
-                                <div class="col-6">
-                                    <select class="form-select form-select-sm" id="categoryFilter">
-                                        <option value="">جميع الفئات</option>
-                                    </select>
-                                </div>
-                                <div class="col-6">
-                                    <input type="text" class="form-control form-control-sm" id="keywordFilter" placeholder="بحث بالكلمة المفتاحية">
-                                </div>
+                        <div id="filterSection" class="d-none bg-body-secondary border rounded-3 p-3 my-3">
+                            <h6 class="h6 mb-2">🔍 تصفية النتائج</h6>
+                            <div class="input-group">
+                                <select class="form-select" id="categoryFilter"><option value="">جميع الفئات</option></select>
+                                <input type="text" class="form-control" id="keywordFilter" placeholder="بحث بالكلمة المفتاحية">
                             </div>
                         </div>
 
-                        <div id="results" class="result-box">
-                            <p class="text-muted text-center">أدخل روابط الصفحات أو ارفع ملفات HTML/Sitemap واضغط "توليد فهرس البحث"</p>
+                        <div id="results" class="p-3 border rounded-3 bg-body-secondary overflow-y-auto flex-grow-1" style="min-height: 200px; max-height: 500px;">
+                            <p class="text-muted text-center m-0">أدخل روابط الصفحات أو ارفع الملفات واضغط "توليد فهرس البحث"</p>
                         </div>
                         
                         <!-- Enhanced Export Options -->
-                        <div class="export-buttons" id="exportButtons" style="display: none;">
-                            <button class="btn btn-success" onclick="downloadJson()">
-                                💾 JSON
-                            </button>
-                            
-                            <button class="btn btn-info" onclick="downloadCSV()">
-                                📊 CSV
-                            </button>
-                            
-                            <button class="btn btn-warning" onclick="downloadZip()">
-                                📦 ZIP
-                            </button>
-                            
-                            <button class="btn btn-secondary" onclick="toggleCopyOptions()">
-                                📋 نسخ
-                            </button>
+                        <div id="exportButtons" class="d-none d-flex gap-2 flex-wrap mt-3">
+                            <button class="btn btn-success flex-grow-1" onclick="downloadJson()">💾 JSON</button>
+                            <button class="btn btn-info flex-grow-1" onclick="downloadCSV()">📊 CSV</button>
+                            <button class="btn btn-warning flex-grow-1" onclick="downloadZip()">📦 ZIP</button>
+                            <button class="btn btn-secondary flex-grow-1" onclick="toggleCopyOptions()">📋 نسخ</button>
                         </div>
 
                         <!-- ZIP Progress -->
-                        <div class="zip-progress" id="zipProgress">
-                            <div class="progress">
-                                <div class="progress-bar progress-bar-striped progress-bar-animated" id="zipProgressBar" role="progressbar" style="width: 0%"></div>
+                        <div id="zipProgress" class="d-none mt-2">
+                            <div class="progress" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" id="zipProgressBar" style="width: 0%"></div>
                             </div>
                             <small class="text-muted" id="zipProgressText">جاري إنشاء ملف ZIP...</small>
                         </div>
 
                         <!-- Copy Options -->
-                        <div class="copy-options" id="copyOptions">
-                            <h6>خيارات النسخ:</h6>
+                        <div id="copyOptions" class="d-none mt-2 p-3 bg-body-secondary border rounded-3">
+                            <h6 class="h6">خيارات النسخ:</h6>
                             <div class="d-grid gap-2">
-                                <button class="btn btn-outline-primary btn-sm" onclick="copyToClipboard('all')">
-                                    📋 نسخ كامل (JSON)
-                                </button>
-                                <button class="btn btn-outline-secondary btn-sm" onclick="copyToClipboard('titles')">
-                                    📝 نسخ العناوين فقط
-                                </button>
-                                <button class="btn btn-outline-info btn-sm" onclick="copyToClipboard('urls')">
-                                    🔗 نسخ الروابط فقط
-                                </button>
-                                <button class="btn btn-outline-success btn-sm" onclick="copyToClipboard('descriptions')">
-                                    📄 نسخ الأوصاف فقط
-                                </button>
+                                <button class="btn btn-outline-primary btn-sm" onclick="copyToClipboard('all')">📋 نسخ كامل (JSON)</button>
+                                <button class="btn btn-outline-secondary btn-sm" onclick="copyToClipboard('titles')">📝 نسخ العناوين فقط</button>
+                                <button class="btn btn-outline-info btn-sm" onclick="copyToClipboard('urls')">🔗 نسخ الروابط فقط</button>
+                                <button class="btn btn-outline-success btn-sm" onclick="copyToClipboard('descriptions')">📄 نسخ الأوصاف فقط</button>
                             </div>
                         </div>
                     </div>
@@ -609,22 +322,17 @@ blog/article2.html
         <div class="row mt-5">
             <div class="col-12">
                 <div class="alert alert-info">
-                    <h4>📖 تعليمات الاستخدام:</h4>
-                    <ol>
-                        <li><strong>جديد:</strong> أدخل رابط GitHub Pages لجلب وتحليل جميع الصفحات تلقائياً</li>
-                        <li><strong>جديد:</strong> ارفع ملف robots.txt لاستخراج الصفحات المستبعدة والمسموحة</li>
-                        <li><strong>جديد:</strong> ارفع ملف manifest.json لاستخراج أسماء أقسام تطبيق PWA</li>
-                        <li><strong>محسن:</strong> ارفع ملف sitemap.xml لاستخراج جميع الروابط تلقائياً</li>
-                        <li><strong>محسن:</strong> ارفع ملفات HTML مباشرة لاستخراج العناوين والأوصاف تلقائيًا</li>
-                        <li><strong>محسن:</strong> اسحب وأفلت ملفات النصوص في منطقة الروابط</li>
-                        <li>أو أدخل روابط جميع صفحات موقعك يدوياً</li>
-                        <li>اضغط "توليد فهرس البحث"</li>
-                        <li><strong>جديد:</strong> راجع الإحصائيات الداخلية والعداد المباشر</li>
-                        <li><strong>جديد:</strong> استخدم التصفية للبحث في النتائج</li>
-                        <li><strong>محسن:</strong> عدّل المحتوى مباشرة في النتائج</li>
-                        <li><strong>محسن:</strong> صدّر كـ JSON، CSV، أو ZIP شامل</li>
-                        <li><strong>محسن:</strong> انسخ العناوين أو الروابط أو الأوصاف منفردة</li>
-                        <li><strong>تلقائي:</strong> البيانات محفوظة تلقائياً في المتصفح</li>
+                    <h4 class="alert-heading">📖 تعليمات الاستخدام:</h4>
+                    <ol class="mb-0">
+                        <li><strong>جديد:</strong> استخدم "زاحف SEO" لتحليل موقعك، والكشف عن الروابط المكسورة، ومراجعة بيانات SEO الأساسية. يمكنك توفير بروكسي خاص بك لزيادة الموثوقية.</li>
+                        <li><strong>جديد:</strong> أدخل رابط موقع SPA (مثل React/Vue) لمحاولة تحليل محتواه الأولي.</li>
+                        <li><strong>جديد:</strong> ارفع ملف robots.txt أو manifest.json لاستخراج مسارات إضافية.</li>
+                        <li><strong>محسن:</strong> ارفع ملف sitemap.xml أو ملفات HTML مباشرة لتحليل ذكي.</li>
+                        <li><strong>محسن:</strong> اسحب وأفلت ملفات النصوص في منطقة الروابط للاستيراد السريع.</li>
+                        <li>اضغط "توليد فهرس البحث" لدمج ومعالجة كل المدخلات.</li>
+                        <li><strong>جديد:</strong> راجع تقرير SEO لكل صفحة في النتائج.</li>
+                        <li><strong>محسن:</strong> عدّل المحتوى مباشرة في النتائج بالنقر على زر "تحرير".</li>
+                        <li><strong>محسن:</strong> صدّر كـ JSON، CSV، أو حزمة ZIP شاملة.</li>
                     </ol>
                 </div>
             </div>
@@ -632,49 +340,38 @@ blog/article2.html
     </div>
 
     <!-- Toast Container -->
-    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
-    </div>
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;"></div>
 
-    <!-- Bootstrap JS for Toast functionality -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        let searchIndex = [];
-        let manualPages = [];
-        let analyzedFiles = [];
-        let sitemapUrls = [];
-        let robotsUrls = [];
-        let manifestData = {};
-        let githubUrls = [];
-        let isDarkMode = localStorage.getItem('darkMode') === 'true';
-        let filteredResults = [];
+        // --- Centralized Application State ---
+        const appState = {
+            searchIndex: [],
+            manualPages: [],
+            analyzedFiles: [],
+            sitemapUrls: [],
+            robotsUrls: [],
+            manifestData: {},
+            filteredResults: [],
+        };
+
+        // Initialize dark mode based on user preference or localStorage
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        let isDarkMode = localStorage.getItem('darkMode') === 'true' || (localStorage.getItem('darkMode') === null && prefersDark);
         
-        // Initialize dark mode
-        if (isDarkMode) {
-            document.documentElement.setAttribute('data-theme', 'dark');
+        const getEl = (id) => document.getElementById(id);
+
+        function setDarkMode(isDark) {
+            isDarkMode = isDark;
+            localStorage.setItem('darkMode', isDarkMode);
+            document.documentElement.setAttribute('data-bs-theme', isDark ? 'dark' : 'light');
             updateDarkModeButton();
         }
-        
-        // Auto-load data on page load
-        window.addEventListener('load', function() {
-            loadFromLocalStorage();
-            setupTextareaDragDrop();
-            setupDropZones();
-            setupFilters();
-        });
-        
-        // Dark mode functionality
+
         function toggleDarkMode() {
-            isDarkMode = !isDarkMode;
-            localStorage.setItem('darkMode', isDarkMode);
-            
-            if (isDarkMode) {
-                document.documentElement.setAttribute('data-theme', 'dark');
-            } else {
-                document.documentElement.removeAttribute('data-theme');
-            }
-            
-            updateDarkModeButton();
+            setDarkMode(!isDarkMode);
             showNotification(isDarkMode ? 'تم تفعيل الوضع الليلي 🌙' : 'تم تفعيل الوضع النهاري ☀️', 'info');
         }
         
@@ -683,1308 +380,513 @@ blog/article2.html
             button.innerHTML = isDarkMode ? '☀️ الوضع النهاري' : '🌙 الوضع الليلي';
         }
 
-        // Live counter functionality
-        function updateLiveCounter() {
-            const counter = document.getElementById('liveCounter');
-            const counterValue = document.getElementById('counterValue');
-            
-            if (searchIndex.length > 0) {
-                counter.style.display = 'block';
-                counterValue.textContent = searchIndex.length;
-            } else {
-                counter.style.display = 'none';
+        // --- NEW: Dynamic Proxy URL Retriever ---
+        function getProxyUrl(targetUrl) {
+            const customProxy = getEl('customProxyUrl').value.trim();
+            if (customProxy) {
+                // If the user provided a proxy, use it. Replace {url} with the encoded target URL.
+                return customProxy.replace('{url}', encodeURIComponent(targetUrl));
             }
-        }
-
-        // Statistics functionality
-        function updateStatistics() {
-            const statsPanel = document.getElementById('statsPanel');
-            
-            if (searchIndex.length === 0) {
-                statsPanel.style.display = 'none';
-                return;
-            }
-
-            statsPanel.style.display = 'block';
-            
-            // Calculate statistics
-            const totalPages = searchIndex.length;
-            const allKeywords = searchIndex.flatMap(item => item.tags || []);
-            const totalKeywords = allKeywords.length;
-            const uniqueCategories = [...new Set(searchIndex.map(item => item.category))].length;
-            
-            // Find most frequent keyword
-            const keywordCount = {};
-            allKeywords.forEach(keyword => {
-                keywordCount[keyword] = (keywordCount[keyword] || 0) + 1;
-            });
-            
-            const topKeyword = Object.keys(keywordCount).reduce((a, b) => 
-                keywordCount[a] > keywordCount[b] ? a : b, '-'
-            );
-            
-            // Update display
-            document.getElementById('statPages').textContent = totalPages;
-            document.getElementById('statKeywords').textContent = totalKeywords;
-            document.getElementById('statCategories').textContent = uniqueCategories;
-            document.getElementById('statTopKeyword').textContent = topKeyword + (keywordCount[topKeyword] ? ` (${keywordCount[topKeyword]})` : '');
-        }
-
-        // Filter functionality
-        function setupFilters() {
-            const categoryFilter = document.getElementById('categoryFilter');
-            const keywordFilter = document.getElementById('keywordFilter');
-            
-            categoryFilter.addEventListener('change', applyFilters);
-            keywordFilter.addEventListener('input', applyFilters);
-        }
-
-        function updateFilterOptions() {
-            const categoryFilter = document.getElementById('categoryFilter');
-            const categories = [...new Set(searchIndex.map(item => item.category))];
-            
-            categoryFilter.innerHTML = '<option value="">جميع الفئات</option>';
-            categories.forEach(category => {
-                const option = document.createElement('option');
-                option.value = category;
-                option.textContent = category;
-                categoryFilter.appendChild(option);
-            });
-        }
-
-        function applyFilters() {
-            const categoryFilter = document.getElementById('categoryFilter').value;
-            const keywordFilter = document.getElementById('keywordFilter').value.toLowerCase();
-            
-            filteredResults = searchIndex.filter(item => {
-                const matchesCategory = !categoryFilter || item.category === categoryFilter;
-                const matchesKeyword = !keywordFilter || 
-                    item.title.toLowerCase().includes(keywordFilter) ||
-                    item.description.toLowerCase().includes(keywordFilter) ||
-                    (item.tags && item.tags.some(tag => tag.toLowerCase().includes(keywordFilter)));
-                
-                return matchesCategory && matchesKeyword;
-            });
-            
-            displayResults(filteredResults);
-        }
-
-        // Delete all data functionality
-        function deleteAllData() {
-            if (confirm('هل أنت متأكد من حذف جميع البيانات؟ لا يمكن التراجع عن هذا الإجراء.')) {
-                searchIndex = [];
-                manualPages = [];
-                analyzedFiles = [];
-                sitemapUrls = [];
-                robotsUrls = [];
-                manifestData = {};
-                githubUrls = [];
-                filteredResults = [];
-                
-                document.getElementById('urlInput').value = '';
-                document.getElementById('results').innerHTML = '<p class="text-muted text-center">تم حذف جميع البيانات</p>';
-                document.getElementById('exportButtons').style.display = 'none';
-                document.getElementById('statsPanel').style.display = 'none';
-                document.getElementById('filterSection').style.display = 'none';
-                
-                updateLiveCounter();
-                localStorage.removeItem('searchIndexGenerator');
-                
-                showNotification('تم حذف جميع البيانات بنجاح! 🗑️', 'success');
-            }
-        }
-
-        // GitHub Pages fetch functionality
-        async function fetchFromGitHub() {
-            const githubUrl = document.getElementById('githubUrl').value.trim();
-            
-            if (!githubUrl) {
-                showNotification('يرجى إدخال رابط GitHub Pages صالح', 'warning');
-                return;
-            }
-            
-            try {
-                showNotification('جاري جلب البيانات من GitHub Pages...', 'info');
-                
-                // This is a simplified implementation
-                // In a real scenario, you'd need to handle CORS and use GitHub API
-                const response = await fetch(githubUrl);
-                const html = await response.text();
-                
-                // Extract links from the main page
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                const links = Array.from(doc.querySelectorAll('a[href]'))
-                    .map(a => a.getAttribute('href'))
-                    .filter(href => href && href.endsWith('.html') && !href.startsWith('http'))
-                    .map(href => href.startsWith('/') ? href : '/' + href);
-                
-                if (links.length > 0) {
-                    githubUrls = links;
-                    const currentUrls = document.getElementById('urlInput').value;
-                    const newUrls = currentUrls ? currentUrls + '\n' + links.join('\n') : links.join('\n');
-                    document.getElementById('urlInput').value = newUrls;
-                    
-                    showNotification(`تم جلب ${links.length} رابط من GitHub Pages! 🐙`, 'success');
-                    autoSave();
-                } else {
-                    showNotification('لم يتم العثور على روابط HTML في الصفحة', 'warning');
-                }
-                
-            } catch (error) {
-                showNotification('خطأ في جلب البيانات من GitHub: ' + error.message, 'danger');
-            }
-        }
-
-        // Setup all drop zones
-        function setupDropZones() {
-            setupRobotsDropZone();
-            setupManifestDropZone();
-            setupSitemapDropZone();
-        }
-
-        // Robots.txt functionality
-        function setupRobotsDropZone() {
-            const robotsDropZone = document.getElementById('robotsDropZone');
-            const robotsFileInput = document.getElementById('robotsFileInput');
-            
-            robotsDropZone.addEventListener('click', () => robotsFileInput.click());
-            
-            robotsDropZone.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                robotsDropZone.classList.add('dragover');
-            });
-            
-            robotsDropZone.addEventListener('dragleave', () => {
-                robotsDropZone.classList.remove('dragover');
-            });
-            
-            robotsDropZone.addEventListener('drop', (e) => {
-                e.preventDefault();
-                robotsDropZone.classList.remove('dragover');
-                const files = Array.from(e.dataTransfer.files).filter(file => 
-                    file.type === 'text/plain' || file.name.endsWith('.txt')
-                );
-                if (files.length > 0) {
-                    processRobotsFile(files[0]);
-                }
-            });
-            
-            robotsFileInput.addEventListener('change', (e) => {
-                if (e.target.files.length > 0) {
-                    processRobotsFile(e.target.files[0]);
-                }
-            });
-        }
-
-        async function processRobotsFile(file) {
-            try {
-                const content = await readFileContent(file);
-                const lines = content.split('\n').map(line => line.trim());
-                
-                const newRobotsUrls = [];
-                let currentUserAgent = '*';
-                
-                lines.forEach(line => {
-                    if (line.toLowerCase().startsWith('user-agent:')) {
-                        currentUserAgent = line.split(':')[1].trim();
-                    } else if (line.toLowerCase().startsWith('disallow:')) {
-                        const path = line.split(':')[1].trim();
-                        if (path && path !== '/' && !robotsUrls.includes(path) && !newRobotsUrls.includes(path)) {
-                            newRobotsUrls.push(path);
-                        }
-                    } else if (line.toLowerCase().startsWith('allow:')) {
-                        const path = line.split(':')[1].trim();
-                        if (path && path !== '/' && !robotsUrls.includes(path) && !newRobotsUrls.includes(path)) {
-                            newRobotsUrls.push(path);
-                        }
-                    }
-                });
-                
-                if (newRobotsUrls.length > 0) {
-                    // Append to existing robotsUrls
-                    robotsUrls.push(...newRobotsUrls);
-                    
-                    const currentUrls = document.getElementById('urlInput').value;
-                    const newUrls = currentUrls ? currentUrls + '\n' + newRobotsUrls.join('\n') : newRobotsUrls.join('\n');
-                    document.getElementById('urlInput').value = newUrls;
-                    
-                    showNotification(`تم استخراج ${newRobotsUrls.length} مسار جديد من robots.txt! 🤖`, 'success');
-                    autoSave();
-                } else {
-                    showNotification('لم يتم العثور على مسارات جديدة في ملف robots.txt', 'warning');
-                }
-                
-            } catch (error) {
-                showNotification('خطأ في معالجة ملف robots.txt: ' + error.message, 'danger');
-            }
-        }
-
-        // Manifest.json functionality
-        function setupManifestDropZone() {
-            const manifestDropZone = document.getElementById('manifestDropZone');
-            const manifestFileInput = document.getElementById('manifestFileInput');
-            
-            manifestDropZone.addEventListener('click', () => manifestFileInput.click());
-            
-            manifestDropZone.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                manifestDropZone.classList.add('dragover');
-            });
-            
-            manifestDropZone.addEventListener('dragleave', () => {
-                manifestDropZone.classList.remove('dragover');
-            });
-            
-            manifestDropZone.addEventListener('drop', (e) => {
-                e.preventDefault();
-                manifestDropZone.classList.remove('dragover');
-                const files = Array.from(e.dataTransfer.files).filter(file => 
-                    file.type === 'application/json' || file.name.endsWith('.json')
-                );
-                if (files.length > 0) {
-                    processManifestFile(files[0]);
-                }
-            });
-            
-            manifestFileInput.addEventListener('change', (e) => {
-                if (e.target.files.length > 0) {
-                    processManifestFile(e.target.files[0]);
-                }
-            });
-        }
-
-        async function processManifestFile(file) {
-            try {
-                const content = await readFileContent(file);
-                manifestData = JSON.parse(content);
-                
-                const extractedUrls = [];
-                
-                // Extract from icons
-                if (manifestData.icons) {
-                    manifestData.icons.forEach(icon => {
-                        if (icon.src) {
-                            extractedUrls.push(icon.src);
-                        }
-                    });
-                }
-                
-                // Extract from screenshots
-                if (manifestData.screenshots) {
-                    manifestData.screenshots.forEach(screenshot => {
-                        if (screenshot.src) {
-                            extractedUrls.push(screenshot.src);
-                        }
-                    });
-                }
-                
-                // Extract start_url
-                if (manifestData.start_url) {
-                    extractedUrls.push(manifestData.start_url);
-                }
-                
-                // Extract from shortcuts
-                if (manifestData.shortcuts) {
-                    manifestData.shortcuts.forEach(shortcut => {
-                        if (shortcut.url) {
-                            extractedUrls.push(shortcut.url);
-                        }
-                    });
-                }
-                
-                if (extractedUrls.length > 0) {
-                    const currentUrls = document.getElementById('urlInput').value;
-                    const newUrls = currentUrls ? currentUrls + '\n' + extractedUrls.join('\n') : extractedUrls.join('\n');
-                    document.getElementById('urlInput').value = newUrls;
-                    
-                    showNotification(`تم استخراج ${extractedUrls.length} مسار من manifest.json! 📱`, 'success');
-                    autoSave();
-                } else {
-                    showNotification('لم يتم العثور على مسارات صالحة في ملف manifest.json', 'warning');
-                }
-                
-            } catch (error) {
-                showNotification('خطأ في معالجة ملف manifest.json: ' + error.message, 'danger');
-            }
+            // Fallback to the default proxy
+            return `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
         }
         
-        // Setup drag and drop for textarea
-        function setupTextareaDragDrop() {
-            const textarea = document.getElementById('urlInput');
-            
-            textarea.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                textarea.classList.add('dragover');
-            });
-            
-            textarea.addEventListener('dragleave', () => {
-                textarea.classList.remove('dragover');
-            });
-            
-            textarea.addEventListener('drop', (e) => {
-                e.preventDefault();
-                textarea.classList.remove('dragover');
-                
-                const files = Array.from(e.dataTransfer.files).filter(file => 
-                    file.type === 'text/plain' || file.name.endsWith('.txt') || file.name.endsWith('.json')
-                );
-                
-                if (files.length > 0) {
-                    processDroppedTextFiles(files);
+        async function startSeoCrawler() {
+            const baseUrlInput = getEl('seoCrawlerUrl');
+            let baseUrl = baseUrlInput.value.trim();
+            if (!baseUrl) {
+                return showNotification('يرجى إدخال رابط الموقع للزحف', 'warning');
+            }
+            try {
+                if (!/^https?:\/\//i.test(baseUrl)) {
+                    baseUrl = 'https://' + baseUrl;
+                    baseUrlInput.value = baseUrl;
                 }
-            });
-        }
-        
-        async function processDroppedTextFiles(files) {
-            for (const file of files) {
+                new URL(baseUrl);
+            } catch (e) {
+                return showNotification('رابط الموقع غير صالح', 'danger');
+            }
+
+            const maxDepth = parseInt(getEl('seoCrawlerDepth').value, 10) || 0;
+            const origin = new URL(baseUrl).origin;
+            
+            showNotification(`🚀 بدء زحف SEO لـ ${origin}...`, 'info');
+
+            let queue = [{ url: baseUrl, depth: 0 }];
+            const visited = new Set([baseUrl]);
+            const crawledData = new Map();
+            const brokenLinks = new Set();
+
+            let processedCount = 0;
+            while (queue.length > 0) {
+                const { url, depth } = queue.shift();
+                
+                showNotification(`🔎 فحص: ${new URL(url).pathname}... (${processedCount + 1})`, 'info', 2000);
+                processedCount++;
+
                 try {
-                    const content = await readFileContent(file);
-                    let urls = [];
+                    const response = await fetch(getProxyUrl(url)); // Use the new proxy function
+                    if (!response.ok) throw new Error(`Status ${response.status}`);
                     
-                    if (file.name.endsWith('.json')) {
-                        const jsonData = JSON.parse(content);
-                        if (Array.isArray(jsonData)) {
-                            urls = jsonData;
-                        } else if (jsonData.urls && Array.isArray(jsonData.urls)) {
-                            urls = jsonData.urls;
-                        }
-                    } else {
-                        urls = content.split('\n')
-                            .map(line => line.trim())
-                            .filter(line => line && !line.startsWith('#'));
-                    }
-                    
-                    if (urls.length > 0) {
-                        const currentUrls = document.getElementById('urlInput').value;
-                        const newUrls = currentUrls ? currentUrls + '\n' + urls.join('\n') : urls.join('\n');
-                        document.getElementById('urlInput').value = newUrls;
-                        showNotification(`تم إضافة ${urls.length} رابط من ${file.name}! 📥`, 'success');
-                        autoSave();
-                    }
+                    const html = await response.text();
+                    const doc = new DOMParser().parseFromString(html, 'text/html');
+
+                    const analysis = analyzeHtmlContent(html, url);
+                    const linksOnPage = new Set();
+                    doc.querySelectorAll('a[href]').forEach(link => {
+                        const href = link.getAttribute('href');
+                        if (!href || href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:')) return;
+                        try {
+                            const absoluteUrl = new URL(href, url).href;
+                            linksOnPage.add(absoluteUrl);
+
+                            if (absoluteUrl.startsWith(origin) && !visited.has(absoluteUrl) && depth < maxDepth) {
+                                const fileExtension = absoluteUrl.split('.').pop().toLowerCase();
+                                const isPage = !['jpg', 'jpeg', 'png', 'gif', 'svg', 'css', 'js', 'pdf', 'zip'].includes(fileExtension);
+                                if(isPage) {
+                                    visited.add(absoluteUrl);
+                                    queue.push({ url: absoluteUrl, depth: depth + 1 });
+                                }
+                            }
+                        } catch (e) { /* Ignore invalid URLs */ }
+                    });
+
+                    crawledData.set(url, { analysis, outgoingLinks: [...linksOnPage] });
+
                 } catch (error) {
-                    showNotification(`خطأ في معالجة ${file.name}: ${error.message}`, 'danger');
+                    console.error(`فشل في جلب ${url}:`, error);
+                    brokenLinks.add(url);
+                    showNotification(`⚠️ رابط مكسور: ${new URL(url).pathname}`, 'warning');
                 }
             }
-        }
-        
-        // Auto-save data when changes occur
-        function autoSave() {
-            saveToLocalStorage();
-        }
-        
-        // LocalStorage functions
-        function saveToLocalStorage() {
-            const data = {
-                searchIndex: searchIndex,
-                manualPages: manualPages,
-                analyzedFiles: analyzedFiles,
-                sitemapUrls: sitemapUrls,
-                robotsUrls: robotsUrls,
-                manifestData: manifestData,
-                githubUrls: githubUrls,
-                urlInput: document.getElementById('urlInput').value,
-                timestamp: new Date().toISOString()
-            };
-            
-            try {
-                localStorage.setItem('searchIndexGenerator', JSON.stringify(data));
-                showNotification('تم حفظ البيانات بنجاح! ✅', 'success');
-            } catch (error) {
-                showNotification('خطأ في حفظ البيانات: ' + error.message, 'danger');
-            }
-        }
-        
-        function loadFromLocalStorage() {
-            try {
-                const savedData = localStorage.getItem('searchIndexGenerator');
-                if (savedData) {
-                    const data = JSON.parse(savedData);
-                    searchIndex = data.searchIndex || [];
-                    manualPages = data.manualPages || [];
-                    analyzedFiles = data.analyzedFiles || [];
-                    sitemapUrls = data.sitemapUrls || [];
-                    robotsUrls = data.robotsUrls || [];
-                    manifestData = data.manifestData || {};
-                    githubUrls = data.githubUrls || [];
-                    
-                    if (data.urlInput) {
-                        document.getElementById('urlInput').value = data.urlInput;
-                    }
-                    
-                    if (searchIndex.length > 0) {
-                        displayResults();
-                        updateStatistics();
-                        updateLiveCounter();
-                        updateFilterOptions();
-                        document.getElementById('filterSection').style.display = 'block';
-                    }
-                    
-                    showNotification('تم تحميل البيانات المحفوظة! 📂', 'info');
-                }
-            } catch (error) {
-                showNotification('خطأ في تحميل البيانات: ' + error.message, 'warning');
-            }
-        }
-        
-        // Enhanced notification system using Bootstrap 5.3 Toasts
-        function showNotification(message, type = 'info') {
-            const toastContainer = document.querySelector('.toast-container');
-            const toastId = 'toast-' + Date.now();
-            
-            // Map notification types to Bootstrap toast styles
-            const typeMapping = {
-                'info': { bg: 'bg-info', icon: 'ℹ️', title: 'معلومات' },
-                'success': { bg: 'bg-success', icon: '✅', title: 'نجح' },
-                'warning': { bg: 'bg-warning', icon: '⚠️', title: 'تحذير' },
-                'danger': { bg: 'bg-danger', icon: '❌', title: 'خطأ' },
-                'error': { bg: 'bg-danger', icon: '❌', title: 'خطأ' }
-            };
-            
-            const toastConfig = typeMapping[type] || typeMapping['info'];
-            
-            // Create toast element
-            const toastElement = document.createElement('div');
-            toastElement.id = toastId;
-            toastElement.className = `toast fade show ${toastConfig.bg} text-white`;
-            toastElement.setAttribute('role', 'alert');
-            toastElement.setAttribute('aria-live', 'assertive');
-            toastElement.setAttribute('aria-atomic', 'true');
-            
-            toastElement.innerHTML = `
-                <div class="toast-header ${toastConfig.bg} text-white border-0">
-                    <span class="me-2">${toastConfig.icon}</span>
-                    <strong class="me-auto">${toastConfig.title}</strong>
-                    <small class="opacity-75">الآن</small>
-                    <button type="button" class="btn-close btn-close-white ms-2" data-bs-dismiss="toast" aria-label="إغلاق"></button>
-                </div>
-                <div class="toast-body">
-                    ${message}
-                </div>
-            `;
-            
-            // Add to container
-            toastContainer.appendChild(toastElement);
-            
-            // Initialize Bootstrap toast
-            const bsToast = new bootstrap.Toast(toastElement, {
-                autohide: true,
-                delay: 5000
+
+            crawledData.forEach((data, pageUrl) => {
+                data.analysis.seo.brokenLinksOnPage = data.outgoingLinks.filter(link => brokenLinks.has(link));
             });
             
-            // Show the toast
-            bsToast.show();
-            
-            // Remove from DOM after it's hidden
-            toastElement.addEventListener('hidden.bs.toast', () => {
-                if (toastElement.parentNode) {
-                    toastElement.parentNode.removeChild(toastElement);
+            const newFiles = [];
+            crawledData.forEach(({ analysis }) => {
+                if (!appState.analyzedFiles.some(f => f.url === analysis.url)) {
+                    appState.analyzedFiles.push(analysis);
+                    newFiles.push(analysis);
                 }
             });
-        }
-        
-        // Sitemap.xml functionality
-        function setupSitemapDropZone() {
-            const sitemapDropZone = document.getElementById('sitemapDropZone');
-            const sitemapFileInput = document.getElementById('sitemapFileInput');
-            
-            sitemapDropZone.addEventListener('click', () => sitemapFileInput.click());
-            
-            sitemapDropZone.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                sitemapDropZone.classList.add('dragover');
-            });
-            
-            sitemapDropZone.addEventListener('dragleave', () => {
-                sitemapDropZone.classList.remove('dragover');
-            });
-            
-            sitemapDropZone.addEventListener('drop', (e) => {
-                e.preventDefault();
-                sitemapDropZone.classList.remove('dragover');
-                const files = Array.from(e.dataTransfer.files).filter(file => 
-                    file.type === 'text/xml' || file.name.endsWith('.xml')
-                );
-                if (files.length > 0) {
-                    processSitemapFile(files[0]);
-                }
-            });
-            
-            sitemapFileInput.addEventListener('change', (e) => {
-                if (e.target.files.length > 0) {
-                    processSitemapFile(e.target.files[0]);
-                }
-            });
-        }
-        
-        async function processSitemapFile(file) {
-            try {
-                const content = await readFileContent(file);
-                const parser = new DOMParser();
-                const xmlDoc = parser.parseFromString(content, 'text/xml');
-                
-                // Check for parsing errors
-                const parseError = xmlDoc.querySelector('parsererror');
-                if (parseError) {
-                    throw new Error('خطأ في تحليل ملف XML');
-                }
-                
-                // Extract URLs from sitemap
-                const urlElements = xmlDoc.querySelectorAll('url > loc, sitemap > loc');
-                const newSitemapUrls = [];
-                
-                urlElements.forEach(element => {
-                    let url = element.textContent.trim();
-                    // Convert full URLs to relative paths
-                    try {
-                        const urlObj = new URL(url);
-                        url = urlObj.pathname;
-                        if (url === '/') url = '/index.html';
-                        if (!url.includes('.')) url += '.html';
-                    } catch (e) {
-                        // If not a valid URL, treat as relative path
-                    }
-                    
-                    if (url && !sitemapUrls.includes(url) && !newSitemapUrls.includes(url)) {
-                        newSitemapUrls.push(url);
-                    }
-                });
-                
-                if (newSitemapUrls.length > 0) {
-                    // Append to existing sitemapUrls
-                    sitemapUrls.push(...newSitemapUrls);
-                    
-                    // Add to URL input
-                    const currentUrls = document.getElementById('urlInput').value;
-                    const newUrls = currentUrls ? currentUrls + '\n' + newSitemapUrls.join('\n') : newSitemapUrls.join('\n');
-                    document.getElementById('urlInput').value = newUrls;
-                    
-                    showNotification(`تم استخراج ${newSitemapUrls.length} رابط جديد من Sitemap! 🗺️`, 'success');
-                    autoSave();
-                } else {
-                    showNotification('لم يتم العثور على روابط جديدة في ملف Sitemap', 'warning');
-                }
-                
-            } catch (error) {
-                showNotification('خطأ في معالجة ملف Sitemap: ' + error.message, 'danger');
-            }
-        }
-        
-        // File drop zone functionality
-        const fileDropZone = document.getElementById('fileDropZone');
-        const htmlFileInput = document.getElementById('htmlFileInput');
-        
-        fileDropZone.addEventListener('click', () => htmlFileInput.click());
-        
-        fileDropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            fileDropZone.classList.add('dragover');
-        });
-        
-        fileDropZone.addEventListener('dragleave', () => {
-            fileDropZone.classList.remove('dragover');
-        });
-        
-        fileDropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            fileDropZone.classList.remove('dragover');
-            const files = Array.from(e.dataTransfer.files).filter(file => 
-                file.type === 'text/html' || file.name.endsWith('.html') || file.name.endsWith('.htm')
-            );
-            if (files.length > 0) {
-                processHtmlFiles(files);
-            }
-        });
-        
-        htmlFileInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                processHtmlFiles(Array.from(e.target.files));
-            }
-        });
-        
-        // Process HTML files with enhanced content extraction
-        async function processHtmlFiles(files) {
-            const progressContainer = document.getElementById('progressContainer');
-            const progressBar = document.getElementById('progressBar');
-            const progressText = document.getElementById('progressText');
-            
-            progressContainer.style.display = 'block';
-            // Don't reset analyzedFiles - append to existing data instead
-            // analyzedFiles = []; // REMOVED: This was causing data loss
-            
-            const newAnalyzedFiles = [];
-            
-            for (let i = 0; i < files.length; i++) {
-                const file = files[i];
-                const progress = ((i + 1) / files.length) * 100;
-                
-                progressBar.style.width = progress + '%';
-                progressText.textContent = `معالجة ${file.name} (${i + 1}/${files.length})`;
-                
-                try {
-                    // Check if this file was already analyzed
-                    const existingAnalysis = analyzedFiles.find(existing => existing.filename === file.name);
-                    
-                    if (!existingAnalysis) {
-                        const content = await readFileContent(file);
-                        const analysis = analyzeHtmlContent(content, file.name);
-                        analyzedFiles.push(analysis);
-                        newAnalyzedFiles.push(analysis);
-                    }
-                } catch (error) {
-                    console.error('Error processing file:', file.name, error);
-                }
-                
-                // Small delay for UI responsiveness
-                await new Promise(resolve => setTimeout(resolve, 100));
-            }
-            
-            progressContainer.style.display = 'none';
-            
-            if (newAnalyzedFiles.length > 0) {
-                showNotification(`تم تحليل ${newAnalyzedFiles.length} ملف HTML جديد بنجاح! إجمالي الملفات: ${analyzedFiles.length} 🎉`, 'success');
+
+            if (newFiles.length > 0) {
+                showNotification(`✅ اكتمل الزحف! تم تحليل ${newFiles.length} صفحة. اضغط "توليد فهرس" لإظهارها.`, 'success');
+            } else if (crawledData.size > 0) {
+                 showNotification('🏁 اكتمل الزحف. تم تحليل هذه الصفحات مسبقاً.', 'info');
             } else {
-                showNotification('جميع الملفات تم تحليلها مسبقاً - لا توجد ملفات جديدة', 'info');
+                 showNotification('❌ فشل الزحف. لم يتم العثور على أي صفحات.', 'danger');
+            }
+            if (brokenLinks.size > 0) {
+                showNotification(`🚨 تم العثور على ${brokenLinks.size} رابط داخلي مكسور.`, 'danger');
             }
             
             autoSave();
         }
-        
-        function readFileContent(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = e => resolve(e.target.result);
-                reader.onerror = reject;
-                reader.readAsText(file, 'UTF-8');
-            });
-        }
-        
-        function analyzeHtmlContent(content, filename) {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(content, 'text/html');
+
+        function analyzeHtmlContent(content, urlOrFilename) {
+            const doc = new DOMParser().parseFromString(content, 'text/html');
+            const isUrl = urlOrFilename.startsWith('http');
+            const url = isUrl ? new URL(urlOrFilename) : null;
+            const filename = isUrl ? url.pathname.split('/').pop() || 'index.html' : urlOrFilename;
             
-            // Extract title
-            const titleElement = doc.querySelector('title');
-            let title = titleElement ? titleElement.textContent.trim() : '';
+            let title = doc.querySelector('title')?.textContent.trim() || filename.replace(/\.(html?|htm)$/i, '').replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            let description = doc.querySelector('meta[name="description"]')?.getAttribute('content') || doc.querySelector('meta[property="og:description"]')?.getAttribute('content') || doc.querySelector('article p, main p')?.textContent.trim().substring(0, 200) + '...' || `صفحة ${title}`;
+            let keywords = doc.querySelector('meta[name="keywords"]')?.getAttribute('content')?.split(',').map(k => k.trim()).filter(Boolean) || [];
             
-            // Extract description from meta tags
-            let description = '';
-            const metaDesc = doc.querySelector('meta[name="description"]') || 
-                           doc.querySelector('meta[property="og:description"]');
-            if (metaDesc) {
-                description = metaDesc.getAttribute('content') || '';
-            }
-            
-            // Enhanced content extraction from article/main sections
-            if (!description) {
-                const articleElement = doc.querySelector('article');
-                const mainElement = doc.querySelector('main');
-                const contentElement = articleElement || mainElement;
-                
-                if (contentElement) {
-                    const firstParagraph = contentElement.querySelector('p');
-                    if (firstParagraph) {
-                        description = firstParagraph.textContent.trim().substring(0, 200) + '...';
-                    }
-                }
-            }
-            
-            // Extract keywords
-            let keywords = [];
-            const metaKeywords = doc.querySelector('meta[name="keywords"]');
-            if (metaKeywords) {
-                keywords = metaKeywords.getAttribute('content')
-                    .split(',')
-                    .map(k => k.trim())
-                    .filter(k => k);
-            }
-            
-            // Extract headings for additional context
-            const headings = Array.from(doc.querySelectorAll('h1, h2, h3'))
-                .map(h => h.textContent.trim())
-                .filter(h => h);
-            
-            // Fallback title from filename
-            if (!title) {
-                title = filename.replace(/\.(html?|htm)$/i, '')
-                    .replace(/[-_]/g, ' ')
-                    .replace(/\b\w/g, l => l.toUpperCase());
-            }
-            
-            // Fallback description
-            if (!description && headings.length > 0) {
-                description = `صفحة ${title} - ${headings[0]}`;
-            } else if (!description) {
-                description = `صفحة ${title}`;
-            }
-            
-            return {
-                filename: filename,
-                title: title,
-                description: description,
-                keywords: keywords,
-                headings: headings,
-                url: '/' + filename,
-                content: content // Store content for ZIP export
-            };
-        }
-        
-        // Enhanced tag extraction from URLs
-        function extractTagsFromUrl(url) {
-            const tags = [];
-            const pathParts = url.split('/').filter(part => part && part !== '');
-            
-            pathParts.forEach(part => {
-                // Remove file extensions
-                const cleanPart = part.replace(/\.(html?|htm|php|asp|jsp)$/i, '');
-                
-                // Split by common separators
-                const subParts = cleanPart.split(/[-_\s]+/);
-                
-                subParts.forEach(subPart => {
-                    if (subPart.length > 2) {
-                        tags.push(subPart.toLowerCase());
-                    }
-                });
-            });
-            
-            // Add common Arabic translations
-            const translations = {
-                'index': 'الرئيسية',
-                'home': 'الرئيسية',
-                'about': 'من نحن',
-                'contact': 'اتصل بنا',
-                'services': 'خدمات',
-                'products': 'منتجات',
-                'blog': 'مدونة',
-                'news': 'أخبار',
-                'portfolio': 'أعمال',
-                'team': 'فريق',
-                'pricing': 'أسعار',
-                'faq': 'أسئلة شائعة'
+            const images = doc.querySelectorAll('img');
+            const imagesWithoutAlt = [...images].filter(img => !img.getAttribute('alt')?.trim());
+            const seoData = {
+                h1: doc.querySelector('h1')?.textContent.trim() || null,
+                lang: doc.documentElement.getAttribute('lang') || null,
+                canonical: doc.querySelector('link[rel="canonical"]')?.getAttribute('href') || null,
+                imageAltInfo: { total: images.length, missing: imagesWithoutAlt.length },
+                brokenLinksOnPage: [],
             };
             
-            tags.forEach(tag => {
-                if (translations[tag]) {
-                    tags.push(translations[tag]);
-                }
-            });
-            
-            return [...new Set(tags)]; // Remove duplicates
+            return { filename, title, description, keywords, url: isUrl ? url.pathname : '/' + filename, source: isUrl ? 'seo_crawler' : 'html_analysis', content, seo: seoData };
         }
-        
-        // Bulk import functionality
-        function importUrlsFile() {
-            const fileInput = document.getElementById('urlsFileInput');
-            const file = fileInput.files[0];
-            
-            if (!file) {
-                alert('يرجى اختيار ملف أولاً');
-                return;
-            }
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const content = e.target.result;
-                let urls = [];
-                
-                try {
-                    if (file.name.endsWith('.json')) {
-                        const jsonData = JSON.parse(content);
-                        if (Array.isArray(jsonData)) {
-                            urls = jsonData;
-                        } else if (jsonData.urls && Array.isArray(jsonData.urls)) {
-                            urls = jsonData.urls;
-                        }
-                    } else {
-                        // Text file
-                        urls = content.split('\n')
-                            .map(line => line.trim())
-                            .filter(line => line && !line.startsWith('#'));
-                    }
-                    
-                    if (urls.length > 0) {
-                        const currentUrls = document.getElementById('urlInput').value;
-                        const newUrls = currentUrls ? currentUrls + '\n' + urls.join('\n') : urls.join('\n');
-                        document.getElementById('urlInput').value = newUrls;
-                        showNotification(`تم استيراد ${urls.length} رابط بنجاح! 📥`, 'success');
-                        autoSave();
-                    } else {
-                        alert('لم يتم العثور على روابط صالحة في الملف');
-                    }
-                } catch (error) {
-                    alert('خطأ في قراءة الملف: ' + error.message);
-                }
-            };
-            
-            reader.readAsText(file, 'UTF-8');
-        }
-        
-        // Toggle manual input
-        document.getElementById('manualInput').addEventListener('change', function() {
-            const section = document.getElementById('manualInputSection');
-            section.style.display = this.checked ? 'block' : 'none';
-        });
-        
-        function addManualPage() {
-            const title = document.getElementById('pageTitle').value;
-            const url = document.getElementById('pageUrl').value;
-            const description = document.getElementById('pageDescription').value;
-            const category = document.getElementById('pageCategory').value;
-            const tags = document.getElementById('pageTags').value.split(',').map(t => t.trim()).filter(t => t);
-            
-            if (!title || !url) {
-                alert('يرجى إدخال العنوان والرابط على الأقل');
-                return;
-            }
-            
-            manualPages.push({
-                title,
-                url: url.startsWith('/') ? url : '/' + url,
-                description,
-                category: category || 'عام',
-                tags
-            });
-            
-            // Clear inputs
-            document.getElementById('pageTitle').value = '';
-            document.getElementById('pageUrl').value = '';
-            document.getElementById('pageDescription').value = '';
-            document.getElementById('pageCategory').value = '';
-            document.getElementById('pageTags').value = '';
-            
-            showNotification(`تم إضافة: ${title}`, 'success');
-            autoSave();
-        }
-        
+
         function generateSearchIndex() {
-            const urlInput = document.getElementById('urlInput').value.trim();
-            const isManual = document.getElementById('manualInput').checked;
-            
-            // Don't reset searchIndex - append to existing data instead
-            // searchIndex = []; // REMOVED: This was causing data loss
-            
-            // Find the highest existing ID to continue numbering
-            let idCounter = searchIndex.length > 0 ? Math.max(...searchIndex.map(item => item.id)) + 1 : 1;
-            
-            // Track new items added in this session
+            let idCounter = appState.searchIndex.length > 0 ? Math.max(...appState.searchIndex.map(item => item.id)) + 1 : 1;
             let newItemsCount = 0;
-            
-            // Add analyzed HTML files first
-            if (analyzedFiles.length > 0) {
-                analyzedFiles.forEach(file => {
-                    // Check if this file is already in searchIndex
-                    const existingItem = searchIndex.find(item => 
-                        item.url === file.url || 
-                        (item.source === 'html_analysis' && item.title === file.title)
-                    );
-                    
-                    if (!existingItem) {
-                        searchIndex.push({
-                            id: idCounter++,
-                            title: file.title,
-                            description: file.description,
-                            url: file.url,
-                            category: 'تحليل تلقائي',
-                            tags: file.keywords.length > 0 ? file.keywords : extractTagsFromUrl(file.url),
-                            source: 'html_analysis',
-                            content: file.content
-                        });
-                        newItemsCount++;
-                    }
-                });
-            }
-            
-            if (isManual && manualPages.length > 0) {
-                // Add manual pages
-                manualPages.forEach(page => {
-                    // Check if this manual page is already in searchIndex
-                    const existingItem = searchIndex.find(item => 
-                        item.url === page.url || 
-                        (item.source === 'manual' && item.title === page.title)
-                    );
-                    
-                    if (!existingItem) {
-                        searchIndex.push({
-                            id: idCounter++,
-                            title: page.title,
-                            description: page.description,
-                            url: page.url,
-                            category: page.category,
-                            tags: page.tags,
-                            source: 'manual'
-                        });
-                        newItemsCount++;
-                    }
-                });
-            } else if (urlInput) {
-                // Generate from URLs
-                const urls = urlInput.split('\n').filter(url => url.trim());
-                
-                urls.forEach(url => {
-                    url = url.trim();
-                    if (!url) return;
-                    
-                    // Check if this URL already exists in searchIndex
-                    const normalizedUrl = url.startsWith('/') ? url : '/' + url;
-                    const existingItem = searchIndex.find(item => item.url === normalizedUrl);
-                    
-                    if (existingItem) {
-                        // Skip if already exists
-                        return;
-                    }
-                    
-                    // Check if this URL was already analyzed from HTML file
-                    const existingAnalysis = analyzedFiles.find(file => 
-                        file.url === normalizedUrl || file.filename === url
-                    );
-                    
-                    if (existingAnalysis) {
-                        // Skip if already added from HTML analysis
-                        return;
-                    }
-                    
-                    // Extract info from URL
-                    const fileName = url.split('/').pop().replace('.html', '');
-                    const pathParts = url.split('/');
-                    const category = pathParts.length > 1 ? pathParts[0] : 'عام';
-                    
-                    // Generate title from filename
-                    let title = fileName.replace(/[-_]/g, ' ');
-                    title = title.charAt(0).toUpperCase() + title.slice(1);
-                    
-                    // Special cases
-                    if (fileName.toLowerCase() === 'index') title = 'الصفحة الرئيسية';
-                    if (fileName.toLowerCase() === 'about') title = 'من نحن';
-                    if (fileName.toLowerCase() === 'contact') title = 'اتصل بنا';
-                    if (fileName.toLowerCase() === 'services') title = 'خدماتنا';
-                    if (fileName.toLowerCase() === 'blog') title = 'المدونة';
-                    
-                    // Enhanced tag extraction
-                    const enhancedTags = extractTagsFromUrl(url);
-                    
-                    // Determine source
-                    let source = 'url_generation';
-                    if (sitemapUrls.includes(url)) source = 'sitemap';
-                    if (robotsUrls.includes(url)) source = 'robots';
-                    if (githubUrls.includes(url)) source = 'github';
-                    
-                    searchIndex.push({
-                        id: idCounter++,
-                        title: title,
-                        description: `صفحة ${title} - تحتوي على معلومات هامة حول ${title.toLowerCase()}`,
-                        url: url.startsWith('/') ? url : '/' + url,
-                        category: category.charAt(0).toUpperCase() + category.slice(1),
-                        tags: enhancedTags.length > 0 ? enhancedTags : [fileName, category],
-                        source: source
-                    });
+            const existingUrls = new Set(appState.searchIndex.map(item => item.url));
+
+            const addItem = (item) => {
+                const urlKey = item.url.endsWith('/') && item.url.length > 1 ? item.url.slice(0, -1) : item.url;
+                if (!existingUrls.has(urlKey)) {
+                    item.id = idCounter++;
+                    appState.searchIndex.push(item);
+                    existingUrls.add(urlKey);
                     newItemsCount++;
-                });
-            }
+                }
+            };
             
-            if (searchIndex.length === 0) {
-                alert('يرجى إدخال روابط الصفحات أو رفع ملفات HTML/Sitemap أو استخدام الإدخال اليدوي');
-                return;
-            }
+            appState.analyzedFiles.forEach(file => addItem({
+                title: file.title, description: file.description, url: file.url,
+                category: file.category || (file.source === 'seo_crawler' ? 'زاحف SEO' : 'تحليل تلقائي'),
+                tags: file.keywords && file.keywords.length > 0 ? file.keywords : extractTagsFromUrl(file.url),
+                source: file.source || 'html_analysis', seo: file.seo
+            }));
             
-            // Show notification about new items added
-            if (newItemsCount > 0) {
-                showNotification(`تم إضافة ${newItemsCount} عنصر جديد! إجمالي العناصر: ${searchIndex.length}`, 'success');
-            } else {
-                showNotification('لا توجد عناصر جديدة للإضافة - جميع العناصر موجودة مسبقاً', 'info');
+            if (getEl('manualInput').checked) { appState.manualPages.forEach(page => addItem({ ...page, source: 'manual' })); }
+            
+            getEl('urlInput').value.trim().split('\n').filter(Boolean).forEach(urlStr => {
+                const url = urlStr.trim().startsWith('/') ? urlStr.trim() : '/' + urlStr.trim();
+                if (existingUrls.has(url)) return;
+
+                const fileName = url.split('/').pop().replace(/\.html?$/, '');
+                const pathParts = url.split('/').filter(Boolean);
+                const category = pathParts.length > 1 ? pathParts[0] : 'عام';
+                const titleMap = { 'index': 'الصفحة الرئيسية', 'about': 'من نحن', 'contact': 'اتصل بنا', 'services': 'خدماتنا', 'blog': 'المدونة' };
+                let title = titleMap[fileName.toLowerCase()] || (fileName.charAt(0).toUpperCase() + fileName.slice(1).replace(/[-_]/g, ' '));
+                let source = appState.sitemapUrls.includes(url) ? 'sitemap' : appState.robotsUrls.includes(url) ? 'robots' : 'url_generation';
+                
+                addItem({ title, description: `صفحة ${title}`, url, category: category.charAt(0).toUpperCase() + category.slice(1), tags: extractTagsFromUrl(url), source });
+            });
+
+            if (appState.searchIndex.length === 0) {
+                showNotification('يرجى إدخال بيانات أولاً', 'warning'); return;
             }
+            showNotification(newItemsCount > 0 ? `تم إضافة ${newItemsCount} عنصر جديد! الإجمالي: ${appState.searchIndex.length}` : 'لا توجد عناصر جديدة للإضافة', newItemsCount > 0 ? 'success' : 'info');
             
             displayResults();
             updateStatistics();
             updateLiveCounter();
             updateFilterOptions();
-            document.getElementById('filterSection').style.display = 'block';
+            getEl('filterSection').classList.remove('d-none');
             autoSave();
         }
         
         function displayResults(resultsToShow = null) {
-            const resultsDiv = document.getElementById('results');
-            const results = resultsToShow || searchIndex;
-            
+            const resultsDiv = getEl('results');
+            const results = resultsToShow || appState.searchIndex;
             if (results.length === 0) {
-                resultsDiv.innerHTML = '<p class="text-danger">لا توجد صفحات للمعالجة</p>';
+                resultsDiv.innerHTML = '<p class="text-danger text-center m-0">لا توجد صفحات للمعالجة أو للعرض</p>';
                 return;
             }
-            
-            let html = `<h5>تم توليد ${results.length} عنصر:</h5>`;
-            
-            // Group by source
             const grouped = results.reduce((acc, item) => {
-                const source = item.source || 'unknown';
-                if (!acc[source]) acc[source] = [];
-                acc[source].push(item);
+                (acc[item.source || 'unknown'] = acc[item.source || 'unknown'] || []).push(item);
                 return acc;
             }, {});
-            
-            Object.keys(grouped).forEach(source => {
-                const sourceLabel = {
-                    'html_analysis': '📄 تحليل ملفات HTML',
-                    'manual': '✏️ إدخال يدوي',
-                    'url_generation': '🔗 توليد من الروابط',
-                    'sitemap': '🗺️ من Sitemap.xml',
-                    'robots': '🤖 من robots.txt',
-                    'github': '🐙 من GitHub Pages'
-                }[source] || source;
-                
-                html += `<h6 class="mt-3 text-primary">${sourceLabel} (${grouped[source].length})</h6>`;
-                
-                grouped[source].forEach(item => {
-                    html += `
-                    <div class="page-item" data-id="${item.id}">
-                        <button class="btn btn-outline-secondary btn-sm edit-btn" onclick="toggleEdit(${item.id})">تحرير</button>
-                        <div class="page-title editable-content" data-field="title" contenteditable="false">${item.title}</div>
-                        <div class="page-url">${item.url}</div>
-                        <div class="text-muted editable-content" data-field="description" contenteditable="false">${item.description}</div>
-                        <div class="mt-2">
-                            <small class="text-info">الفئة: <span class="editable-content" data-field="category" contenteditable="false">${item.category}</span></small>
-                        </div>
-                        <div class="mt-1">
-                            <small class="text-success">الكلمات: <span class="editable-content" data-field="tags" contenteditable="false">${item.tags.join(', ')}</span></small>
-                        </div>
-                    </div>
-                    `;
-                });
-            });
-            
-            resultsDiv.innerHTML = html;
-            
-            // Show export buttons
-            document.getElementById('exportButtons').style.display = 'flex';
-        }
-        
-        function toggleEdit(itemId) {
-            const pageItem = document.querySelector(`[data-id="${itemId}"]`);
-            const editableElements = pageItem.querySelectorAll('.editable-content');
-            const editBtn = pageItem.querySelector('.edit-btn');
-            
-            const isEditing = editableElements[0].getAttribute('contenteditable') === 'true';
-            
-            if (isEditing) {
-                // Save changes
-                editableElements.forEach(element => {
-                    element.setAttribute('contenteditable', 'false');
-                    element.style.backgroundColor = '';
-                    
-                    const field = element.getAttribute('data-field');
-                    const value = element.textContent.trim();
-                    
-                    // Update searchIndex
-                    const item = searchIndex.find(item => item.id === itemId);
-                    if (item) {
-                        if (field === 'tags') {
-                            item[field] = value.split(',').map(t => t.trim()).filter(t => t);
-                        } else {
-                            item[field] = value;
-                        }
-                    }
-                });
-                
-                editBtn.textContent = 'تحرير';
-                editBtn.className = 'btn btn-outline-secondary btn-sm edit-btn';
-                showNotification('تم حفظ التعديلات! ✅', 'success');
-                updateStatistics();
-                autoSave();
-            } else {
-                // Enable editing
-                editableElements.forEach(element => {
-                    element.setAttribute('contenteditable', 'true');
-                    element.style.backgroundColor = '#fff3cd';
-                });
-                
-                editBtn.textContent = 'حفظ';
-                editBtn.className = 'btn btn-success btn-sm edit-btn';
-            }
-        }
-        
-        // Enhanced export functions
-        function downloadJson() {
-            const jsonData = JSON.stringify(searchIndex.map(item => ({
-                id: item.id,
-                title: item.title,
-                description: item.description,
-                url: item.url,
-                category: item.category,
-                tags: item.tags
-            })), null, 2);
-            
-            const blob = new Blob([jsonData], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'search-index.json';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            
-            showNotification('تم تحميل search-index.json بنجاح! ✅', 'success');
-        }
-        
-        function downloadCSV() {
-            const headers = ['ID', 'العنوان', 'الرابط', 'الوصف', 'الفئة', 'الكلمات المفتاحية'];
-            const csvContent = [
-                headers.join(','),
-                ...searchIndex.map(item => [
-                    item.id,
-                    `"${item.title.replace(/"/g, '""')}"`,
-                    `"${item.url}"`,
-                    `"${item.description.replace(/"/g, '""')}"`,
-                    `"${item.category}"`,
-                    `"${item.tags.join(', ').replace(/"/g, '""')}"`
-                ].join(','))
-            ].join('\n');
-            
-            // Add BOM for proper Arabic display in Excel
-            const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'search-index.csv';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            
-            showNotification('تم تحميل search-index.csv بنجاح! 📊', 'success');
-        }
-        
-        async function downloadZip() {
-            const zipProgress = document.getElementById('zipProgress');
-            const zipProgressBar = document.getElementById('zipProgressBar');
-            const zipProgressText = document.getElementById('zipProgressText');
-            
-            zipProgress.style.display = 'block';
-            zipProgressBar.style.width = '10%';
-            zipProgressText.textContent = 'جاري إنشاء ملف ZIP...';
-            
-            try {
-                const zip = new JSZip();
-                
-                // Add search-index.json
-                const jsonData = JSON.stringify(searchIndex.map(item => ({
-                    id: item.id,
-                    title: item.title,
-                    description: item.description,
-                    url: item.url,
-                    category: item.category,
-                    tags: item.tags
-                })), null, 2);
-                
-                zip.file('search-index.json', jsonData);
-                zipProgressBar.style.width = '30%';
-                zipProgressText.textContent = 'تم إضافة search-index.json...';
-                
-                // Add HTML files if available
-                const htmlFiles = analyzedFiles.filter(file => file.content);
-                if (htmlFiles.length > 0) {
-                    const htmlFolder = zip.folder('html-files');
-                    
-                    for (let i = 0; i < htmlFiles.length; i++) {
-                        const file = htmlFiles[i];
-                        htmlFolder.file(file.filename, file.content);
-                        
-                        const progress = 30 + (i + 1) / htmlFiles.length * 50;
-                        zipProgressBar.style.width = progress + '%';
-                        zipProgressText.textContent = `تم إضافة ${file.filename}...`;
-                        
-                        // Small delay for UI responsiveness
-                        await new Promise(resolve => setTimeout(resolve, 50));
-                    }
+
+            const sourceLabels = {
+                'seo_crawler': '🔬 زاحف SEO', 'html_analysis': '📄 تحليل HTML', 'manual': '✏️ إدخال يدوي',
+                'url_generation': '🔗 من الروابط', 'sitemap': '🗺️ من Sitemap', 'robots': '🤖 من robots.txt', 'spa_analysis': '⚡ تحليل SPA'
+            };
+
+            const renderSeoSummary = (seo) => {
+                if (!seo) return '';
+                const h1 = seo.h1 ? `<span class="badge bg-success">موجود</span>` : `<span class="badge bg-danger">مفقود</span>`;
+                const canonical = seo.canonical ? `<span class="badge bg-success">موجود</span>` : `<span class="badge bg-danger">مفقود</span>`;
+                const lang = seo.lang ? `<span class="badge bg-success">${seo.lang}</span>` : `<span class="badge bg-danger">مفقود</span>`;
+                let imgAltBadge;
+                if (seo.imageAltInfo.total === 0) {
+                    imgAltBadge = `<span class="badge bg-secondary">لا يوجد</span>`;
+                } else if (seo.imageAltInfo.missing === 0) {
+                    imgAltBadge = `<span class="badge bg-success">${seo.imageAltInfo.total}/${seo.imageAltInfo.total}</span>`;
+                } else {
+                    imgAltBadge = `<span class="badge bg-warning">${seo.imageAltInfo.total - seo.imageAltInfo.missing}/${seo.imageAltInfo.total}</span>`;
                 }
-                
-                zipProgressBar.style.width = '90%';
-                zipProgressText.textContent = 'جاري ضغط الملفات...';
-                
-                // Generate ZIP file
-                const content = await zip.generateAsync({type: 'blob'});
-                
-                zipProgressBar.style.width = '100%';
-                zipProgressText.textContent = 'تم إنشاء الملف بنجاح!';
-                
-                // Download ZIP
-                const url = URL.createObjectURL(content);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'search-index-package.zip';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                
-                showNotification('تم تحميل الحزمة الكاملة بنجاح! 📦', 'success');
-                
-                setTimeout(() => {
-                    zipProgress.style.display = 'none';
-                }, 2000);
-                
-            } catch (error) {
-                showNotification('خطأ في إنشاء ملف ZIP: ' + error.message, 'danger');
-                zipProgress.style.display = 'none';
-            }
+                const brokenLinksCount = seo.brokenLinksOnPage?.length || 0;
+                const brokenLinksBadge = brokenLinksCount > 0 ? `<span class="badge bg-danger">${brokenLinksCount}</span>` : `<span class="badge bg-success">0</span>`;
+
+                return `<div class="mt-2 pt-2 border-top border-opacity-10">
+                    <div class="seo-summary-item"><strong>H1:</strong> ${h1}</div>
+                    <div class="seo-summary-item"><strong>Lang:</strong> ${lang}</div>
+                    <div class="seo-summary-item"><strong>Canonical:</strong> ${canonical}</div>
+                    <div class="seo-summary-item"><strong>Img Alt:</strong> ${imgAltBadge}</div>
+                    <div class="seo-summary-item"><strong>روابط مكسورة:</strong> ${brokenLinksBadge}</div>
+                </div>`;
+            };
+
+            resultsDiv.innerHTML = `<h5>تم توليد ${results.length} عنصر:</h5>` + Object.entries(grouped).map(([source, items]) => `
+                <h6 class="mt-3 text-primary">${sourceLabels[source] || source} (${items.length})</h6>
+                ${items.map(item => `
+                <div class="position-relative bg-body border rounded-2 p-3 my-2" data-id="${item.id}">
+                    <button class="btn btn-outline-secondary btn-sm position-absolute top-0 start-0 m-2" onclick="toggleEdit(${item.id})">تحرير</button>
+                    <div class="page-title editable-content text-primary fw-bold mb-1" data-field="title">${item.title}</div>
+                    <div class="text-body-secondary small">${item.url}</div>
+                    <div class="text-muted editable-content mt-1" data-field="description">${item.description}</div>
+                    <div class="mt-2 small"><span class="text-info">الفئة:</span> <span class="editable-content" data-field="category">${item.category || ''}</span></div>
+                    <div class="mt-1 small"><span class="text-success">الكلمات:</span> <span class="editable-content" data-field="tags">${(item.tags || []).join(', ')}</span></div>
+                    ${renderSeoSummary(item.seo)}
+                </div>`).join('')}`
+            ).join('');
+            getEl('exportButtons').classList.remove('d-none');
         }
         
-        function toggleCopyOptions() {
-            const copyOptions = document.getElementById('copyOptions');
-            copyOptions.style.display = copyOptions.style.display === 'none' ? 'block' : 'none';
-        }
-        
-        function copyToClipboard(type) {
-            let content = '';
-            
-            switch (type) {
-                case 'all':
-                    content = JSON.stringify(searchIndex.map(item => ({
-                        id: item.id,
-                        title: item.title,
-                        description: item.description,
-                        url: item.url,
-                        category: item.category,
-                        tags: item.tags
-                    })), null, 2);
-                    break;
-                case 'titles':
-                    content = searchIndex.map(item => item.title).join('\n');
-                    break;
-                case 'urls':
-                    content = searchIndex.map(item => item.url).join('\n');
-                    break;
-                case 'descriptions':
-                    content = searchIndex.map(item => item.description).join('\n');
-                    break;
+        function updateLiveCounter() {
+            const counter = getEl('liveCounter');
+            if (appState.searchIndex.length > 0) {
+                counter.classList.remove('d-none');
+                getEl('counterValue').textContent = appState.searchIndex.length;
+            } else {
+                counter.classList.add('d-none');
             }
-            
-            navigator.clipboard.writeText(content).then(() => {
-                const typeLabels = {
-                    'all': 'البيانات الكاملة',
-                    'titles': 'العناوين',
-                    'urls': 'الروابط',
-                    'descriptions': 'الأوصاف'
-                };
-                showNotification(`تم نسخ ${typeLabels[type]} إلى الحافظة! 📋`, 'success');
-                toggleCopyOptions();
-            }).catch(err => {
-                console.error('خطأ في النسخ:', err);
-                // Fallback
-                const textArea = document.createElement('textarea');
-                textArea.value = content;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                showNotification('تم نسخ البيانات إلى الحافظة! 📋', 'success');
-                toggleCopyOptions();
+        }
+
+        function updateStatistics() {
+            const statsPanel = getEl('statsPanel');
+            if (appState.searchIndex.length === 0) {
+                statsPanel.classList.add('d-none');
+                return;
+            }
+            statsPanel.classList.remove('d-none');
+            const allKeywords = appState.searchIndex.flatMap(item => item.tags || []);
+            const uniqueCategories = [...new Set(appState.searchIndex.map(item => item.category).filter(Boolean))];
+            const keywordCount = allKeywords.reduce((acc, keyword) => {
+                acc[keyword] = (acc[keyword] || 0) + 1;
+                return acc;
+            }, {});
+            const topKeyword = Object.keys(keywordCount).reduce((a, b) => keywordCount[a] > keywordCount[b] ? a : b, '-');
+            getEl('statPages').textContent = appState.searchIndex.length;
+            getEl('statKeywords').textContent = allKeywords.length;
+            getEl('statCategories').textContent = uniqueCategories.length;
+            getEl('statTopKeyword').textContent = topKeyword === '-' ? '-' : `${topKeyword} (${keywordCount[topKeyword]})`;
+        }
+        function setupFilters() { getEl('categoryFilter').addEventListener('change', applyFilters); getEl('keywordFilter').addEventListener('input', applyFilters); }
+        function updateFilterOptions() {
+            const categoryFilter = getEl('categoryFilter');
+            const categories = [...new Set(appState.searchIndex.map(item => item.category).filter(Boolean))].sort();
+            categoryFilter.innerHTML = '<option value="">جميع الفئات</option>';
+            categories.forEach(category => {
+                const option = document.createElement('option'); option.value = category; option.textContent = category; categoryFilter.appendChild(option);
             });
         }
-        
-        // Auto-save when URL input changes
-        document.getElementById('urlInput').addEventListener('input', autoSave);
+        function applyFilters() {
+            const categoryFilterValue = getEl('categoryFilter').value;
+            const keywordFilterValue = getEl('keywordFilter').value.toLowerCase();
+            appState.filteredResults = appState.searchIndex.filter(item => {
+                const matchesCategory = !categoryFilterValue || item.category === categoryFilterValue;
+                const matchesKeyword = !keywordFilterValue || item.title.toLowerCase().includes(keywordFilterValue) || item.description.toLowerCase().includes(keywordFilterValue) || (item.tags && item.tags.some(tag => tag.toLowerCase().includes(keywordFilterValue)));
+                return matchesCategory && matchesKeyword;
+            });
+            displayResults(appState.filteredResults);
+        }
+        function deleteAllData() {
+            if (confirm('هل أنت متأكد من حذف جميع البيانات؟ لا يمكن التراجع عن هذا الإجراء.')) {
+                // Reset the appState object to its initial values
+                Object.assign(appState, { searchIndex: [], manualPages: [], analyzedFiles: [], sitemapUrls: [], robotsUrls: [], manifestData: {}, filteredResults: [] });
+                
+                getEl('urlInput').value = '';
+                getEl('customProxyUrl').value = ''; // Also clear the proxy
+                getEl('results').innerHTML = '<p class="text-muted text-center m-0">تم حذف جميع البيانات</p>';
+                getEl('exportButtons').classList.add('d-none');
+                getEl('statsPanel').classList.add('d-none');
+                getEl('filterSection').classList.add('d-none');
+                updateLiveCounter();
+                localStorage.removeItem('searchIndexGenerator');
+                showNotification('تم حذف جميع البيانات بنجاح! 🗑️', 'success');
+            }
+        }
+        async function processHtmlFiles(files) {
+            const progressContainer = getEl('progressContainer');
+            const progressBar = getEl('progressBar');
+            const progressText = getEl('progressText');
+            progressContainer.classList.remove('d-none');
+            const newAnalyzedFiles = [];
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                progressBar.style.width = `${((i + 1) / files.length) * 100}%`;
+                progressText.textContent = `معالجة ${file.name} (${i + 1}/${files.length})`;
+                if (!appState.analyzedFiles.find(f => f.filename === file.name)) {
+                    try {
+                        const analysis = analyzeHtmlContent(await readFileContent(file), file.name);
+                        appState.analyzedFiles.push(analysis);
+                        newAnalyzedFiles.push(analysis);
+                    } catch (error) { console.error('Error processing file:', file.name, error); }
+                }
+                await new Promise(r => setTimeout(r, 50));
+            }
+            progressContainer.classList.add('d-none');
+            if (newAnalyzedFiles.length > 0) { showNotification(`تم تحليل ${newAnalyzedFiles.length} ملف HTML جديد! إجمالي: ${appState.analyzedFiles.length} 🎉`, 'success'); }
+            else { showNotification('جميع الملفات تم تحليلها مسبقاً', 'info'); }
+            autoSave();
+        }
+        function toggleCopyOptions() { getEl('copyOptions').classList.toggle('d-none'); }
+        window.addEventListener('load', function() {
+            setDarkMode(isDarkMode); loadFromLocalStorage();
+            const setupDragDrop = (dropZoneId, fileInputId, fileTypeRegex, processFunction) => {
+                const dropZone = getEl(dropZoneId); const fileInput = getEl(fileInputId); if (!dropZone || !fileInput) return;
+                dropZone.addEventListener('click', () => fileInput.click()); dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+                dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+                dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); const files = Array.from(e.dataTransfer.files).filter(file => fileTypeRegex.test(file.type) || fileTypeRegex.test(file.name)); if (files.length > 0) processFunction(files.length > 1 ? files : files[0]); });
+                fileInput.addEventListener('change', (e) => { if (e.target.files.length > 0) processFunction(fileInput.multiple ? Array.from(e.target.files) : e.target.files[0]); });
+            };
+            setupDragDrop('robotsDropZone', 'robotsFileInput', /\.txt$/, processRobotsFile); setupDragDrop('manifestDropZone', 'manifestFileInput', /\.json$/, processManifestFile);
+            setupDragDrop('sitemapDropZone', 'sitemapFileInput', /\.xml$/, processSitemapFile); setupDragDrop('fileDropZone', 'htmlFileInput', /\.html?$/, processHtmlFiles);
+            setupTextareaDragDrop(); setupFilters();
+        });
+        async function analyzeSpaSite() {
+            const url = getEl('spaUrl').value.trim(); if (!url) { return showNotification('يرجى إدخال رابط الموقع للتحليل', 'warning'); }
+            showNotification(`🔬 جاري تحليل ${url}...`, 'info');
+            try {
+                const response = await fetch(getProxyUrl(url)); // Use the new proxy function
+                if (!response.ok) { throw new Error(`فشل في جلب الموقع (Status: ${response.status})`); }
+                const html = await response.text();
+                const filename = new URL(url).pathname.split('/').pop() || 'index.html';
+                if (appState.analyzedFiles.some(f => f.url === url)) { return showNotification('تم تحليل هذا الموقع مسبقاً', 'info'); }
+                const analysis = analyzeHtmlContent(html, url); analysis.url = url; analysis.source = 'spa_analysis'; analysis.category = 'تحليل SPA';
+                appState.analyzedFiles.push(analysis);
+                showNotification(`✅ تم تحليل الموقع. اضغط "توليد فهرس البحث" لإضافته للنتائج.`, 'success'); autoSave();
+            } catch (error) { console.error('SPA Analysis Error:', error); showNotification(`خطأ في تحليل الموقع: ${error.message}`, 'danger'); }
+        }
+        async function processRobotsFile(file) {
+            try {
+                const content = await readFileContent(file); const lines = content.split('\n').map(l => l.trim());
+                const newRobotsUrls = lines.filter(l => l.toLowerCase().startsWith('disallow:') || l.toLowerCase().startsWith('allow:')).map(l => l.split(':')[1]?.trim()).filter(Boolean);
+                if (newRobotsUrls.length > 0) {
+                    appState.robotsUrls.push(...newRobotsUrls); const urlInput = getEl('urlInput'); urlInput.value = (urlInput.value ? urlInput.value + '\n' : '') + newRobotsUrls.join('\n');
+                    showNotification(`تم استخراج ${newRobotsUrls.length} مسار جديد من robots.txt! 🤖`, 'success'); autoSave();
+                } else { showNotification('لم يتم العثور على مسارات جديدة في ملف robots.txt', 'warning'); }
+            } catch (error) { showNotification('خطأ في معالجة ملف robots.txt: ' + error.message, 'danger'); }
+        }
+        async function processManifestFile(file) {
+            try {
+                appState.manifestData = JSON.parse(await readFileContent(file));
+                const extractedUrls = [ ...(appState.manifestData.icons?.map(i => i.src) || []), ...(appState.manifestData.screenshots?.map(s => s.src) || []), appState.manifestData.start_url, ...(appState.manifestData.shortcuts?.map(s => s.url) || []) ].filter(Boolean);
+                if (extractedUrls.length > 0) {
+                    const urlInput = getEl('urlInput'); urlInput.value = (urlInput.value ? urlInput.value + '\n' : '') + extractedUrls.join('\n');
+                    showNotification(`تم استخراج ${extractedUrls.length} مسار من manifest.json! 📱`, 'success'); autoSave();
+                } else { showNotification('لم يتم العثور على مسارات صالحة في ملف manifest.json', 'warning'); }
+            } catch (error) { showNotification('خطأ في معالجة ملف manifest.json: ' + error.message, 'danger'); }
+        }
+        function setupTextareaDragDrop() {
+            const textarea = getEl('urlInput'); textarea.addEventListener('dragover', (e) => { e.preventDefault(); textarea.classList.add('dragover'); });
+            textarea.addEventListener('dragleave', () => textarea.classList.remove('dragover'));
+            textarea.addEventListener('drop', (e) => { e.preventDefault(); textarea.classList.remove('dragover'); const files = Array.from(e.dataTransfer.files).filter(file => /\.txt|\.json$/.test(file.name)); if (files.length > 0) processDroppedTextFiles(files); });
+        }
+        async function processDroppedTextFiles(files) {
+            for (const file of files) {
+                try {
+                    const content = await readFileContent(file);
+                    let urls = file.name.endsWith('.json') ? (JSON.parse(content).urls || JSON.parse(content)) : content.split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('#'));
+                    if (urls.length > 0) {
+                        const urlInput = getEl('urlInput'); urlInput.value = (urlInput.value ? urlInput.value + '\n' : '') + urls.join('\n');
+                        showNotification(`تم إضافة ${urls.length} رابط من ${file.name}! 📥`, 'success'); autoSave();
+                    }
+                } catch (error) { showNotification(`خطأ في معالجة ${file.name}: ${error.message}`, 'danger'); }
+            }
+        }
+        function autoSave() { saveToLocalStorage(); }
+        function saveToLocalStorage() {
+            const filesToSave = appState.analyzedFiles.map(({ content, ...rest }) => rest);
+            const data = {
+                searchIndex: appState.searchIndex,
+                manualPages: appState.manualPages,
+                analyzedFiles: filesToSave,
+                sitemapUrls: appState.sitemapUrls,
+                robotsUrls: appState.robotsUrls,
+                manifestData: appState.manifestData,
+                urlInput: getEl('urlInput').value,
+                customProxyUrl: getEl('customProxyUrl').value, // Save the proxy URL
+                timestamp: new Date().toISOString()
+            };
+            try {
+                localStorage.setItem('searchIndexGenerator', JSON.stringify(data));
+            } catch (error) {
+                showNotification('خطأ في حفظ البيانات: ' + error.message, 'danger');
+            }
+        }
+        function loadFromLocalStorage() {
+            try {
+                const savedData = localStorage.getItem('searchIndexGenerator');
+                if (savedData) {
+                    const data = JSON.parse(savedData);
+                    Object.assign(appState, {
+                        searchIndex: data.searchIndex || [],
+                        manualPages: data.manualPages || [],
+                        analyzedFiles: data.analyzedFiles || [],
+                        sitemapUrls: data.sitemapUrls || [],
+                        robotsUrls: data.robotsUrls || [],
+                        manifestData: data.manifestData || {}
+                    });
+                    if (data.urlInput) getEl('urlInput').value = data.urlInput;
+                    if (data.customProxyUrl) getEl('customProxyUrl').value = data.customProxyUrl; // Load the proxy URL
+                    if (appState.searchIndex.length > 0) {
+                        displayResults();
+                        updateStatistics();
+                        updateLiveCounter();
+                        updateFilterOptions();
+                        getEl('filterSection').classList.remove('d-none');
+                    }
+                    showNotification('تم تحميل البيانات المحفوظة! 📂', 'info');
+                }
+            } catch (error) { showNotification('خطأ في تحميل البيانات: ' + error.message, 'warning'); }
+        }
+        function showNotification(message, type = 'info', duration = 5000) {
+            const toastContainer = document.querySelector('.toast-container'); const toastId = 'toast-' + Date.now();
+            const typeMapping = { 'info': 'bg-info', 'success': 'bg-success', 'warning': 'bg-warning', 'danger': 'bg-danger' };
+            const toast = document.createElement('div'); toast.id = toastId; toast.className = `toast ${typeMapping[type]} text-white`;
+            toast.innerHTML = `<div class="d-flex"><div class="toast-body">${message}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button></div>`;
+            toastContainer.appendChild(toast); const bsToast = new bootstrap.Toast(toast, { delay: duration }); bsToast.show(); toast.addEventListener('hidden.bs.toast', () => toast.remove());
+        }
+        async function processSitemapFile(file) {
+            try {
+                const content = await readFileContent(file); const xmlDoc = new DOMParser().parseFromString(content, 'text/xml');
+                if (xmlDoc.querySelector('parsererror')) throw new Error('خطأ في تحليل ملف XML');
+                const newSitemapUrls = [...xmlDoc.querySelectorAll('url > loc, sitemap > loc')].map(el => { try { return new URL(el.textContent.trim()).pathname; } catch { return el.textContent.trim(); } }).filter(Boolean);
+                if (newSitemapUrls.length > 0) {
+                    appState.sitemapUrls.push(...newSitemapUrls); const urlInput = getEl('urlInput'); urlInput.value = (urlInput.value ? urlInput.value + '\n' : '') + newSitemapUrls.join('\n');
+                    showNotification(`تم استخراج ${newSitemapUrls.length} رابط جديد من Sitemap! 🗺️`, 'success'); autoSave();
+                } else { showNotification('لم يتم العثور على روابط جديدة في ملف Sitemap', 'warning'); }
+            } catch (error) { showNotification('خطأ في معالجة ملف Sitemap: ' + error.message, 'danger'); }
+        }
+        function readFileContent(file) { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = e => resolve(e.target.result); reader.onerror = reject; reader.readAsText(file, 'UTF-8'); }); }
+        function extractTagsFromUrl(url) {
+            if (!url) return [];
+            const pathParts = url.split('/').filter(p => p && p !== '');
+            const tags = pathParts.flatMap(part => part.replace(/\.[^/.]+$/, '').split(/[-_\s]+/)).filter(p => p.length > 2).map(p => p.toLowerCase());
+            const translations = { 'index': 'الرئيسية', 'home': 'الرئيسية', 'about': 'من نحن', 'contact': 'اتصل بنا', 'services': 'خدمات', 'products': 'منتجات', 'blog': 'مدونة', 'news': 'أخبار', 'portfolio': 'أعمال', 'team': 'فريق', 'pricing': 'أسعار', 'faq': 'أسئلة شائعة' };
+            tags.forEach(tag => { if (translations[tag]) tags.push(translations[tag]); }); return [...new Set(tags)];
+        }
+        function importUrlsFile() { const file = getEl('urlsFileInput').files[0]; if (!file) { return alert('يرجى اختيار ملف أولاً'); } processDroppedTextFiles([file]); }
+        getEl('manualInput').addEventListener('change', function() { getEl('manualInputSection').classList.toggle('d-none', !this.checked); });
+        function addManualPage() {
+            const [title, url, description, category, tagsValue] = ['pageTitle', 'pageUrl', 'pageDescription', 'pageCategory', 'pageTags'].map(id => getEl(id).value);
+            if (!title || !url) return alert('يرجى إدخال العنوان والرابط على الأقل');
+            appState.manualPages.push({ title, url: url.startsWith('/') ? url : '/' + url, description, category: category || 'عام', tags: tagsValue.split(',').map(t => t.trim()).filter(Boolean) });
+            ['pageTitle', 'pageUrl', 'pageDescription', 'pageCategory', 'pageTags'].forEach(id => getEl(id).value = ''); showNotification(`تم إضافة: ${title}`, 'success'); autoSave();
+        }
+        function toggleEdit(itemId) {
+            const pageItem = document.querySelector(`[data-id="${itemId}"]`); const editBtn = pageItem.querySelector('button');
+            const isEditing = editBtn.textContent === 'حفظ'; pageItem.querySelectorAll('.editable-content').forEach(el => el.setAttribute('contenteditable', !isEditing));
+            editBtn.textContent = isEditing ? 'تحرير' : 'حفظ'; editBtn.classList.toggle('btn-outline-secondary', isEditing); editBtn.classList.toggle('btn-success', !isEditing);
+            if (isEditing) {
+                const item = appState.searchIndex.find(i => i.id === itemId); if (!item) return;
+                pageItem.querySelectorAll('.editable-content').forEach(el => {
+                    const field = el.dataset.field; const value = el.textContent.trim();
+                    item[field] = field === 'tags' ? value.split(',').map(t => t.trim()).filter(Boolean) : value;
+                }); showNotification('تم حفظ التعديلات! ✅', 'success'); updateStatistics(); autoSave();
+            }
+        }
+        const downloadFile = (blob, filename) => { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; a.click(); URL.revokeObjectURL(a.href); };
+        const getStrippedIndex = () => appState.searchIndex.map(({ id, title, description, url, category, tags, seo }) => ({ id, title, description, url, category, tags, seo }));
+        function downloadJson() { downloadFile(new Blob([JSON.stringify(getStrippedIndex(), null, 2)], { type: 'application/json' }), 'search-index.json'); showNotification('تم تحميل JSON ✅', 'success'); }
+        function downloadCSV() {
+            const csv = ['ID,العنوان,الرابط,الوصف,الفئة,الكلمات المفتاحية', ...appState.searchIndex.map(i => [`"${i.id}"`, `"${i.title.replace(/"/g, '""')}"`, `"${i.url}"`, `"${i.description.replace(/"/g, '""')}"`, `"${i.category || ''}"`, `"${(i.tags || []).join(', ')}"`].join(','))].join('\n');
+            downloadFile(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' }), 'search-index.csv'); showNotification('تم تحميل CSV 📊', 'success');
+        }
+        async function downloadZip() {
+            const zipProgress = getEl('zipProgress'); const zipProgressBar = getEl('zipProgressBar'); zipProgress.classList.remove('d-none');
+            try {
+                const zip = new JSZip(); zip.file('search-index.json', JSON.stringify(getStrippedIndex(), null, 2));
+                const htmlFiles = appState.analyzedFiles.filter(f => f.content);
+                if (htmlFiles.length > 0) { const htmlFolder = zip.folder('html-files'); htmlFiles.forEach(f => htmlFolder.file(f.filename, f.content)); }
+                const content = await zip.generateAsync({ type: 'blob' }, (metadata) => { zipProgressBar.style.width = metadata.percent.toFixed(2) + '%'; });
+                downloadFile(content, 'search-index-package.zip'); showNotification('تم تحميل ZIP 📦', 'success');
+            } catch (error) { showNotification('خطأ في إنشاء ZIP: ' + error.message, 'danger'); } finally { setTimeout(() => zipProgress.classList.add('d-none'), 2000); }
+        }
+        function copyToClipboard(type) {
+            const dataMap = { all: () => JSON.stringify(getStrippedIndex(), null, 2), titles: () => appState.searchIndex.map(item => item.title).join('\n'), urls: () => appState.searchIndex.map(item => item.url).join('\n'), descriptions: () => appState.searchIndex.map(item => item.description).join('\n') };
+            const content = dataMap[type]();
+            navigator.clipboard.writeText(content).then(() => { showNotification(`تم نسخ ${type} إلى الحافظة! 📋`, 'success'); getEl('copyOptions').classList.add('d-none'); }).catch(err => showNotification('فشل النسخ!', 'danger'));
+        }
+        getEl('urlInput').addEventListener('input', autoSave);
+        getEl('customProxyUrl').addEventListener('input', autoSave); // Save proxy on change
     </script>
 </body>
 </html>
