@@ -1,892 +1,233 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html data-bs-theme="light" lang="ar" data-bss-forced-theme="light" dir="rtl">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مولد فهرس البحث المتطور - Ultimate Edition</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <style>
-        /* CSS is now significantly simplified, relying on Bootstrap variables and utilities */
-
-        /* Custom properties for reusable gradients */
-        :root {
-            --gradient-sitemap: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --gradient-robots: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
-            --gradient-manifest: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-            --gradient-github: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%);
-            --gradient-spa: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
-            --gradient-seo-crawler: linear-gradient(135deg, #5ee7df 0%, #b490ca 100%); /* New Gradient for SEO Crawler */
-            --gradient-feature: linear-gradient(45deg, #28a745, #20c997);
-            --gradient-pro: linear-gradient(45deg, #6f42c1, #e83e8c);
-            --gradient-ultimate: linear-gradient(45deg, #fd7e14, #dc3545);
-            --gradient-dark-toggle: linear-gradient(45deg, #667eea, #764ba2);
-            --gradient-live-counter: linear-gradient(45deg, #28a745, #20c997);
-        }
-
-        /* Keep custom styles for components that require unique aesthetics not covered by Bootstrap */
-        
-        .file-drop-zone.dragover {
-            border-color: var(--bs-primary) !important;
-            background-color: rgba(var(--bs-primary-rgb), 0.1);
-        }
-        
-        .url-textarea-drop.dragover {
-            border-color: var(--bs-success) !important;
-            background-color: rgba(var(--bs-success-rgb), 0.1);
-        }
-        
-        /* Custom Badges with Gradients */
-        .badge.feature-badge { background: var(--gradient-feature); }
-        .badge.pro-badge { background: var(--gradient-pro); }
-        .badge.ultimate-badge {
-            background: var(--gradient-ultimate);
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(var(--bs-warning-rgb), 0.7); }
-            50% { transform: scale(1.05); box-shadow: 0 0 10px 5px rgba(var(--bs-warning-rgb), 0); }
-            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(var(--bs-warning-rgb), 0); }
-        }
-
-        /* In-place editing styles */
-        .editable-content[contenteditable="true"] {
-            outline: 2px solid var(--bs-primary);
-            background-color: var(--bs-warning-bg-subtle);
-            padding: 0.25rem;
-            border-radius: 0.25rem;
-            cursor: text;
-        }
-        
-        /* Gradient Sections */
-        .sitemap-section { background: var(--gradient-sitemap); color: white; }
-        .robots-section { background: var(--gradient-robots); color: #333; }
-        .manifest-section { background: var(--gradient-manifest); color: #333; }
-        .github-section { background: var(--gradient-github); color: #333; }
-        .spa-section { background: var(--gradient-spa); color: #333; }
-        .seo-crawler-section { background: var(--gradient-seo-crawler); color: #333; } /* New Style for SEO Crawler section */
-
-
-        .drop-zone {
-            border: 2px dashed rgba(255, 255, 255, 0.6);
-            transition: all 0.3s ease;
-        }
-        .drop-zone:hover {
-            border-color: white;
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-        .robots-section .drop-zone, .manifest-section .drop-zone, .github-section .drop-zone, .spa-section .drop-zone, .seo-crawler-section .drop-zone {
-            border-color: rgba(0, 0, 0, 0.3);
-        }
-        .robots-section .drop-zone:hover, .manifest-section .drop-zone:hover, .github-section .drop-zone:hover, .spa-section .drop-zone:hover, .seo-crawler-section .drop-zone:hover {
-            border-color: #333;
-            background-color: rgba(0, 0, 0, 0.05);
-        }
-
-        .dark-mode-toggle {
-            background: var(--gradient-dark-toggle);
-            transition: all 0.3s ease;
-        }
-        .dark-mode-toggle:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-
-        .live-counter {
-            background: var(--gradient-live-counter);
-            transition: all 0.3s ease;
-        }
-
-        .seo-summary-item { display: inline-block; margin-inline-end: 0.75rem; font-size: 0.8rem; }
-        .seo-summary-item .badge { font-size: 0.75rem; }
-    </style>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>search vip</title>
+    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/aos.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="assets/css/styles.css">
 </head>
-<body>
-    <button class="dark-mode-toggle position-fixed top-0 start-0 m-3 z-3 rounded-pill py-2 px-3 border-0 text-white shadow-sm" onclick="toggleDarkMode()">
-        🌙 الوضع الليلي
-    </button>
 
-    <div class="live-counter position-fixed d-none shadow-sm fw-bold text-white rounded-pill py-2 px-3 z-2" id="liveCounter" style="top: 80px; left: 20px;">
-        📊 العناصر: <span id="counterValue">0</span>
-    </div>
-
-    <div class="container mt-5 pt-4">
-        <h1 class="text-center mb-4 display-6">🔍 مولد فهرس البحث المتطور <span class="badge ultimate-badge align-middle">Ultimate</span></h1>
-        
+<body><button id="darkModeToggle" class="dark-mode-toggle position-fixed top-0 start-0 m-3 z-3 rounded-pill py-2 px-3 border-0 text-white shadow-sm d-flex align-items-center gap-2" aria-label="تبديل الوضع الليلي"></button>
+    <div class="fw-bold text-white shadow-sm d-none d-flex align-items-center d-flex live-counter position-fixed rounded-pill py-2 px-3 z-2 d-flex gap-2" id="liveCounter" style="top:80px;left:20px;"><i class="bi bi-bar-chart-line-fill" aria-hidden="true"></i><span>العناصر: <span id="counterValue">0</span></span></div>
+    <main class="container mt-5 pt-4">
+        <h1 class="display-6 text-center mb-4"><i class="bi bi-search ms-2" aria-hidden="true"></i> مولد فهرس البحث المتطور <span class="badge ultimate-badge align-middle me-3">Ultimate</span></h1>
         <div class="row g-4">
             <div class="col-lg-6">
                 <div class="card h-100 shadow-sm">
                     <div class="card-header bg-transparent">
-                        <h3 class="h5 mb-0">📝 إدخال صفحات الموقع</h3>
+                        <h2 class="h5 mb-0"><i class="bi bi-pencil-square ms-2" aria-hidden="true"></i>إدخال صفحات الموقع</h2>
                     </div>
                     <div class="card-body">
-                        <!-- NEW: SEO Crawler Section -->
                         <div class="seo-crawler-section rounded-3 p-3 my-3">
-                            <h5 class="h6">🔬 زاحف SEO وتحليل الموقع <span class="badge ultimate-badge">جديد</span></h5>
-                            <div class="input-group">
-                                <input type="url" class="form-control" id="seoCrawlerUrl" placeholder="https://example.com">
-                                <input type="number" class="form-control flex-grow-0" id="seoCrawlerDepth" value="1" min="0" max="5" style="width: 100px;" title="عمق الزحف (0 = الصفحة الحالية فقط)">
-                                <button class="btn btn-dark" onclick="startSeoCrawler()">
-                                    🚀 زحف وتحليل
-                                </button>
-                            </div>
-                            <div class="mt-2">
-                                <label for="customProxyUrl" class="form-label small opacity-75">بروكسي مخصص (اختياري)</label>
-                                <input type="url" class="form-control form-control-sm" id="customProxyUrl" placeholder="https://my-proxy.com/?url={url}">
-                                <small class="d-block mt-1 opacity-75" style="font-size: .75rem;">استخدم <code>{url}</code> كعنصر نائب للرابط المستهدف. سيتم استخدام allorigins.win كخيار افتراضي.</small>
-                            </div>
+                            <h3 class="h6"><i class="bi bi-robot ms-2" aria-hidden="true"></i>زاحف SEO وتحليل الموقع <span class="badge ultimate-badge me-5">جديد</span></h3>
+                            <div class="input-group"><input class="form-control form-control" type="url" aria-label="رابط الموقع للزحف" dir="ltr" id="seoCrawlerUrl" placeholder="https://example.com"><input class="form-control flex-grow-0 form-control text-center" type="number" aria-label="عمق الزحف" id="seoCrawlerDepth" max="5" min="0" style="width:100px;" title="عمق الزحف (0 = الصفحة الحالية فقط)" value="1"><button class="btn btn-dark me-2" id="startCrawlerBtn"><i class="bi bi-rocket-takeoff-fill ms-2" aria-hidden="true"></i>زحف وتحليل</button></div>
+                            <div class="mt-2"><label class="form-label small opacity-75" for="customProxyUrl">بروكسي مخصص (اختياري)</label><input class="form-control-sm form-control" type="url" dir="ltr" id="customProxyUrl" placeholder="https://my-proxy.com/?url={url}"></div>
                         </div>
-
-                        <!-- SPA / Headless Analysis Section -->
                         <div class="spa-section rounded-3 p-3 my-3">
-                            <h5 class="h6">⚡ تحليل مواقع SPA (React/Vue) <span class="badge pro-badge">تجريبي</span></h5>
-                             <div class="input-group">
-                                <input type="url" class="form-control" id="spaUrl" placeholder="https://my-react-app.com">
-                                <button class="btn btn-dark" onclick="analyzeSpaSite()">
-                                    🔬 تحليل
-                                </button>
-                            </div>
-                            <small class="d-block mt-2 opacity-75">
-                                محاولة لاستخراج البيانات الأولية من المواقع المعتمدة على JS. قد لا يتمكن من قراءة المحتوى الديناميكي بالكامل.
-                            </small>
+                            <h3 class="h6"><i class="bi bi-lightning-charge-fill ms-2" aria-hidden="true"></i>تحليل مواقع SPA <span class="badge pro-badge me-5">تجريبي</span></h3>
+                            <div class="input-group"><input class="form-control form-control" type="url" aria-label="رابط موقع SPA" dir="ltr" id="spaUrl" placeholder="https://my-react-app.com"><button class="btn btn-dark me-2" id="analyzeSpaBtn"><i class="bi bi-binoculars-fill ms-2" aria-hidden="true"></i>تحليل</button></div>
                         </div>
-
-                        <!-- Robots.txt Section -->
                         <div class="robots-section rounded-3 p-3 my-3">
-                            <h5 class="h6">🤖 استيراد من robots.txt <span class="badge feature-badge">جديد</span></h5>
-                            <div class="drop-zone rounded-3 p-3 text-center cursor-pointer" id="robotsDropZone">
-                                <p class="mb-1">اسحب وأفلت ملف robots.txt هنا أو انقر للاختيار</p>
-                                <small class="opacity-75">سيتم استخراج الصفحات المستبعدة والمسموحة</small>
-                                <input type="file" id="robotsFileInput" accept=".txt" class="d-none">
+                            <h3 class="h6"><i class="bi bi-robot ms-2" aria-hidden="true"></i>استيراد من robots.txt </h3>
+                            <div class="text-center drop-zone rounded-3 p-3 cursor-pointer" id="robotsDropZone">
+                                <p class="mb-1">اسحب وأفلت ملف robots.txt هنا</p><input type="file" accept=".txt" class="d-none" id="robotsFileInput">
                             </div>
                         </div>
-
-                        <!-- Manifest.json Section -->
                         <div class="manifest-section rounded-3 p-3 my-3">
-                            <h5 class="h6">📱 استيراد من manifest.json <span class="badge feature-badge">PWA</span></h5>
-                            <div class="drop-zone rounded-3 p-3 text-center cursor-pointer" id="manifestDropZone">
-                                <p class="mb-1">اسحب وأفلت ملف manifest.json هنا أو انقر للاختيار</p>
-                                <small class="opacity-75">سيتم استخراج أسماء الأقسام من تطبيق PWA</small>
-                                <input type="file" id="manifestFileInput" accept=".json" class="d-none">
+                            <h3 class="h6"><i class="bi bi-pwa me-2" aria-hidden="true"></i>استيراد من manifest.json <span class="badge feature-badge me-3">PWA</span></h3>
+                            <div class="text-center drop-zone rounded-3 p-3 cursor-pointer" id="manifestDropZone">
+                                <p class="mb-1">اسحب وأفلت ملف manifest.json هنا</p><input type="file" accept=".json" class="d-none" id="manifestFileInput">
                             </div>
                         </div>
-
-                        <!-- Sitemap.xml Section -->
                         <div class="sitemap-section rounded-3 p-3 my-3">
-                            <h5 class="h6">🗺️ استيراد من Sitemap.xml <span class="badge feature-badge">ذكي</span></h5>
-                            <div class="drop-zone rounded-3 p-3 text-center cursor-pointer" id="sitemapDropZone">
-                                <p class="mb-1">اسحب وأفلت ملف sitemap.xml هنا أو انقر للاختيار</p>
-                                <small class="opacity-75">سيتم استخراج جميع الروابط تلقائياً</small>
-                                <input type="file" id="sitemapFileInput" accept=".xml" class="d-none">
+                            <h3 class="h6"><i class="bi bi-map-fill ms-2" aria-hidden="true"></i>استيراد من Sitemap.xml </h3>
+                            <div class="text-center drop-zone rounded-3 p-3 cursor-pointer" id="sitemapDropZone">
+                                <p class="mb-1">اسحب وأفلت ملف sitemap.xml هنا</p><input type="file" accept=".xml" class="d-none" id="sitemapFileInput">
                             </div>
                         </div>
-
-                        <!-- HTML File Analysis Section -->
-                        <div class="mb-4">
-                            <label class="form-label">
-                                📄 تحليل ملفات HTML <span class="badge feature-badge">محسن</span>
-                            </label>
-                            <div class="file-drop-zone border border-2 border-dashed rounded-3 p-4 text-center bg-body-secondary cursor-pointer" id="fileDropZone">
-                                <p class="mb-1">اسحب وأفلت ملفات HTML هنا أو انقر للاختيار</p>
-                                <small class="text-muted">سيتم استخراج العنوان والوصف وبيانات SEO تلقائيًا</small>
-                                <input type="file" id="htmlFileInput" multiple accept=".html,.htm" class="d-none">
-                            </div>
-                            <div class="d-none my-3" id="progressContainer">
-                                <div class="progress" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-                                    <div class="progress-bar" id="progressBar" style="width: 0%"></div>
-                                </div>
-                                <small class="text-muted" id="progressText">جاري المعالجة...</small>
+                        <div class="mb-4"><label class="form-label" for="fileDropZone"><i class="bi bi-file-earmark-text-fill ms-2" aria-hidden="true"></i>تحليل ملفات HTML </label>
+                            <div class="text-center bg-body-secondary border-2 file-drop-zone border border-dashed rounded-3 p-4 cursor-pointer" id="fileDropZone">
+                                <p class="mb-1">اسحب وأفلت ملفات HTML هنا</p><input type="file" accept=".html,.htm" class="d-none" id="htmlFileInput" multiple="">
                             </div>
                         </div>
-
-                        <!-- Bulk Import Section -->
-                        <div class="mb-4">
-                            <label class="form-label">
-                                📂 استيراد جماعي <span class="badge feature-badge">محسن</span>
-                            </label>
-                            <div class="input-group">
-                                <input type="file" class="form-control" id="urlsFileInput" accept=".txt,.json">
-                                <button class="btn btn-outline-primary" onclick="importUrlsFile()">
-                                    📥 استيراد
-                                </button>
-                            </div>
+                        <div class="mb-4"><label class="form-label" for="urlsFileInput"><i class="bi bi-folder2-open ms-2" aria-hidden="true"></i>استيراد جماعي <span class="badge feature-badge me-5">محسن</span></label>
+                            <div class="input-group"><input class="form-control form-control" type="file" accept=".txt,.json" id="urlsFileInput"><button class="btn btn-outline-primary me-2" id="importUrlsFileBtn"><i class="bi bi-download ms-2" aria-hidden="true"></i>استيراد</button></div>
                         </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label">
-                                روابط صفحات موقعك <span class="badge pro-badge">Drag & Drop</span>
-                            </label>
-                            <div class="position-relative">
-                                <textarea class="form-control url-textarea-drop" id="urlInput" rows="6" placeholder="index.html
+                        <div class="mb-3"><label class="form-label" for="urlInput">روابط صفحات موقعك </label><textarea class="form-control url-textarea-drop" dir="ltr" id="urlInput" placeholder="index.html
 about.html
-services.html
-...
-
-💡 يمكنك سحب وإفلات ملفات النصوص هنا!" dir="ltr"></textarea>
-                            </div>
+services.html" rows="6"></textarea></div>
+                        <div class="form-check form-switch mb-3"><input type="checkbox" class="form-check-input" id="manualInput" role="switch"><label class="form-check-label" for="manualInput">إدخال يدوي للصفحات</label></div>
+                        <div class="d-none border rounded p-3 mb-3" id="manualInputSection">
+                            <div class="d-grid gap-2"><input type="text" aria-label="عنوان الصفحة اليدوي" class="form-control" id="pageTitle" placeholder="عنوان الصفحة"><input type="text" aria-label="رابط الصفحة اليدوي" class="form-control" id="pageUrl" placeholder="رابط الصفحة"><input type="text" aria-label="وصف الصفحة اليدوي" class="form-control" id="pageDescription" placeholder="وصف الصفحة"><input type="text" aria-label="فئة الصفحة اليدوية" class="form-control" id="pageCategory" placeholder="فئة الصفحة"><input type="text" aria-label="الكلمات المفتاحية اليدوية" class="form-control" id="pageTags" placeholder="الكلمات المفتاحية (مفصولة بفواصل)"><button class="btn btn-success btn-sm" id="addManualPageBtn">إضافة صفحة</button></div>
+                        </div><button class="btn btn-primary w-100" id="generateIndexBtn"><i class="bi bi-rocket-takeoff-fill ms-2" aria-hidden="true"></i>توليد فهرس البحث</button>
+                        <div class="mt-4 border-top pt-3">
+                            <h3 class="h6"><i class="bi bi-folder-symlink-fill me-2" aria-hidden="true"></i>إدارة المشاريع</h3>
+                            <div class="input-group mb-2"><select class="form-select form-select" aria-label="اختر مشروع" id="projectSelector" title="اختر مشروعًا محفوظًا لتحميله">
+                                    <option value="">-- اختر مشروعًا --</option>
+                                </select><button class="btn btn-outline-danger me-2" id="deleteProjectBtn" title="حذف المشروع المختار" aria-label="حذف المشروع"><i class="bi bi-trash3-fill" aria-hidden="true"></i></button></div>
+                            <div class="input-group"><input class="form-control form-control" type="text" aria-label="اسم المشروع" id="projectNameInput" placeholder="اسم المشروع الحالي أو الجديد"><button class="btn btn-success me-2" id="saveProjectBtn" title="حفظ المشروع"><i class="bi bi-save-fill ms-2" aria-hidden="true"></i>حفظ</button></div>
+                            <div class="d-flex justify-content-center mt-2"><button class="btn btn-link btn-sm text-decoration-none" id="clearFormBtn"><i class="bi bi-sparkles me-1" aria-hidden="true"></i>البدء من جديد (مسح الكل)</button></div>
                         </div>
-                        
-                        <div class="form-check form-switch mb-3">
-                            <input class="form-check-input" type="checkbox" role="switch" id="manualInput">
-                            <label class="form-check-label" for="manualInput">
-                                إدخال يدوي للصفحات
-                            </label>
-                        </div>
-                        
-                        <div id="manualInputSection" class="d-none border rounded p-3 mb-3">
-                            <div class="d-grid gap-2">
-                                <input type="text" class="form-control" id="pageTitle" placeholder="عنوان الصفحة">
-                                <input type="text" class="form-control" id="pageUrl" placeholder="رابط الصفحة">
-                                <input type="text" class="form-control" id="pageDescription" placeholder="وصف الصفحة">
-                                <input type="text" class="form-control" id="pageCategory" placeholder="فئة الصفحة">
-                                <input type="text" class="form-control" id="pageTags" placeholder="الكلمات المفتاحية (مفصولة بفواصل)">
-                                <button class="btn btn-success btn-sm" onclick="addManualPage()">إضافة صفحة</button>
-                            </div>
-                        </div>
-                        
-                        <button class="btn btn-primary w-100" onclick="generateSearchIndex()">
-                            🚀 توليد فهرس البحث
-                        </button>
-                        
-                        <!-- Data Management -->
-                        <div class="mt-3 d-flex gap-2">
-                            <button class="btn btn-outline-success w-100 btn-sm" onclick="saveToLocalStorage()">💾 حفظ</button>
-                            <button class="btn btn-outline-info w-100 btn-sm" onclick="loadFromLocalStorage()">📂 تحميل</button>
-                            <button class="btn btn-outline-danger w-100 btn-sm" onclick="deleteAllData()">🗑️ حذف الكل</button>
-                        </div>
-                        <small class="text-muted d-block mt-1 text-center">البيانات محفوظة محليًا في المتصفح</small>
                     </div>
                 </div>
             </div>
-            
             <div class="col-lg-6">
                 <div class="card h-100 shadow-sm">
                     <div class="card-header bg-transparent">
-                        <h3 class="h5 mb-0">📊 النتائج <span class="badge pro-badge">قابل للتحرير</span></h3>
+                        <h2 class="h5 mb-0"><i class="bi bi-bar-chart-steps ms-2" aria-hidden="true"></i>النتائج <span class="badge pro-badge me-5">قابل للتحرير</span></h2>
                     </div>
                     <div class="card-body d-flex flex-column">
-                        <!-- Statistics Panel -->
-                        <div id="statsPanel" class="d-none rounded-3 p-3 my-3 text-white" style="background: var(--gradient-sitemap);">
-                            <h6 class="h6">📈 إحصائيات داخلية</h6>
-                            <div class="d-flex justify-content-between align-items-center py-1 border-bottom border-white border-opacity-25"><span>عدد الصفحات:</span><strong id="statPages">0</strong></div>
-                            <div class="d-flex justify-content-between align-items-center py-1 border-bottom border-white border-opacity-25"><span>إجمالي الكلمات المفتاحية:</span><strong id="statKeywords">0</strong></div>
-                            <div class="d-flex justify-content-between align-items-center py-1 border-bottom border-white border-opacity-25"><span>الفئات المختلفة:</span><strong id="statCategories">0</strong></div>
+                        <div class="text-white d-none rounded-3 p-3 my-3" id="statsPanel" style="background:var(--gradient-sitemap);">
+                            <h3 class="h6"><i class="bi bi-graph-up-arrow ms-2" aria-hidden="true"></i>إحصائيات داخلية</h3>
+                            <div class="border-white d-flex justify-content-between align-items-center py-1 border-bottom border-opacity-25"><span>عدد الصفحات:</span><strong id="statPages">0</strong></div>
+                            <div class="border-white d-flex justify-content-between align-items-center py-1 border-bottom border-opacity-25"><span>إجمالي الكلمات المفتاحية:</span><strong id="statKeywords">0</strong></div>
+                            <div class="border-white d-flex justify-content-between align-items-center py-1 border-bottom border-opacity-25"><span>الفئات المختلفة:</span><strong id="statCategories">0</strong></div>
                             <div class="d-flex justify-content-between align-items-center py-1"><span>أكثر الكلمات تكراراً:</span><strong id="statTopKeyword">-</strong></div>
                         </div>
-
-                        <!-- Filter Section -->
-                        <div id="filterSection" class="d-none bg-body-secondary border rounded-3 p-3 my-3">
-                            <h6 class="h6 mb-2">🔍 تصفية النتائج</h6>
-                            <div class="input-group">
-                                <select class="form-select" id="categoryFilter"><option value="">جميع الفئات</option></select>
-                                <input type="text" class="form-control" id="keywordFilter" placeholder="بحث بالكلمة المفتاحية">
+                        <div class="bg-body-secondary d-none border rounded-3 p-3 my-3" id="filterSection">
+                            <h3 class="h6 mb-2"><i class="bi bi-funnel-fill ms-2" aria-hidden="true"></i>تصفية النتائج</h3>
+                            <div class="input-group"><select class="form-select form-select" aria-label="تصفية حسب الفئة" id="categoryFilter">
+                                    <option value="">جميع الفئات</option>
+                                </select><input class="form-control form-control" type="text" aria-label="بحث بالكلمة المفتاحية" id="keywordFilter" placeholder="بحث بالكلمة المفتاحية"></div>
+                        </div>
+                        <div class="bg-body-tertiary d-none d-flex justify-content-between align-items-center d-flex p-2 rounded-top-2 border-bottom" id="selectionControls">
+                            <div class="d-flex gap-2"><button class="btn btn-outline-primary btn-sm" id="selectAllBtn"><i class="bi bi-check-all ms-2" aria-hidden="true"></i>تحديد الكل</button><button class="btn btn-outline-secondary btn-sm" id="deselectAllBtn"><i class="bi bi-x-lg ms-2" aria-hidden="true"></i>إلغاء تحديد الكل</button></div><span class="text-muted small">تم تحديد: <strong id="selectionCounter">0</strong></span>
+                        </div>
+                        <div class="bg-body-secondary flex-grow-1 p-1 rounded-bottom-2 overflow-y-auto" id="results" style="min-height:200px;max-height:500px;">
+                            <p class="text-center text-muted p-3">أدخل روابط الصفحات أو ارفع الملفات واضغط "توليد فهرس البحث"</p>
+                        </div>
+                        <div class="d-none d-flex flex-wrap d-flex gap-2 mt-3" id="exportButtons"><button class="btn btn-success flex-grow-1" id="downloadJsonBtn"><i class="bi bi-filetype-json ms-2" aria-hidden="true"></i>JSON</button><button class="btn btn-info flex-grow-1" id="downloadCsvBtn"><i class="bi bi-filetype-csv ms-2" aria-hidden="true"></i>CSV</button><button class="btn btn-warning flex-grow-1" id="downloadZipBtn"><i class="bi bi-file-zip-fill ms-2" aria-hidden="true"></i>ZIP</button><button class="btn btn-secondary flex-grow-1" id="toggleCopyBtn"><i class="bi bi-clipboard-fill ms-2" aria-hidden="true"></i>نسخ</button></div>
+                        <div class="d-none mt-2" id="zipProgress">
+                            <div class="progress" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="تقدم إنشاء ZIP">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" id="zipProgressBar" style="width:0%;"></div>
                             </div>
                         </div>
-
-                        <div id="results" class="p-3 border rounded-3 bg-body-secondary overflow-y-auto flex-grow-1" style="min-height: 200px; max-height: 500px;">
-                            <p class="text-muted text-center m-0">أدخل روابط الصفحات أو ارفع الملفات واضغط "توليد فهرس البحث"</p>
-                        </div>
-                        
-                        <!-- Enhanced Export Options -->
-                        <div id="exportButtons" class="d-none d-flex gap-2 flex-wrap mt-3">
-                            <button class="btn btn-success flex-grow-1" onclick="downloadJson()">💾 JSON</button>
-                            <button class="btn btn-info flex-grow-1" onclick="downloadCSV()">📊 CSV</button>
-                            <button class="btn btn-warning flex-grow-1" onclick="downloadZip()">📦 ZIP</button>
-                            <button class="btn btn-secondary flex-grow-1" onclick="toggleCopyOptions()">📋 نسخ</button>
-                        </div>
-
-                        <!-- ZIP Progress -->
-                        <div id="zipProgress" class="d-none mt-2">
-                            <div class="progress" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-                                <div class="progress-bar progress-bar-striped progress-bar-animated" id="zipProgressBar" style="width: 0%"></div>
-                            </div>
-                            <small class="text-muted" id="zipProgressText">جاري إنشاء ملف ZIP...</small>
-                        </div>
-
-                        <!-- Copy Options -->
-                        <div id="copyOptions" class="d-none mt-2 p-3 bg-body-secondary border rounded-3">
-                            <h6 class="h6">خيارات النسخ:</h6>
-                            <div class="d-grid gap-2">
-                                <button class="btn btn-outline-primary btn-sm" onclick="copyToClipboard('all')">📋 نسخ كامل (JSON)</button>
-                                <button class="btn btn-outline-secondary btn-sm" onclick="copyToClipboard('titles')">📝 نسخ العناوين فقط</button>
-                                <button class="btn btn-outline-info btn-sm" onclick="copyToClipboard('urls')">🔗 نسخ الروابط فقط</button>
-                                <button class="btn btn-outline-success btn-sm" onclick="copyToClipboard('descriptions')">📄 نسخ الأوصاف فقط</button>
-                            </div>
+                        <div class="bg-body-secondary d-none mt-2 p-3 border rounded-3" id="copyOptions">
+                            <h4 class="h6">خيارات النسخ:</h4>
+                            <div class="d-grid gap-2"><button class="btn btn-outline-primary btn-sm" data-copy-type="all"><i class="bi bi-clipboard-check-fill ms-2" aria-hidden="true"></i>نسخ كامل (JSON)</button><button class="btn btn-outline-secondary btn-sm" data-copy-type="titles"><i class="bi bi-fonts ms-2" aria-hidden="true"></i>نسخ العناوين فقط</button><button class="btn btn-outline-info btn-sm" data-copy-type="urls"><i class="bi bi-link-45deg ms-2" aria-hidden="true"></i>نسخ الروابط فقط</button><button class="btn btn-outline-success btn-sm" data-copy-type="descriptions"><i class="bi bi-card-text ms-2" aria-hidden="true"></i>نسخ الأوصاف فقط</button></div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        
-        <div class="row mt-5">
-            <div class="col-12">
-                <div class="alert alert-info">
-                    <h4 class="alert-heading">📖 تعليمات الاستخدام:</h4>
-                    <ol class="mb-0">
-                        <li><strong>جديد:</strong> استخدم "زاحف SEO" لتحليل موقعك، والكشف عن الروابط المكسورة، ومراجعة بيانات SEO الأساسية. يمكنك توفير بروكسي خاص بك لزيادة الموثوقية.</li>
-                        <li><strong>جديد:</strong> أدخل رابط موقع SPA (مثل React/Vue) لمحاولة تحليل محتواه الأولي.</li>
-                        <li><strong>جديد:</strong> ارفع ملف robots.txt أو manifest.json لاستخراج مسارات إضافية.</li>
-                        <li><strong>محسن:</strong> ارفع ملف sitemap.xml أو ملفات HTML مباشرة لتحليل ذكي.</li>
-                        <li><strong>محسن:</strong> اسحب وأفلت ملفات النصوص في منطقة الروابط للاستيراد السريع.</li>
-                        <li>اضغط "توليد فهرس البحث" لدمج ومعالجة كل المدخلات.</li>
-                        <li><strong>جديد:</strong> راجع تقرير SEO لكل صفحة في النتائج.</li>
-                        <li><strong>محسن:</strong> عدّل المحتوى مباشرة في النتائج بالنقر على زر "تحرير".</li>
-                        <li><strong>محسن:</strong> صدّر كـ JSON، CSV، أو حزمة ZIP شاملة.</li>
-                    </ol>
+        <section class="mt-5 mb-4 pb-4">
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="text-center mb-5">
+                        <h2 class="display-6 fw-bold" data-aos="fade-up">أطلق العنان لقوة موقعك الحقيقية</h2>
+                        <p class="fs-5 text-muted" data-aos="fade-up" data-aos-delay="100">الأداة التي تمنحك رؤى تحليل SEO التقني العميقة، ببساطة لا تجدها في الأدوات الأخرى.</p>
+                    </div>
+                    <div class="accordion accordion-flush" id="howToUseAccordion">
+                        <div data-aos="fade-up" data-aos-delay="200" data-aos-once="true" class="accordion-item">
+                            <h3 class="accordion-header" id="headingOne"><button class="accordion-button fs-5 fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne"><span class="badge text-primary-emphasis bg-primary-subtle border-primary-subtle border ms-3">1</span>جمع البيانات: نقطة البداية لكل تحليل ناجح</button></h3>
+                            <div class="accordion-collapse collapse show" id="collapseOne" aria-labelledby="headingOne" data-bs-parent="#howToUseAccordion">
+                                <div class="accordion-body">
+                                    <p class="mb-4">كل تحليل SEO عظيم يبدأ ببيانات دقيقة. اختر الطريقة التي تناسب سير عملك:</p>
+                                    <div class="row g-4">
+                                        <div class="col-md-4">
+                                            <div class="bg-body-secondary p-3 rounded-3 h-100">
+                                                <h4 class="fw-bold h6"><i class="text-primary bi bi-robot ms-2" aria-hidden="true"></i>ابدأ بالزحف الفوري</h4>
+                                                <p class="text-muted small mb-2">زاحف المواقع المدمج لدينا يحلل موقعك بذكاء.</p><a class="fw-bold text-decoration-none link-body-emphasis small" href="/blog/best-seo-crawling-practices"><i class="bi bi-book-half ms-1" aria-hidden="true"></i>تعلم أفضل ممارسات الزحف <i class="bi bi-arrow-left-short" aria-hidden="true"></i></a>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="bg-body-secondary p-3 rounded-3 h-100">
+                                                <h4 class="fw-bold h6"><i class="text-success bi bi-file-earmark-arrow-up-fill ms-2" aria-hidden="true"></i>استورد بياناتك الحالية</h4>
+                                                <p class="text-muted small mb-2">هل لديك `Sitemap.xml` أو ملفات HTML؟ استوردها لتسريع التحليل.</p><a class="fw-bold text-decoration-none link-body-emphasis small" href="/blog/why-sitemap-is-important-for-seo"><i class="bi bi-book-half ms-1" aria-hidden="true"></i>لماذا خريطة الموقع مهمة؟ <i class="bi bi-arrow-left-short" aria-hidden="true"></i></a>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="bg-body-secondary p-3 rounded-3 h-100">
+                                                <h4 class="fw-bold h6"><i class="text-info bi bi-keyboard-fill ms-2" aria-hidden="true"></i>تحكم يدوي كامل</h4>
+                                                <p class="text-muted small mb-2">أضف روابط محددة. مثالي لاختبار صفحات الهبوط الجديدة.</p><a class="fw-bold text-decoration-none link-body-emphasis small" href="/blog/manual-page-auditing-guide"><i class="bi bi-book-half ms-1" aria-hidden="true"></i>دليل تدقيق الصفحات يدوياً <i class="bi bi-arrow-left-short" aria-hidden="true"></i></a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div data-aos="fade-up" data-aos-delay="300" data-aos-once="true" class="accordion-item">
+                            <h3 class="accordion-header" id="headingTwo"><button class="accordion-button collapsed fs-5 fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo"><span class="badge text-primary-emphasis bg-primary-subtle border-primary-subtle border ms-3">2</span>التحليل والإدارة: حوّل البيانات إلى قرارات</button></h3>
+                            <div class="accordion-collapse collapse" id="collapseTwo" aria-labelledby="headingTwo" data-bs-parent="#howToUseAccordion">
+                                <div class="accordion-body">
+                                    <ul class="list-unstyled">
+                                        <li class="mb-3"><i class="text-success bi bi-pencil-fill ms-3" aria-hidden="true"></i><strong>حسّن صفحاتك لجذب النقرات:</strong> عدّل العناوين والأوصاف مباشرة وشاهد كيف يمكن أن يؤثر ذلك على نسبة النقر إلى الظهور (CTR). <br><a class="fw-bold text-decoration-none link-body-emphasis d-inline-block small mt-1" href="/blog/writing-high-ctr-titles-descriptions"><i class="bi bi-book-half ms-1" aria-hidden="true"></i>دليل كتابة العناوين والأوصاف الفعالة <i class="bi bi-arrow-left-short" aria-hidden="true"></i></a></li>
+                                        <li class="mb-0"><i class="text-info bi bi-folder-symlink-fill ms-3" aria-hidden="true"></i><strong>تتبع تقدمك بمرور الوقت:</strong> استخدم "إدارة المشاريع" لحفظ لقطات من تحليل موقعك. قارن النتائج قبل وبعد التغييرات لترى أثر عملك. <br><a class="fw-bold text-decoration-none link-body-emphasis d-inline-block small mt-1" href="/blog/importance-of-tracking-seo-changes"><i class="bi bi-book-half ms-1" aria-hidden="true"></i>أهمية تتبع تغييرات الـ SEO <i class="bi bi-arrow-left-short" aria-hidden="true"></i></a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div data-aos="fade-up" data-aos-delay="400" data-aos-once="true" class="accordion-item">
+                            <h3 class="accordion-header" id="headingThree"><button class="accordion-button collapsed fs-5 fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree"><span class="badge text-primary-emphasis bg-primary-subtle border-primary-subtle border ms-3">3</span>التصدير والمشاركة: اجعل بياناتك قابلة للتنفيذ</button></h3>
+                            <div class="accordion-collapse collapse" id="collapseThree" aria-labelledby="headingThree" data-bs-parent="#howToUseAccordion">
+                                <div class="accordion-body">
+                                    <p class="mb-3">أصبحت رؤيتك التحليلية جاهزة للاستخدام في تقاريرك، أو لمشاركتها مع فريقك. اختر التنسيق الذي تحتاجه:</p>
+                                    <div class="d-flex justify-content-center flex-wrap gap-4"><span class="fw-bold"><i class="text-warning bi bi-filetype-json ms-2" aria-hidden="true"></i>JSON للمطورين</span><span class="fw-bold"><i class="text-success bi bi-filetype-csv ms-2" aria-hidden="true"></i>CSV للمحللين</span><span class="fw-bold"><i class="text-secondary bi bi-file-zip-fill ms-2" aria-hidden="true"></i>ZIP للتقارير</span><span class="fw-bold"><i class="text-primary bi bi-clipboard-check-fill ms-2" aria-hidden="true"></i>نسخ مباشر للسرعة</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
+        </section>
+        <section class="mt-5 mb-5 overflow-hidden pt-5">
+            <div class="row align-items-center">
+                <div class="col-md-5 text-center" data-aos="fade-left">
+                    <lottie-player src="https://assets9.lottiefiles.com/packages/lf20_PBgNop.json" style="max-width:400px;margin:auto;" loop="" autoplay=""></lottie-player>
+                </div>
+                <div class="col-md-7 text-center text-md-end" data-aos="fade-right">
+                    <h2 class="display-5 fw-bold pb-2"><i class="text-primary bi bi-gem ms-3" aria-hidden="true"></i>ارتقِ بموقعك إلى مستوى متقدم</h2>
+                    <p class="fs-5 text-muted">استفد من أدوات إضافية وفرص حصرية لتكون في الصدارة.</p>
+                </div>
+            </div>
+        </section>
+        <section class="mb-5">
+            <div class="row">
+                <div class="col-lg-7 mb-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="card h-100 border-primary border-2 shadow-sm">
+                        <div class="card-body text-center d-flex flex-column justify-content-center p-lg-5 p-4"><span class="text-primary display-4"><i class="bi bi-envelope-paper-heart-fill" aria-hidden="true"></i></span>
+                            <h3 class="card-title mt-2">انضم إلى مجتمعنا</h3>
+                            <p class="text-muted mt-2">في <strong>ai8v.com</strong>، نؤمن بأن أفضل النتائج تأتي من الدمج بين العقل البشري وقوة الآلة. أنت تأتي بالاستراتيجية (Mind)، ونحن نوفر لك الآلة (Machine) لتحويل رؤيتك إلى واقع.</p>
+                            <form class="mt-4" action="#" method="POST">
+                                <div class="input-group"><input class="form-control form-control-lg form-control" type="email" aria-label="البريد الإلكتروني للاشتراك" dir="ltr" placeholder="your-email@example.com" required=""><button class="btn btn-primary" type="submit"><i class="bi bi-send-check-fill ms-2" aria-hidden="true"></i>انضم الان</button></div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-5 mb-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body p-4">
+                            <h3 class="card-title h5 mb-3"><i class="text-success bi bi-person-check-fill ms-2" aria-hidden="true"></i>هل تحتاج لمساعدة خبير؟</h3>
+                            <p class="text-muted small">قد تكون الأداة رائعة، لكن العين الخبيرة ترى ما لا تراه الأدوات. احصل على تدقيق احترافي لموقعك.</p><a class="btn btn-success w-100 mb-4" role="button" href="mailto:your-email@example.com?subject=طلب تدقيق احترافي للموقع">اطلب تدقيقاً احترافياً</a>
+                            <h3 class="card-title h5 mb-3"><i class="text-info bi bi-share-fill ms-2" aria-hidden="true"></i>ادعم المشروع وانشره</h3>
+                            <p class="text-muted small">مشاركتك هي أكبر دعم. ساعدنا في الوصول إلى المزيد من المستخدمين.</p>
+                            <div class="d-flex gap-2"><a class="btn btn-outline-info flex-fill" role="button" href="https://twitter.com/intent/tweet?text=اكتشفت%20هذه%20الأداة%20الرائعة%20لتحليل%20المواقع%20وإنشاء%20فهرس%20بحث%20متطور&amp;url=YOUR_APP_URL" target="_blank" aria-label="شارك على تويتر"><i class="bi bi-twitter" aria-hidden="true"></i></a><a class="btn btn-outline-info flex-fill" role="button" href="https://www.linkedin.com/shareArticle?mini=true&amp;url=YOUR_APP_URL&amp;title=أداة%20فهرس%20البحث%20المتطور" target="_blank" aria-label="شارك على لينكدإن"><i class="bi bi-linkedin" aria-hidden="true"></i></a><a class="btn btn-outline-success flex-fill" role="button" href="#" target="_blank" aria-label="ادعمنا بنجمة على جيت هاب"><i class="bi bi-github" aria-hidden="true"></i> Star us</a></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <div class="bg-body-tertiary shadow-lg d-none position-fixed bottom-0 end-0 m-3 p-3 rounded-3" id="crawlerStatus" style="z-index:1100;width:350px;">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h4 class="fw-bold h6 mb-0"><i class="bi bi-robot ms-2" aria-hidden="true"></i>جاري الزحف...</h4><button class="btn-close" type="button" id="hideCrawlerStatusBtn" aria-label="Close"></button>
         </div>
+        <p class="text-truncate text-muted small mb-1" id="crawlerCurrentUrl">بدء العملية...</p>
+        <div class="progress" role="progressbar" style="height:10px;" aria-label="تقدم الزحف">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" id="crawlerProgressBar" style="width:0%;"></div>
+        </div>
+        <div class="text-muted d-flex justify-content-between small mt-1"><span id="crawlerQueueCount">في الانتظار: 0</span><span id="crawlerProgressText">0/0</span></div>
     </div>
-
-    <!-- Toast Container -->
-    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;"></div>
-
-    <!-- Bootstrap JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
-
-    <script>
-        // --- Centralized Application State ---
-        const appState = {
-            searchIndex: [],
-            manualPages: [],
-            analyzedFiles: [],
-            sitemapUrls: [],
-            robotsUrls: [],
-            manifestData: {},
-            filteredResults: [],
-        };
-
-        // Initialize dark mode based on user preference or localStorage
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        let isDarkMode = localStorage.getItem('darkMode') === 'true' || (localStorage.getItem('darkMode') === null && prefersDark);
-        
-        const getEl = (id) => document.getElementById(id);
-
-        function setDarkMode(isDark) {
-            isDarkMode = isDark;
-            localStorage.setItem('darkMode', isDarkMode);
-            document.documentElement.setAttribute('data-bs-theme', isDark ? 'dark' : 'light');
-            updateDarkModeButton();
-        }
-
-        function toggleDarkMode() {
-            setDarkMode(!isDarkMode);
-            showNotification(isDarkMode ? 'تم تفعيل الوضع الليلي 🌙' : 'تم تفعيل الوضع النهاري ☀️', 'info');
-        }
-        
-        function updateDarkModeButton() {
-            const button = document.querySelector('.dark-mode-toggle');
-            button.innerHTML = isDarkMode ? '☀️ الوضع النهاري' : '🌙 الوضع الليلي';
-        }
-
-        // --- NEW: Dynamic Proxy URL Retriever ---
-        function getProxyUrl(targetUrl) {
-            const customProxy = getEl('customProxyUrl').value.trim();
-            if (customProxy) {
-                // If the user provided a proxy, use it. Replace {url} with the encoded target URL.
-                return customProxy.replace('{url}', encodeURIComponent(targetUrl));
-            }
-            // Fallback to the default proxy
-            return `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
-        }
-        
-        async function startSeoCrawler() {
-            const baseUrlInput = getEl('seoCrawlerUrl');
-            let baseUrl = baseUrlInput.value.trim();
-            if (!baseUrl) {
-                return showNotification('يرجى إدخال رابط الموقع للزحف', 'warning');
-            }
-            try {
-                if (!/^https?:\/\//i.test(baseUrl)) {
-                    baseUrl = 'https://' + baseUrl;
-                    baseUrlInput.value = baseUrl;
-                }
-                new URL(baseUrl);
-            } catch (e) {
-                return showNotification('رابط الموقع غير صالح', 'danger');
-            }
-
-            const maxDepth = parseInt(getEl('seoCrawlerDepth').value, 10) || 0;
-            const origin = new URL(baseUrl).origin;
-            
-            showNotification(`🚀 بدء زحف SEO لـ ${origin}...`, 'info');
-
-            let queue = [{ url: baseUrl, depth: 0 }];
-            const visited = new Set([baseUrl]);
-            const crawledData = new Map();
-            const brokenLinks = new Set();
-
-            let processedCount = 0;
-            while (queue.length > 0) {
-                const { url, depth } = queue.shift();
-                
-                showNotification(`🔎 فحص: ${new URL(url).pathname}... (${processedCount + 1})`, 'info', 2000);
-                processedCount++;
-
-                try {
-                    const response = await fetch(getProxyUrl(url)); // Use the new proxy function
-                    if (!response.ok) throw new Error(`Status ${response.status}`);
-                    
-                    const html = await response.text();
-                    const doc = new DOMParser().parseFromString(html, 'text/html');
-
-                    const analysis = analyzeHtmlContent(html, url);
-                    const linksOnPage = new Set();
-                    doc.querySelectorAll('a[href]').forEach(link => {
-                        const href = link.getAttribute('href');
-                        if (!href || href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:')) return;
-                        try {
-                            const absoluteUrl = new URL(href, url).href;
-                            linksOnPage.add(absoluteUrl);
-
-                            if (absoluteUrl.startsWith(origin) && !visited.has(absoluteUrl) && depth < maxDepth) {
-                                const fileExtension = absoluteUrl.split('.').pop().toLowerCase();
-                                const isPage = !['jpg', 'jpeg', 'png', 'gif', 'svg', 'css', 'js', 'pdf', 'zip'].includes(fileExtension);
-                                if(isPage) {
-                                    visited.add(absoluteUrl);
-                                    queue.push({ url: absoluteUrl, depth: depth + 1 });
-                                }
-                            }
-                        } catch (e) { /* Ignore invalid URLs */ }
-                    });
-
-                    crawledData.set(url, { analysis, outgoingLinks: [...linksOnPage] });
-
-                } catch (error) {
-                    console.error(`فشل في جلب ${url}:`, error);
-                    brokenLinks.add(url);
-                    showNotification(`⚠️ رابط مكسور: ${new URL(url).pathname}`, 'warning');
-                }
-            }
-
-            crawledData.forEach((data, pageUrl) => {
-                data.analysis.seo.brokenLinksOnPage = data.outgoingLinks.filter(link => brokenLinks.has(link));
-            });
-            
-            const newFiles = [];
-            crawledData.forEach(({ analysis }) => {
-                if (!appState.analyzedFiles.some(f => f.url === analysis.url)) {
-                    appState.analyzedFiles.push(analysis);
-                    newFiles.push(analysis);
-                }
-            });
-
-            if (newFiles.length > 0) {
-                showNotification(`✅ اكتمل الزحف! تم تحليل ${newFiles.length} صفحة. اضغط "توليد فهرس" لإظهارها.`, 'success');
-            } else if (crawledData.size > 0) {
-                 showNotification('🏁 اكتمل الزحف. تم تحليل هذه الصفحات مسبقاً.', 'info');
-            } else {
-                 showNotification('❌ فشل الزحف. لم يتم العثور على أي صفحات.', 'danger');
-            }
-            if (brokenLinks.size > 0) {
-                showNotification(`🚨 تم العثور على ${brokenLinks.size} رابط داخلي مكسور.`, 'danger');
-            }
-            
-            autoSave();
-        }
-
-        function analyzeHtmlContent(content, urlOrFilename) {
-            const doc = new DOMParser().parseFromString(content, 'text/html');
-            const isUrl = urlOrFilename.startsWith('http');
-            const url = isUrl ? new URL(urlOrFilename) : null;
-            const filename = isUrl ? url.pathname.split('/').pop() || 'index.html' : urlOrFilename;
-            
-            let title = doc.querySelector('title')?.textContent.trim() || filename.replace(/\.(html?|htm)$/i, '').replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-            let description = doc.querySelector('meta[name="description"]')?.getAttribute('content') || doc.querySelector('meta[property="og:description"]')?.getAttribute('content') || doc.querySelector('article p, main p')?.textContent.trim().substring(0, 200) + '...' || `صفحة ${title}`;
-            let keywords = doc.querySelector('meta[name="keywords"]')?.getAttribute('content')?.split(',').map(k => k.trim()).filter(Boolean) || [];
-            
-            const images = doc.querySelectorAll('img');
-            const imagesWithoutAlt = [...images].filter(img => !img.getAttribute('alt')?.trim());
-            const seoData = {
-                h1: doc.querySelector('h1')?.textContent.trim() || null,
-                lang: doc.documentElement.getAttribute('lang') || null,
-                canonical: doc.querySelector('link[rel="canonical"]')?.getAttribute('href') || null,
-                imageAltInfo: { total: images.length, missing: imagesWithoutAlt.length },
-                brokenLinksOnPage: [],
-            };
-            
-            return { filename, title, description, keywords, url: isUrl ? url.pathname : '/' + filename, source: isUrl ? 'seo_crawler' : 'html_analysis', content, seo: seoData };
-        }
-
-        function generateSearchIndex() {
-            let idCounter = appState.searchIndex.length > 0 ? Math.max(...appState.searchIndex.map(item => item.id)) + 1 : 1;
-            let newItemsCount = 0;
-            const existingUrls = new Set(appState.searchIndex.map(item => item.url));
-
-            const addItem = (item) => {
-                const urlKey = item.url.endsWith('/') && item.url.length > 1 ? item.url.slice(0, -1) : item.url;
-                if (!existingUrls.has(urlKey)) {
-                    item.id = idCounter++;
-                    appState.searchIndex.push(item);
-                    existingUrls.add(urlKey);
-                    newItemsCount++;
-                }
-            };
-            
-            appState.analyzedFiles.forEach(file => addItem({
-                title: file.title, description: file.description, url: file.url,
-                category: file.category || (file.source === 'seo_crawler' ? 'زاحف SEO' : 'تحليل تلقائي'),
-                tags: file.keywords && file.keywords.length > 0 ? file.keywords : extractTagsFromUrl(file.url),
-                source: file.source || 'html_analysis', seo: file.seo
-            }));
-            
-            if (getEl('manualInput').checked) { appState.manualPages.forEach(page => addItem({ ...page, source: 'manual' })); }
-            
-            getEl('urlInput').value.trim().split('\n').filter(Boolean).forEach(urlStr => {
-                const url = urlStr.trim().startsWith('/') ? urlStr.trim() : '/' + urlStr.trim();
-                if (existingUrls.has(url)) return;
-
-                const fileName = url.split('/').pop().replace(/\.html?$/, '');
-                const pathParts = url.split('/').filter(Boolean);
-                const category = pathParts.length > 1 ? pathParts[0] : 'عام';
-                const titleMap = { 'index': 'الصفحة الرئيسية', 'about': 'من نحن', 'contact': 'اتصل بنا', 'services': 'خدماتنا', 'blog': 'المدونة' };
-                let title = titleMap[fileName.toLowerCase()] || (fileName.charAt(0).toUpperCase() + fileName.slice(1).replace(/[-_]/g, ' '));
-                let source = appState.sitemapUrls.includes(url) ? 'sitemap' : appState.robotsUrls.includes(url) ? 'robots' : 'url_generation';
-                
-                addItem({ title, description: `صفحة ${title}`, url, category: category.charAt(0).toUpperCase() + category.slice(1), tags: extractTagsFromUrl(url), source });
-            });
-
-            if (appState.searchIndex.length === 0) {
-                showNotification('يرجى إدخال بيانات أولاً', 'warning'); return;
-            }
-            showNotification(newItemsCount > 0 ? `تم إضافة ${newItemsCount} عنصر جديد! الإجمالي: ${appState.searchIndex.length}` : 'لا توجد عناصر جديدة للإضافة', newItemsCount > 0 ? 'success' : 'info');
-            
-            displayResults();
-            updateStatistics();
-            updateLiveCounter();
-            updateFilterOptions();
-            getEl('filterSection').classList.remove('d-none');
-            autoSave();
-        }
-        
-        function displayResults(resultsToShow = null) {
-            const resultsDiv = getEl('results');
-            const results = resultsToShow || appState.searchIndex;
-            if (results.length === 0) {
-                resultsDiv.innerHTML = '<p class="text-danger text-center m-0">لا توجد صفحات للمعالجة أو للعرض</p>';
-                return;
-            }
-            const grouped = results.reduce((acc, item) => {
-                (acc[item.source || 'unknown'] = acc[item.source || 'unknown'] || []).push(item);
-                return acc;
-            }, {});
-
-            const sourceLabels = {
-                'seo_crawler': '🔬 زاحف SEO', 'html_analysis': '📄 تحليل HTML', 'manual': '✏️ إدخال يدوي',
-                'url_generation': '🔗 من الروابط', 'sitemap': '🗺️ من Sitemap', 'robots': '🤖 من robots.txt', 'spa_analysis': '⚡ تحليل SPA'
-            };
-
-            const renderSeoSummary = (seo) => {
-                if (!seo) return '';
-                const h1 = seo.h1 ? `<span class="badge bg-success">موجود</span>` : `<span class="badge bg-danger">مفقود</span>`;
-                const canonical = seo.canonical ? `<span class="badge bg-success">موجود</span>` : `<span class="badge bg-danger">مفقود</span>`;
-                const lang = seo.lang ? `<span class="badge bg-success">${seo.lang}</span>` : `<span class="badge bg-danger">مفقود</span>`;
-                let imgAltBadge;
-                if (seo.imageAltInfo.total === 0) {
-                    imgAltBadge = `<span class="badge bg-secondary">لا يوجد</span>`;
-                } else if (seo.imageAltInfo.missing === 0) {
-                    imgAltBadge = `<span class="badge bg-success">${seo.imageAltInfo.total}/${seo.imageAltInfo.total}</span>`;
-                } else {
-                    imgAltBadge = `<span class="badge bg-warning">${seo.imageAltInfo.total - seo.imageAltInfo.missing}/${seo.imageAltInfo.total}</span>`;
-                }
-                const brokenLinksCount = seo.brokenLinksOnPage?.length || 0;
-                const brokenLinksBadge = brokenLinksCount > 0 ? `<span class="badge bg-danger">${brokenLinksCount}</span>` : `<span class="badge bg-success">0</span>`;
-
-                return `<div class="mt-2 pt-2 border-top border-opacity-10">
-                    <div class="seo-summary-item"><strong>H1:</strong> ${h1}</div>
-                    <div class="seo-summary-item"><strong>Lang:</strong> ${lang}</div>
-                    <div class="seo-summary-item"><strong>Canonical:</strong> ${canonical}</div>
-                    <div class="seo-summary-item"><strong>Img Alt:</strong> ${imgAltBadge}</div>
-                    <div class="seo-summary-item"><strong>روابط مكسورة:</strong> ${brokenLinksBadge}</div>
-                </div>`;
-            };
-
-            resultsDiv.innerHTML = `<h5>تم توليد ${results.length} عنصر:</h5>` + Object.entries(grouped).map(([source, items]) => `
-                <h6 class="mt-3 text-primary">${sourceLabels[source] || source} (${items.length})</h6>
-                ${items.map(item => `
-                <div class="position-relative bg-body border rounded-2 p-3 my-2" data-id="${item.id}">
-                    <button class="btn btn-outline-secondary btn-sm position-absolute top-0 start-0 m-2" onclick="toggleEdit(${item.id})">تحرير</button>
-                    <div class="page-title editable-content text-primary fw-bold mb-1" data-field="title">${item.title}</div>
-                    <div class="text-body-secondary small">${item.url}</div>
-                    <div class="text-muted editable-content mt-1" data-field="description">${item.description}</div>
-                    <div class="mt-2 small"><span class="text-info">الفئة:</span> <span class="editable-content" data-field="category">${item.category || ''}</span></div>
-                    <div class="mt-1 small"><span class="text-success">الكلمات:</span> <span class="editable-content" data-field="tags">${(item.tags || []).join(', ')}</span></div>
-                    ${renderSeoSummary(item.seo)}
-                </div>`).join('')}`
-            ).join('');
-            getEl('exportButtons').classList.remove('d-none');
-        }
-        
-        function updateLiveCounter() {
-            const counter = getEl('liveCounter');
-            if (appState.searchIndex.length > 0) {
-                counter.classList.remove('d-none');
-                getEl('counterValue').textContent = appState.searchIndex.length;
-            } else {
-                counter.classList.add('d-none');
-            }
-        }
-
-        function updateStatistics() {
-            const statsPanel = getEl('statsPanel');
-            if (appState.searchIndex.length === 0) {
-                statsPanel.classList.add('d-none');
-                return;
-            }
-            statsPanel.classList.remove('d-none');
-            const allKeywords = appState.searchIndex.flatMap(item => item.tags || []);
-            const uniqueCategories = [...new Set(appState.searchIndex.map(item => item.category).filter(Boolean))];
-            const keywordCount = allKeywords.reduce((acc, keyword) => {
-                acc[keyword] = (acc[keyword] || 0) + 1;
-                return acc;
-            }, {});
-            const topKeyword = Object.keys(keywordCount).reduce((a, b) => keywordCount[a] > keywordCount[b] ? a : b, '-');
-            getEl('statPages').textContent = appState.searchIndex.length;
-            getEl('statKeywords').textContent = allKeywords.length;
-            getEl('statCategories').textContent = uniqueCategories.length;
-            getEl('statTopKeyword').textContent = topKeyword === '-' ? '-' : `${topKeyword} (${keywordCount[topKeyword]})`;
-        }
-        function setupFilters() { getEl('categoryFilter').addEventListener('change', applyFilters); getEl('keywordFilter').addEventListener('input', applyFilters); }
-        function updateFilterOptions() {
-            const categoryFilter = getEl('categoryFilter');
-            const categories = [...new Set(appState.searchIndex.map(item => item.category).filter(Boolean))].sort();
-            categoryFilter.innerHTML = '<option value="">جميع الفئات</option>';
-            categories.forEach(category => {
-                const option = document.createElement('option'); option.value = category; option.textContent = category; categoryFilter.appendChild(option);
-            });
-        }
-        function applyFilters() {
-            const categoryFilterValue = getEl('categoryFilter').value;
-            const keywordFilterValue = getEl('keywordFilter').value.toLowerCase();
-            appState.filteredResults = appState.searchIndex.filter(item => {
-                const matchesCategory = !categoryFilterValue || item.category === categoryFilterValue;
-                const matchesKeyword = !keywordFilterValue || item.title.toLowerCase().includes(keywordFilterValue) || item.description.toLowerCase().includes(keywordFilterValue) || (item.tags && item.tags.some(tag => tag.toLowerCase().includes(keywordFilterValue)));
-                return matchesCategory && matchesKeyword;
-            });
-            displayResults(appState.filteredResults);
-        }
-        function deleteAllData() {
-            if (confirm('هل أنت متأكد من حذف جميع البيانات؟ لا يمكن التراجع عن هذا الإجراء.')) {
-                // Reset the appState object to its initial values
-                Object.assign(appState, { searchIndex: [], manualPages: [], analyzedFiles: [], sitemapUrls: [], robotsUrls: [], manifestData: {}, filteredResults: [] });
-                
-                getEl('urlInput').value = '';
-                getEl('customProxyUrl').value = ''; // Also clear the proxy
-                getEl('results').innerHTML = '<p class="text-muted text-center m-0">تم حذف جميع البيانات</p>';
-                getEl('exportButtons').classList.add('d-none');
-                getEl('statsPanel').classList.add('d-none');
-                getEl('filterSection').classList.add('d-none');
-                updateLiveCounter();
-                localStorage.removeItem('searchIndexGenerator');
-                showNotification('تم حذف جميع البيانات بنجاح! 🗑️', 'success');
-            }
-        }
-        async function processHtmlFiles(files) {
-            const progressContainer = getEl('progressContainer');
-            const progressBar = getEl('progressBar');
-            const progressText = getEl('progressText');
-            progressContainer.classList.remove('d-none');
-            const newAnalyzedFiles = [];
-            for (let i = 0; i < files.length; i++) {
-                const file = files[i];
-                progressBar.style.width = `${((i + 1) / files.length) * 100}%`;
-                progressText.textContent = `معالجة ${file.name} (${i + 1}/${files.length})`;
-                if (!appState.analyzedFiles.find(f => f.filename === file.name)) {
-                    try {
-                        const analysis = analyzeHtmlContent(await readFileContent(file), file.name);
-                        appState.analyzedFiles.push(analysis);
-                        newAnalyzedFiles.push(analysis);
-                    } catch (error) { console.error('Error processing file:', file.name, error); }
-                }
-                await new Promise(r => setTimeout(r, 50));
-            }
-            progressContainer.classList.add('d-none');
-            if (newAnalyzedFiles.length > 0) { showNotification(`تم تحليل ${newAnalyzedFiles.length} ملف HTML جديد! إجمالي: ${appState.analyzedFiles.length} 🎉`, 'success'); }
-            else { showNotification('جميع الملفات تم تحليلها مسبقاً', 'info'); }
-            autoSave();
-        }
-        function toggleCopyOptions() { getEl('copyOptions').classList.toggle('d-none'); }
-        window.addEventListener('load', function() {
-            setDarkMode(isDarkMode); loadFromLocalStorage();
-            const setupDragDrop = (dropZoneId, fileInputId, fileTypeRegex, processFunction) => {
-                const dropZone = getEl(dropZoneId); const fileInput = getEl(fileInputId); if (!dropZone || !fileInput) return;
-                dropZone.addEventListener('click', () => fileInput.click()); dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
-                dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-                dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); const files = Array.from(e.dataTransfer.files).filter(file => fileTypeRegex.test(file.type) || fileTypeRegex.test(file.name)); if (files.length > 0) processFunction(files.length > 1 ? files : files[0]); });
-                fileInput.addEventListener('change', (e) => { if (e.target.files.length > 0) processFunction(fileInput.multiple ? Array.from(e.target.files) : e.target.files[0]); });
-            };
-            setupDragDrop('robotsDropZone', 'robotsFileInput', /\.txt$/, processRobotsFile); setupDragDrop('manifestDropZone', 'manifestFileInput', /\.json$/, processManifestFile);
-            setupDragDrop('sitemapDropZone', 'sitemapFileInput', /\.xml$/, processSitemapFile); setupDragDrop('fileDropZone', 'htmlFileInput', /\.html?$/, processHtmlFiles);
-            setupTextareaDragDrop(); setupFilters();
-        });
-        async function analyzeSpaSite() {
-            const url = getEl('spaUrl').value.trim(); if (!url) { return showNotification('يرجى إدخال رابط الموقع للتحليل', 'warning'); }
-            showNotification(`🔬 جاري تحليل ${url}...`, 'info');
-            try {
-                const response = await fetch(getProxyUrl(url)); // Use the new proxy function
-                if (!response.ok) { throw new Error(`فشل في جلب الموقع (Status: ${response.status})`); }
-                const html = await response.text();
-                const filename = new URL(url).pathname.split('/').pop() || 'index.html';
-                if (appState.analyzedFiles.some(f => f.url === url)) { return showNotification('تم تحليل هذا الموقع مسبقاً', 'info'); }
-                const analysis = analyzeHtmlContent(html, url); analysis.url = url; analysis.source = 'spa_analysis'; analysis.category = 'تحليل SPA';
-                appState.analyzedFiles.push(analysis);
-                showNotification(`✅ تم تحليل الموقع. اضغط "توليد فهرس البحث" لإضافته للنتائج.`, 'success'); autoSave();
-            } catch (error) { console.error('SPA Analysis Error:', error); showNotification(`خطأ في تحليل الموقع: ${error.message}`, 'danger'); }
-        }
-        async function processRobotsFile(file) {
-            try {
-                const content = await readFileContent(file); const lines = content.split('\n').map(l => l.trim());
-                const newRobotsUrls = lines.filter(l => l.toLowerCase().startsWith('disallow:') || l.toLowerCase().startsWith('allow:')).map(l => l.split(':')[1]?.trim()).filter(Boolean);
-                if (newRobotsUrls.length > 0) {
-                    appState.robotsUrls.push(...newRobotsUrls); const urlInput = getEl('urlInput'); urlInput.value = (urlInput.value ? urlInput.value + '\n' : '') + newRobotsUrls.join('\n');
-                    showNotification(`تم استخراج ${newRobotsUrls.length} مسار جديد من robots.txt! 🤖`, 'success'); autoSave();
-                } else { showNotification('لم يتم العثور على مسارات جديدة في ملف robots.txt', 'warning'); }
-            } catch (error) { showNotification('خطأ في معالجة ملف robots.txt: ' + error.message, 'danger'); }
-        }
-        async function processManifestFile(file) {
-            try {
-                appState.manifestData = JSON.parse(await readFileContent(file));
-                const extractedUrls = [ ...(appState.manifestData.icons?.map(i => i.src) || []), ...(appState.manifestData.screenshots?.map(s => s.src) || []), appState.manifestData.start_url, ...(appState.manifestData.shortcuts?.map(s => s.url) || []) ].filter(Boolean);
-                if (extractedUrls.length > 0) {
-                    const urlInput = getEl('urlInput'); urlInput.value = (urlInput.value ? urlInput.value + '\n' : '') + extractedUrls.join('\n');
-                    showNotification(`تم استخراج ${extractedUrls.length} مسار من manifest.json! 📱`, 'success'); autoSave();
-                } else { showNotification('لم يتم العثور على مسارات صالحة في ملف manifest.json', 'warning'); }
-            } catch (error) { showNotification('خطأ في معالجة ملف manifest.json: ' + error.message, 'danger'); }
-        }
-        function setupTextareaDragDrop() {
-            const textarea = getEl('urlInput'); textarea.addEventListener('dragover', (e) => { e.preventDefault(); textarea.classList.add('dragover'); });
-            textarea.addEventListener('dragleave', () => textarea.classList.remove('dragover'));
-            textarea.addEventListener('drop', (e) => { e.preventDefault(); textarea.classList.remove('dragover'); const files = Array.from(e.dataTransfer.files).filter(file => /\.txt|\.json$/.test(file.name)); if (files.length > 0) processDroppedTextFiles(files); });
-        }
-        async function processDroppedTextFiles(files) {
-            for (const file of files) {
-                try {
-                    const content = await readFileContent(file);
-                    let urls = file.name.endsWith('.json') ? (JSON.parse(content).urls || JSON.parse(content)) : content.split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('#'));
-                    if (urls.length > 0) {
-                        const urlInput = getEl('urlInput'); urlInput.value = (urlInput.value ? urlInput.value + '\n' : '') + urls.join('\n');
-                        showNotification(`تم إضافة ${urls.length} رابط من ${file.name}! 📥`, 'success'); autoSave();
-                    }
-                } catch (error) { showNotification(`خطأ في معالجة ${file.name}: ${error.message}`, 'danger'); }
-            }
-        }
-        function autoSave() { saveToLocalStorage(); }
-        function saveToLocalStorage() {
-            const filesToSave = appState.analyzedFiles.map(({ content, ...rest }) => rest);
-            const data = {
-                searchIndex: appState.searchIndex,
-                manualPages: appState.manualPages,
-                analyzedFiles: filesToSave,
-                sitemapUrls: appState.sitemapUrls,
-                robotsUrls: appState.robotsUrls,
-                manifestData: appState.manifestData,
-                urlInput: getEl('urlInput').value,
-                customProxyUrl: getEl('customProxyUrl').value, // Save the proxy URL
-                timestamp: new Date().toISOString()
-            };
-            try {
-                localStorage.setItem('searchIndexGenerator', JSON.stringify(data));
-            } catch (error) {
-                showNotification('خطأ في حفظ البيانات: ' + error.message, 'danger');
-            }
-        }
-        function loadFromLocalStorage() {
-            try {
-                const savedData = localStorage.getItem('searchIndexGenerator');
-                if (savedData) {
-                    const data = JSON.parse(savedData);
-                    Object.assign(appState, {
-                        searchIndex: data.searchIndex || [],
-                        manualPages: data.manualPages || [],
-                        analyzedFiles: data.analyzedFiles || [],
-                        sitemapUrls: data.sitemapUrls || [],
-                        robotsUrls: data.robotsUrls || [],
-                        manifestData: data.manifestData || {}
-                    });
-                    if (data.urlInput) getEl('urlInput').value = data.urlInput;
-                    if (data.customProxyUrl) getEl('customProxyUrl').value = data.customProxyUrl; // Load the proxy URL
-                    if (appState.searchIndex.length > 0) {
-                        displayResults();
-                        updateStatistics();
-                        updateLiveCounter();
-                        updateFilterOptions();
-                        getEl('filterSection').classList.remove('d-none');
-                    }
-                    showNotification('تم تحميل البيانات المحفوظة! 📂', 'info');
-                }
-            } catch (error) { showNotification('خطأ في تحميل البيانات: ' + error.message, 'warning'); }
-        }
-        function showNotification(message, type = 'info', duration = 5000) {
-            const toastContainer = document.querySelector('.toast-container'); const toastId = 'toast-' + Date.now();
-            const typeMapping = { 'info': 'bg-info', 'success': 'bg-success', 'warning': 'bg-warning', 'danger': 'bg-danger' };
-            const toast = document.createElement('div'); toast.id = toastId; toast.className = `toast ${typeMapping[type]} text-white`;
-            toast.innerHTML = `<div class="d-flex"><div class="toast-body">${message}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button></div>`;
-            toastContainer.appendChild(toast); const bsToast = new bootstrap.Toast(toast, { delay: duration }); bsToast.show(); toast.addEventListener('hidden.bs.toast', () => toast.remove());
-        }
-        async function processSitemapFile(file) {
-            try {
-                const content = await readFileContent(file); const xmlDoc = new DOMParser().parseFromString(content, 'text/xml');
-                if (xmlDoc.querySelector('parsererror')) throw new Error('خطأ في تحليل ملف XML');
-                const newSitemapUrls = [...xmlDoc.querySelectorAll('url > loc, sitemap > loc')].map(el => { try { return new URL(el.textContent.trim()).pathname; } catch { return el.textContent.trim(); } }).filter(Boolean);
-                if (newSitemapUrls.length > 0) {
-                    appState.sitemapUrls.push(...newSitemapUrls); const urlInput = getEl('urlInput'); urlInput.value = (urlInput.value ? urlInput.value + '\n' : '') + newSitemapUrls.join('\n');
-                    showNotification(`تم استخراج ${newSitemapUrls.length} رابط جديد من Sitemap! 🗺️`, 'success'); autoSave();
-                } else { showNotification('لم يتم العثور على روابط جديدة في ملف Sitemap', 'warning'); }
-            } catch (error) { showNotification('خطأ في معالجة ملف Sitemap: ' + error.message, 'danger'); }
-        }
-        function readFileContent(file) { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = e => resolve(e.target.result); reader.onerror = reject; reader.readAsText(file, 'UTF-8'); }); }
-        function extractTagsFromUrl(url) {
-            if (!url) return [];
-            const pathParts = url.split('/').filter(p => p && p !== '');
-            const tags = pathParts.flatMap(part => part.replace(/\.[^/.]+$/, '').split(/[-_\s]+/)).filter(p => p.length > 2).map(p => p.toLowerCase());
-            const translations = { 'index': 'الرئيسية', 'home': 'الرئيسية', 'about': 'من نحن', 'contact': 'اتصل بنا', 'services': 'خدمات', 'products': 'منتجات', 'blog': 'مدونة', 'news': 'أخبار', 'portfolio': 'أعمال', 'team': 'فريق', 'pricing': 'أسعار', 'faq': 'أسئلة شائعة' };
-            tags.forEach(tag => { if (translations[tag]) tags.push(translations[tag]); }); return [...new Set(tags)];
-        }
-        function importUrlsFile() { const file = getEl('urlsFileInput').files[0]; if (!file) { return alert('يرجى اختيار ملف أولاً'); } processDroppedTextFiles([file]); }
-        getEl('manualInput').addEventListener('change', function() { getEl('manualInputSection').classList.toggle('d-none', !this.checked); });
-        function addManualPage() {
-            const [title, url, description, category, tagsValue] = ['pageTitle', 'pageUrl', 'pageDescription', 'pageCategory', 'pageTags'].map(id => getEl(id).value);
-            if (!title || !url) return alert('يرجى إدخال العنوان والرابط على الأقل');
-            appState.manualPages.push({ title, url: url.startsWith('/') ? url : '/' + url, description, category: category || 'عام', tags: tagsValue.split(',').map(t => t.trim()).filter(Boolean) });
-            ['pageTitle', 'pageUrl', 'pageDescription', 'pageCategory', 'pageTags'].forEach(id => getEl(id).value = ''); showNotification(`تم إضافة: ${title}`, 'success'); autoSave();
-        }
-        function toggleEdit(itemId) {
-            const pageItem = document.querySelector(`[data-id="${itemId}"]`); const editBtn = pageItem.querySelector('button');
-            const isEditing = editBtn.textContent === 'حفظ'; pageItem.querySelectorAll('.editable-content').forEach(el => el.setAttribute('contenteditable', !isEditing));
-            editBtn.textContent = isEditing ? 'تحرير' : 'حفظ'; editBtn.classList.toggle('btn-outline-secondary', isEditing); editBtn.classList.toggle('btn-success', !isEditing);
-            if (isEditing) {
-                const item = appState.searchIndex.find(i => i.id === itemId); if (!item) return;
-                pageItem.querySelectorAll('.editable-content').forEach(el => {
-                    const field = el.dataset.field; const value = el.textContent.trim();
-                    item[field] = field === 'tags' ? value.split(',').map(t => t.trim()).filter(Boolean) : value;
-                }); showNotification('تم حفظ التعديلات! ✅', 'success'); updateStatistics(); autoSave();
-            }
-        }
-        const downloadFile = (blob, filename) => { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; a.click(); URL.revokeObjectURL(a.href); };
-        const getStrippedIndex = () => appState.searchIndex.map(({ id, title, description, url, category, tags, seo }) => ({ id, title, description, url, category, tags, seo }));
-        function downloadJson() { downloadFile(new Blob([JSON.stringify(getStrippedIndex(), null, 2)], { type: 'application/json' }), 'search-index.json'); showNotification('تم تحميل JSON ✅', 'success'); }
-        function downloadCSV() {
-            const csv = ['ID,العنوان,الرابط,الوصف,الفئة,الكلمات المفتاحية', ...appState.searchIndex.map(i => [`"${i.id}"`, `"${i.title.replace(/"/g, '""')}"`, `"${i.url}"`, `"${i.description.replace(/"/g, '""')}"`, `"${i.category || ''}"`, `"${(i.tags || []).join(', ')}"`].join(','))].join('\n');
-            downloadFile(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' }), 'search-index.csv'); showNotification('تم تحميل CSV 📊', 'success');
-        }
-        async function downloadZip() {
-            const zipProgress = getEl('zipProgress'); const zipProgressBar = getEl('zipProgressBar'); zipProgress.classList.remove('d-none');
-            try {
-                const zip = new JSZip(); zip.file('search-index.json', JSON.stringify(getStrippedIndex(), null, 2));
-                const htmlFiles = appState.analyzedFiles.filter(f => f.content);
-                if (htmlFiles.length > 0) { const htmlFolder = zip.folder('html-files'); htmlFiles.forEach(f => htmlFolder.file(f.filename, f.content)); }
-                const content = await zip.generateAsync({ type: 'blob' }, (metadata) => { zipProgressBar.style.width = metadata.percent.toFixed(2) + '%'; });
-                downloadFile(content, 'search-index-package.zip'); showNotification('تم تحميل ZIP 📦', 'success');
-            } catch (error) { showNotification('خطأ في إنشاء ZIP: ' + error.message, 'danger'); } finally { setTimeout(() => zipProgress.classList.add('d-none'), 2000); }
-        }
-        function copyToClipboard(type) {
-            const dataMap = { all: () => JSON.stringify(getStrippedIndex(), null, 2), titles: () => appState.searchIndex.map(item => item.title).join('\n'), urls: () => appState.searchIndex.map(item => item.url).join('\n'), descriptions: () => appState.searchIndex.map(item => item.description).join('\n') };
-            const content = dataMap[type]();
-            navigator.clipboard.writeText(content).then(() => { showNotification(`تم نسخ ${type} إلى الحافظة! 📋`, 'success'); getEl('copyOptions').classList.add('d-none'); }).catch(err => showNotification('فشل النسخ!', 'danger'));
-        }
-        getEl('urlInput').addEventListener('input', autoSave);
-        getEl('customProxyUrl').addEventListener('input', autoSave); // Save proxy on change
-    </script>
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index:1100;"></div>
+    <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+    <script src="assets/js/aos.min.js"></script>
+    <script src="assets/js/lottie-player.min.js"></script>
+    <script src="assets/js/bs-init.js"></script>
+    <script src="assets/js/script.js"></script>
 </body>
+
 </html>
