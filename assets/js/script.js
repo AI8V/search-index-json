@@ -1,4 +1,3 @@
-/* --- START OF FILE script.js --- */
 (function () { // Start of IIFE to encapsulate code
     // --- Centralized Application State ---
     const DEFAULT_BASE_SCHEMA_OBJ = {
@@ -38,17 +37,21 @@
             baseSchema: DEFAULT_BASE_SCHEMA_STR
         }
     };
-
+    
+    // --- Constants ---
     const PROJECTS_MASTER_KEY = 'searchIndexGenerator_projects';
     const LAST_PROJECT_KEY = 'searchIndexGenerator_lastProject';
+    const VIRTUAL_SCROLL_CHUNK_SIZE = 15; // Number of items to render at a time
 
+    // --- State & Variables ---
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     let isDarkMode = localStorage.getItem('darkMode') === 'true' || (localStorage.getItem('darkMode') === null && prefersDark);
-    
-    // --- IMPROVEMENT: DOM Element Caching for performance ---
     const dom = {};
     let resultItemTemplate; // To be populated on DOMContentLoaded
+    let saveTimeout;
+    let sourceChartInstance, keywordsChartInstance, seoScoreChartInstance;
 
+    // --- Core Functions ---
     const getEl = (id) => document.getElementById(id);
 
     function setDarkMode(isDark) {
@@ -348,8 +351,7 @@
             </div>`;
     };
 
-    // --- IMPROVEMENT: Major refactor of displayResults for performance (Lazy Loading) ---
-    function displayResults(resultsToShow = null) {
+    function displayResults(resultsToShow = null, openAccordionId = null) {
         const results = resultsToShow || appState.searchIndex;
 
         dom.selectionControls.classList.toggle('d-none', results.length === 0);
@@ -365,13 +367,13 @@
         }, {});
 
         Object.entries(grouped).forEach(([source, items], index) => {
-            renderAccordionGroup(source, items, index);
+            renderAccordionGroup(source, items, index, openAccordionId);
         });
         
-        updateSelectionCounter();
+        updateSelectionUI();
     }
     
-    function renderAccordionGroup(source, items, index) {
+    function renderAccordionGroup(source, items, index, openAccordionId = null) {
         const sourceLabels = {
             'seo_crawler': `<i class="bi bi-robot ms-2" aria-hidden="true"></i>زاحف SEO`,
             'html_analysis': `<i class="bi bi-file-earmark-code-fill ms-2" aria-hidden="true"></i>تحليل HTML`,
@@ -383,35 +385,28 @@
         };
 
         const collapseId = `collapse-source-${source.replace(/[^a-zA-Z0-9]/g, '-')}-${index}`;
-        const isFirst = index === 0;
+        const shouldBeOpen = openAccordionId ? (collapseId === openAccordionId) : index === 0;
 
         const accordionItem = document.createElement('div');
         accordionItem.className = 'accordion-item bg-transparent';
         accordionItem.innerHTML = `
             <h2 class="accordion-header" id="heading-${collapseId}">
-                <button class="accordion-button ${isFirst ? '' : 'collapsed'}" type="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}">
+                <button class="accordion-button ${shouldBeOpen ? '' : 'collapsed'}" type="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}">
                     ${sourceLabels[source] || source} (${items.length})
                 </button>
             </h2>
-            <div id="${collapseId}" class="accordion-collapse collapse ${isFirst ? 'show' : ''}" data-bs-parent="#resultsAccordion">
-                <div class="accordion-body" data-loaded="false" data-items='${JSON.stringify(items.map(i => i.id))}'>
-                    <!-- Items will be lazy-loaded here -->
-                    <div class="text-center p-3">
-                        <div class="spinner-border spinner-border-sm" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                    </div>
+            <div id="${collapseId}" class="accordion-collapse collapse ${shouldBeOpen ? 'show' : ''}" data-bs-parent="#resultsAccordion">
+                <div class="accordion-body" data-source="${source}" data-rendered-count="0">
+                    <!-- Items will be lazy/virtually-loaded here -->
                 </div>
             </div>`;
         
         dom.resultsAccordion.appendChild(accordionItem);
     }
 
-    function renderItemsInBody(accordionBody) {
-        const itemIds = JSON.parse(accordionBody.dataset.items);
-        const itemsToRender = itemIds.map(id => appState.searchIndex.find(item => item.id === id)).filter(Boolean);
-
-        accordionBody.innerHTML = ''; // Clear spinner
+    function renderItemChunk(container, items, offset) {
+        const fragment = document.createDocumentFragment();
+        const itemsToRender = items.slice(offset, offset + VIRTUAL_SCROLL_CHUNK_SIZE);
         
         itemsToRender.forEach(item => {
             const itemClone = resultItemTemplate.content.cloneNode(true);
@@ -446,13 +441,50 @@
 
             itemClone.querySelector('.seo-summary-container').innerHTML = renderSeoSummary(item.seo, item.id);
             
-            accordionBody.appendChild(itemClone);
+            fragment.appendChild(itemClone);
         });
+        
+        container.appendChild(fragment);
+
+        const newRenderedCount = offset + itemsToRender.length;
+        container.dataset.renderedCount = newRenderedCount;
+
+        if (newRenderedCount < items.length) {
+            const loadMoreBtn = document.createElement('button');
+            loadMoreBtn.className = 'btn btn-outline-secondary btn-sm w-100 mt-2 load-more-btn';
+            loadMoreBtn.textContent = 'تحميل المزيد';
+            container.appendChild(loadMoreBtn);
+        }
     }
 
-    function updateAllUI() {
-        displayResults(appState.filteredResults.length > 0 ? appState.filteredResults : appState.searchIndex);
-        updateStatistics();
+    function handleAccordionShow(event) {
+        const accordionBody = event.target.querySelector('.accordion-body');
+        if (accordionBody && parseInt(accordionBody.dataset.renderedCount, 10) === 0) {
+            const source = accordionBody.dataset.source;
+            const allVisibleItems = appState.filteredResults.length > 0 ? appState.filteredResults : appState.searchIndex;
+            const itemsForThisGroup = allVisibleItems.filter(item => (item.source || 'unknown') === source);
+            
+            accordionBody.innerHTML = ''; // Clear spinner
+            renderItemChunk(accordionBody, itemsForThisGroup, 0);
+        }
+    }
+
+    function handleLoadMore(button) {
+        const accordionBody = button.closest('.accordion-body');
+        if (!accordionBody) return;
+
+        const source = accordionBody.dataset.source;
+        const currentOffset = parseInt(accordionBody.dataset.renderedCount, 10);
+        const allVisibleItems = appState.filteredResults.length > 0 ? appState.filteredResults : appState.searchIndex;
+        const itemsForThisGroup = allVisibleItems.filter(item => (item.source || 'unknown') === source);
+
+        button.remove();
+        renderItemChunk(accordionBody, itemsForThisGroup, currentOffset);
+    }
+
+    function updateAllUI(openAccordionId = null) {
+        displayResults(appState.filteredResults.length > 0 ? appState.filteredResults : appState.searchIndex, openAccordionId);
+        updateAnalyticsDashboard();
         updateLiveCounter();
         updateFilterOptions();
         dom.filterSection.classList.toggle('d-none', appState.searchIndex.length === 0);
@@ -469,23 +501,185 @@
         }
     }
 
-    function updateStatistics() {
+    const CHART_TEXT_COLOR = 'rgba(255, 255, 255, 0.85)';
+    const CHART_GRID_COLOR = 'rgba(255, 255, 255, 0.15)';
+
+    function renderSourceChart(labels, data) {
+        const chartContext = dom.sourceDistributionChart.getContext('2d');
+        const sourceLabels = {
+            'seo_crawler': `زاحف SEO`,
+            'html_analysis': `تحليل HTML`,
+            'manual': `إدخال يدوي`,
+            'url_generation': `من الروابط`,
+            'sitemap': `من Sitemap`,
+            'robots': `من robots.txt`,
+            'spa_analysis': `تحليل SPA`,
+            'unknown': 'غير معروف'
+        };
+        if (sourceChartInstance) {
+            sourceChartInstance.data.labels = labels.map(l => sourceLabels[l] || l);
+            sourceChartInstance.data.datasets[0].data = data;
+            sourceChartInstance.update();
+        } else {
+            sourceChartInstance = new Chart(chartContext, {
+                type: 'pie',
+                data: {
+                    labels: labels.map(l => sourceLabels[l] || l),
+                    datasets: [{
+                        label: 'عدد الصفحات',
+                        data: data,
+                        backgroundColor: ['#4bc0c0', '#ff6384', '#ffcd56', '#36a2eb', '#9966ff', '#c9cbcf', '#ff9f40'],
+                        borderColor: 'rgba(255, 255, 255, 0.1)',
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: CHART_TEXT_COLOR,
+                                boxWidth: 12,
+                                padding: 15
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    function renderKeywordsChart(labels, data) {
+        const chartContext = dom.topKeywordsChart.getContext('2d');
+        if (keywordsChartInstance) {
+            keywordsChartInstance.data.labels = labels;
+            keywordsChartInstance.data.datasets[0].data = data;
+            keywordsChartInstance.update();
+        } else {
+            keywordsChartInstance = new Chart(chartContext, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'عدد التكرارات',
+                        data: data,
+                        backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: CHART_TEXT_COLOR,
+                                stepSize: 1
+                            },
+                            grid: {
+                                color: CHART_GRID_COLOR
+                            }
+                        },
+                        y: {
+                            ticks: {
+                                color: CHART_TEXT_COLOR
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    function renderSeoScoreChart(percentage) {
+        const chartContext = dom.averageSeoScoreChart.getContext('2d');
+        dom.seoScoreText.textContent = `${Math.round(percentage)}%`;
+        const scoreColor = percentage >= 80 ? '#4bc0c0' : percentage >= 50 ? '#ffcd56' : '#ff6384';
+        if (seoScoreChartInstance) {
+            seoScoreChartInstance.data.datasets[0].data = [percentage, 100 - percentage];
+            seoScoreChartInstance.data.datasets[0].backgroundColor[0] = scoreColor;
+            seoScoreChartInstance.update();
+        } else {
+            seoScoreChartInstance = new Chart(chartContext, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: [percentage, 100 - percentage],
+                        backgroundColor: [scoreColor, 'rgba(255, 255, 255, 0.2)'],
+                        borderColor: 'transparent',
+                        circumference: 180,
+                        rotation: 270,
+                        cutout: '75%'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            enabled: false
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    function updateAnalyticsDashboard() {
         if (appState.searchIndex.length === 0) {
-            dom.statsPanel.classList.add('d-none');
+            dom.analyticsDashboard.classList.add('d-none');
             return;
         }
-        dom.statsPanel.classList.remove('d-none');
-        const allKeywords = appState.searchIndex.flatMap(item => item.tags || []);
-        const uniqueCategories = [...new Set(appState.searchIndex.map(item => item.category).filter(Boolean))];
-        const keywordCount = allKeywords.reduce((acc, keyword) => {
-            acc[keyword] = (acc[keyword] || 0) + 1;
+        dom.analyticsDashboard.classList.remove('d-none');
+        // 1. Source Distribution Data
+        const sourceCounts = appState.searchIndex.reduce((acc, item) => {
+            const source = item.source || 'unknown';
+            acc[source] = (acc[source] || 0) + 1;
             return acc;
         }, {});
-        const topKeyword = Object.keys(keywordCount).reduce((a, b) => keywordCount[a] > keywordCount[b] ? a : b, '-');
-        getEl('statPages').textContent = appState.searchIndex.length;
-        getEl('statKeywords').textContent = allKeywords.length;
-        getEl('statCategories').textContent = uniqueCategories.length;
-        getEl('statTopKeyword').textContent = topKeyword === '-' ? '-' : `${topKeyword} (${keywordCount[topKeyword]})`;
+        const sourceLabels = Object.keys(sourceCounts);
+        const sourceData = Object.values(sourceCounts);
+        renderSourceChart(sourceLabels, sourceData);
+        // 2. Top Keywords Data
+        const allKeywords = appState.searchIndex.flatMap(item => item.tags || []);
+        const keywordCount = allKeywords.reduce((acc, keyword) => {
+            if (keyword) { // Ensure keyword is not empty
+                acc[keyword] = (acc[keyword] || 0) + 1;
+            }
+            return acc;
+        }, {});
+        const sortedKeywords = Object.entries(keywordCount).sort((a, b) => b[1] - a[1]).slice(0, 10);
+        const keywordLabels = sortedKeywords.map(entry => entry[0]);
+        const keywordData = sortedKeywords.map(entry => entry[1]);
+        renderKeywordsChart(keywordLabels, keywordData);
+        // 3. Average SEO Score Data
+        let totalScore = 0;
+        let maxPossibleScore = 0;
+        appState.searchIndex.forEach(item => {
+            const {
+                score,
+                maxScore
+            } = calculateSeoScore(item.seo);
+            totalScore += score;
+            maxPossibleScore += maxScore; // Using the dynamic maxScore from the function
+        });
+        const averageSeoPercentage = maxPossibleScore > 0 ? (totalScore / maxPossibleScore) * 100 : 0;
+        renderSeoScoreChart(averageSeoPercentage);
     }
 
     function setupFilters() { dom.categoryFilter.addEventListener('change', applyFilters); dom.keywordFilter.addEventListener('input', applyFilters); }
@@ -505,6 +699,10 @@
     }
 
     function applyFilters() {
+        // FIX: Preserve open accordion state during filtering
+        const openAccordion = dom.resultsAccordion.querySelector('.accordion-collapse.show');
+        const openAccordionId = openAccordion ? openAccordion.id : null;
+
         const categoryFilterValue = dom.categoryFilter.value;
         const keywordFilterValue = dom.keywordFilter.value.toLowerCase();
         appState.filteredResults = appState.searchIndex.filter(item => {
@@ -512,7 +710,20 @@
             const matchesKeyword = !keywordFilterValue || item.title.toLowerCase().includes(keywordFilterValue) || item.description.toLowerCase().includes(keywordFilterValue) || (item.tags && item.tags.some(tag => tag.toLowerCase().includes(keywordFilterValue)));
             return matchesCategory && matchesKeyword;
         });
-        displayResults(appState.filteredResults);
+        
+        // Pass the open accordion ID to restore its state
+        displayResults(appState.filteredResults, openAccordionId);
+    }
+    
+    // UI-only update for selection, no data change
+    function updateSelectionUI() {
+        document.querySelectorAll('.result-item').forEach(itemDiv => {
+            const itemId = parseInt(itemDiv.dataset.id, 10);
+            const isSelected = appState.selectedItemIds.has(itemId);
+            itemDiv.classList.toggle('selected', isSelected);
+            itemDiv.querySelector('.item-select-checkbox').checked = isSelected;
+        });
+        updateSelectionCounter();
     }
 
     function updateSelectionCounter() {
@@ -520,39 +731,25 @@
     }
 
     function toggleItemSelection(checkbox, itemId) {
-        const itemDiv = document.querySelector(`.result-item[data-id="${itemId}"]`);
         if (checkbox.checked) {
             appState.selectedItemIds.add(itemId);
-            itemDiv?.classList.add('selected');
         } else {
             appState.selectedItemIds.delete(itemId);
-            itemDiv?.classList.remove('selected');
         }
-        updateSelectionCounter();
+        updateSelectionUI();
     }
-
+    
     function selectAllItems() {
-        const currentlyVisibleItems = document.querySelectorAll('#results .result-item');
-        currentlyVisibleItems.forEach(itemDiv => {
-            const itemId = parseInt(itemDiv.dataset.id, 10);
-            const checkbox = itemDiv.querySelector('input[type="checkbox"]');
-            if (checkbox && !checkbox.checked) {
-                checkbox.checked = true;
-                appState.selectedItemIds.add(itemId);
-                itemDiv.classList.add('selected');
-            }
-        });
-        updateSelectionCounter();
+        const itemsToSelect = appState.filteredResults.length > 0 ? appState.filteredResults : appState.searchIndex;
+        itemsToSelect.forEach(item => appState.selectedItemIds.add(item.id));
+        updateSelectionUI();
     }
 
     function deselectAllItems() {
-        document.querySelectorAll('#results .result-item').forEach(itemDiv => {
-            const checkbox = itemDiv.querySelector('input[type="checkbox"]');
-            if (checkbox && checkbox.checked) checkbox.checked = false;
-            itemDiv.classList.remove('selected');
-        });
-        appState.selectedItemIds.clear();
-        updateSelectionCounter();
+        const itemsToDeselect = appState.filteredResults.length > 0 ? appState.filteredResults : appState.searchIndex;
+        const idsToDeselect = new Set(itemsToDeselect.map(i => i.id));
+        appState.selectedItemIds = new Set([...appState.selectedItemIds].filter(id => !idsToDeselect.has(id)));
+        updateSelectionUI();
     }
 
     function getSelectedItems() {
@@ -702,11 +899,9 @@
         } catch (error) { showNotification('خطأ في تحميل المشروع: ' + error.message, 'warning'); }
     }
     
-    // --- IMPROVEMENT: Debounced save function to reduce localStorage writes ---
-    let saveTimeout;
     function debouncedSaveProject() {
         clearTimeout(saveTimeout);
-        saveTimeout = setTimeout(saveProject, 1000); // Save after 1 second of inactivity
+        saveTimeout = setTimeout(saveProject, 1000);
     }
     
     function saveProject() {
@@ -761,7 +956,7 @@
         appState.schemaConfig.baseUrl = dom.schemaBaseUrl.value.trim();
         appState.schemaConfig.pageSchemaType = dom.schemaPageType.value;
 
-        saveProject(); // Direct save, no debounce
+        saveProject();
         showNotification(`تم حفظ المشروع "${projectName}" بنجاح! <i class="bi bi-save-fill ms-2" aria-hidden="true"></i>`, 'success');
     }
 
@@ -939,7 +1134,6 @@
         ['pageTitle', 'pageUrl', 'pageDescription', 'pageCategory', 'pageTags'].forEach(id => getEl(id).value = ''); showNotification(`تم إضافة: ${title} يدويًا. اضغط "توليد" لإظهارها.`, 'success'); debouncedSaveProject();
     }
 
-    // --- IMPROVEMENT: Complete refactor of toggleEdit for Accessibility and UX ---
     function toggleEdit(itemId) {
         const pageItem = document.querySelector(`.result-item[data-id="${itemId}"]`);
         if (!pageItem) return;
@@ -949,7 +1143,7 @@
         const item = appState.searchIndex.find(i => i.id === itemId);
         if(!item) return;
 
-        if (isEditing) { // --- Currently editing, switching to SAVE ---
+        if (isEditing) {
             const fields = ['title', 'description', 'category', 'tags'];
             let isValid = true;
             fields.forEach(field => {
@@ -957,10 +1151,8 @@
                 const value = input.value.trim();
                 if (field === 'title' && !value) isValid = false;
                 
-                // Update state
                 item[field] = field === 'tags' ? value.split(',').map(t => t.trim()).filter(Boolean) : value;
 
-                // Revert to static element
                 const staticEl = document.createElement(input.dataset.originalTag);
                 staticEl.className = input.dataset.originalClasses;
                 staticEl.dataset.field = field;
@@ -970,7 +1162,6 @@
 
             if(!isValid) {
                  showNotification('حقل العنوان لا يمكن أن يكون فارغاً!', 'danger');
-                 // Re-enable editing mode immediately
                  toggleEdit(itemId); 
                  return;
             }
@@ -981,10 +1172,10 @@
             editBtn.classList.add('btn-outline-secondary');
             
             showNotification('تم حفظ التعديلات!', 'success');
-            updateStatistics();
+            updateAnalyticsDashboard();
             debouncedSaveProject();
 
-        } else { // --- Not editing, switching to EDIT ---
+        } else {
             pageItem.classList.add('is-editing');
             
             pageItem.querySelectorAll('.editable-content').forEach((el, index) => {
@@ -1007,7 +1198,7 @@
                 input.value = Array.isArray(value) ? value.join(', ') : value;
                 
                 el.replaceWith(input);
-                if (index === 0) input.focus(); // Focus on the first input (title)
+                if (index === 0) input.focus();
             });
 
             editBtn.innerHTML = 'حفظ';
@@ -1030,7 +1221,6 @@
 
     const downloadFile = (blob, filename) => { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; a.click(); URL.revokeObjectURL(a.href); };
 
-    // --- SCHEMA GENERATOR FUNCTIONS (Unchanged, but now benefits from app structure) ---
     function validateSchemaEditor() {
         const editor = dom.schemaBaseEditor;
         try {
@@ -1053,7 +1243,7 @@
             appState.schemaConfig.baseSchema = dom.schemaBaseEditor.value;
             return true;
         } else {
-            showNotification('يرجى تصحيح الأخطاء في "السكيما الأساسية" قبل المتابعة. الحقل محاط باللون الأحمر.', 'danger');
+            showNotification('يرجى تصحيح الأخطاء في "السكيما الأساسية" قبل المتابعة.', 'danger');
             dom.schemaBaseEditor.focus();
             return false;
         }
@@ -1079,7 +1269,7 @@
 
         const itemsToProcess = getSelectedItems();
         if (itemsToProcess.length === 0) {
-            showNotification('<strong>خطوة ناقصة:</strong> يجب أولاً توليد قائمة بالصفحات في قسم "النتائج" لتتمكن من إنشاء السكيما لها.', 'warning', 7000);
+            showNotification('<strong>خطوة ناقصة:</strong> يجب أولاً توليد قائمة بالصفحات.', 'warning', 7000);
             dom.results.classList.add('border', 'border-warning', 'border-3', 'shadow');
             setTimeout(() => dom.results.classList.remove('border', 'border-warning', 'border-3', 'shadow'), 2500);
             return;
@@ -1113,9 +1303,7 @@
                 "headline": item.title,
                 "description": item.description,
                 "url": pageUrl,
-                "isPartOf": {
-                    "@id": baseSchemaObject['@id']
-                },
+                "isPartOf": { "@id": baseSchemaObject['@id'] },
                 "primaryImageOfPage": {
                     "@type": "ImageObject",
                     "url": (item.seo && item.seo.ogImage) ? new URL(item.seo.ogImage, baseUrl).href : new URL('/og-image.png', baseUrl).href
@@ -1150,11 +1338,11 @@
     }
 
     function init() {
-        // --- IMPROVEMENT: Cache all frequently used DOM elements ---
         const domIds = [
             'darkModeToggle', 'liveCounter', 'counterValue', 'seoCrawlerUrl', 'seoCrawlerDepth', 'customProxyUrl',
             'spaUrl', 'urlInput', 'manualInput', 'manualInputSection', 'projectSelector', 'projectNameInput',
-            'statsPanel', 'filterSection', 'categoryFilter', 'keywordFilter', 'selectionControls', 'selectionCounter',
+            'analyticsDashboard', 'sourceDistributionChart', 'topKeywordsChart', 'averageSeoScoreChart', 'seoScoreText',
+            'filterSection', 'categoryFilter', 'keywordFilter', 'selectionControls', 'selectionCounter',
             'results', 'resultsAccordion', 'resultsPlaceholder', 'exportButtons', 'zipProgress', 'zipProgressBar', 'copyOptions',
             'schemaGeneratorSection', 'schemaBaseUrl', 'schemaPageType', 'schemaBaseEditor', 'crawlerStatus',
             'crawlerCurrentUrl', 'crawlerProgressBar', 'crawlerProgressText', 'crawlerQueueCount', 'urlsFileInput'
@@ -1179,7 +1367,6 @@
         getEl('downloadCsvBtn').addEventListener('click', downloadCSV);
         getEl('downloadZipBtn').addEventListener('click', downloadZip);
         getEl('toggleCopyBtn').addEventListener('click', toggleCopyOptions);
-
         getEl('saveProjectBtn').addEventListener('click', handleManualSave);
         dom.projectSelector.addEventListener('change', (e) => loadProject(e.target.value));
         getEl('deleteProjectBtn').addEventListener('click', deleteSelectedProject);
@@ -1192,7 +1379,6 @@
 
         dom.manualInput.addEventListener('change', function () { dom.manualInputSection.classList.toggle('d-none', !this.checked); });
         getEl('hideCrawlerStatusBtn').addEventListener('click', () => dom.crawlerStatus.classList.add('d-none'));
-
         getEl('generateSchemaBtn').addEventListener('click', generateAndDownloadSchema);
         
         dom.schemaBaseUrl.addEventListener('change', () => {
@@ -1214,6 +1400,12 @@
 
         dom.results.addEventListener('click', function (e) {
             const target = e.target;
+            
+            if (target.classList.contains('load-more-btn')) {
+                handleLoadMore(target);
+                return;
+            }
+            
             const resultItem = target.closest('.result-item');
             if (!resultItem) return;
 
@@ -1227,14 +1419,7 @@
             }
         });
 
-        // --- IMPROVEMENT: Lazy loading listener ---
-        dom.resultsAccordion.addEventListener('show.bs.collapse', event => {
-            const accordionBody = event.target.querySelector('.accordion-body');
-            if (accordionBody && accordionBody.dataset.loaded === 'false') {
-                renderItemsInBody(accordionBody);
-                accordionBody.dataset.loaded = 'true';
-            }
-        });
+        dom.resultsAccordion.addEventListener('show.bs.collapse', handleAccordionShow);
         
         if (dom.copyOptions) {
             dom.copyOptions.addEventListener('click', function (e) {
@@ -1245,10 +1430,18 @@
 
         const setupDragDrop = (dropZoneId, fileInputId, fileTypeRegex, processFunction) => {
             const dropZone = getEl(dropZoneId); const fileInput = getEl(fileInputId); if (!dropZone || !fileInput) return;
-            dropZone.addEventListener('click', () => fileInput.click()); dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+            dropZone.addEventListener('click', () => fileInput.click());
+            dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
             dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-            dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); const files = Array.from(e.dataTransfer.files).filter(file => fileTypeRegex.test(file.type) || fileTypeRegex.test(file.name)); if (files.length > 0) processFunction(fileInput.multiple ? files : files[0]); });
-            fileInput.addEventListener('change', (e) => { if (e.target.files.length > 0) processFunction(fileInput.multiple ? Array.from(e.target.files) : e.target.files[0]); });
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+                const files = Array.from(e.dataTransfer.files).filter(file => fileTypeRegex.test(file.type) || fileTypeRegex.test(file.name));
+                if (files.length > 0) processFunction(fileInput.multiple ? files : files[0]);
+            });
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) processFunction(fileInput.multiple ? Array.from(e.target.files) : e.target.files[0]);
+            });
         };
 
         setupDragDrop('robotsDropZone', 'robotsFileInput', /\.txt$/, processRobotsFile);

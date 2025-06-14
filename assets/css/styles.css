@@ -168,6 +168,14 @@
   margin-right: auto;
 }
 
+/* NEW: Sticky accordion header for better UX in long lists */
+
+.accordion-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
 .seo-score-dot {
   display: inline-block;
   width: 12px;
