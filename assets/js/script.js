@@ -1,4 +1,3 @@
-
 (function () { // Start of IIFE to encapsulate code
     // --- Centralized Application State ---
     const DEFAULT_BASE_SCHEMA_OBJ = {
@@ -186,20 +185,75 @@
         setTimeout(() => { dom.crawlerStatus.classList.add('d-none'); }, 5000);
     }
 
+    // --- UPDATED ---: Enhanced analysis logic is now integrated.
     function analyzeHtmlContent(content, urlOrFilename, options = {}) {
         const doc = new DOMParser().parseFromString(content, 'text/html');
         const isUrl = urlOrFilename.startsWith('http');
         const url = isUrl ? new URL(urlOrFilename) : null;
-        const filename = isUrl ? url.pathname.split('/').pop() || 'index.html' : urlOrFilename;
-
+        const filename = isUrl ? (url.pathname.split('/').pop() || 'index.html') : urlOrFilename;
+    
+        // --- Basic SEO data ---
         let title = doc.querySelector('title')?.textContent.trim() || filename.replace(/\.(html?|htm)$/i, '').replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
         let description = doc.querySelector('meta[name="description"]')?.getAttribute('content') || doc.querySelector('meta[property="og:description"]')?.getAttribute('content') || doc.querySelector('article p, main p')?.textContent.trim().substring(0, 200) + '...' || `صفحة ${title}`;
         let keywords = doc.querySelector('meta[name="keywords"]')?.getAttribute('content')?.split(',').map(k => k.trim()).filter(Boolean) || [];
-
+    
         const images = doc.querySelectorAll('img');
         const imagesWithoutAlt = [...images].filter(img => !img.getAttribute('alt')?.trim());
         const robotsMeta = doc.querySelector('meta[name="robots"]');
         const isNoIndex = robotsMeta ? /noindex/i.test(robotsMeta.getAttribute('content')) : false;
+    
+        // --- START: NEW ADVANCED ANALYSIS LOGIC ---
+        const bodyText = doc.body?.textContent.trim() || '';
+        const words = bodyText.split(/\s+/).filter(Boolean);
+        const sentences = bodyText.match(/[^.!?]+[.!?]+/g) || [];
+        const wordCount = words.length;
+    
+        // 1. Content & Readability Analysis
+        const allLinks = [...doc.querySelectorAll('a[href]')];
+        const pageHostname = url ? url.hostname : (isUrl ? new URL(urlOrFilename).hostname : window.location.hostname);
+
+        const internalLinks = allLinks.filter(a => {
+            const href = a.getAttribute('href');
+            if (!href || href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:')) return false;
+            try {
+                return new URL(href, urlOrFilename).hostname === pageHostname;
+            } catch { return !/^(https?:)?\/\//.test(href); } // Fallback for relative paths
+        }).length;
+        
+        const externalLinks = allLinks.filter(a => {
+            const href = a.getAttribute('href');
+            if (!href) return false;
+            try {
+                const linkUrl = new URL(href, urlOrFilename);
+                return linkUrl.hostname && linkUrl.hostname !== pageHostname;
+            } catch { return /^(https?:)?\/\//.test(href); } // Fallback for absolute paths
+        }).length;
+
+        // Flesch-Kincaid Readability Score (Approximation)
+        const syllableApproximation = words.reduce((acc, word) => acc + (word.match(/[aeiouy]{1,2}/gi) || []).length, 0);
+        const readabilityScore = sentences.length > 0 && wordCount > 0 
+            ? Math.max(0, 206.835 - 1.015 * (wordCount / sentences.length) - 84.6 * (syllableApproximation / wordCount)).toFixed(1)
+            : null;
+
+        // 2. Performance Metrics
+        const pageSizeKB = (new TextEncoder().encode(content).length / 1024).toFixed(1);
+        const resourceCounts = {
+            js: doc.querySelectorAll('script[src]').length,
+            css: doc.querySelectorAll('link[rel="stylesheet"]').length,
+            images: images.length
+        };
+        
+        // 3. Accessibility (a11y) Quick Scan
+        const a11y = {
+            formLabels: {
+                total: doc.querySelectorAll('input, textarea, select').length,
+                missing: [...doc.querySelectorAll('input:not([type=hidden]), textarea, select')].filter(el => !el.id || !doc.querySelector(`label[for="${el.id}"]`)).length
+            },
+            semanticHeaders: !!doc.querySelector('header'),
+            semanticNav: !!doc.querySelector('nav'),
+            semanticMain: !!doc.querySelector('main')
+        };
+        // --- END: NEW ADVANCED ANALYSIS LOGIC ---
 
         const seoData = {
             h1: doc.querySelector('h1')?.textContent.trim() || null,
@@ -212,9 +266,21 @@
             ogTitle: doc.querySelector('meta[property="og:title"]')?.getAttribute('content') || null,
             ogImage: doc.querySelector('meta[property="og:image"]')?.getAttribute('content') || null,
             hasStructuredData: !!doc.querySelector('script[type="application/ld+json"]'),
-            wordCount: doc.body?.textContent.trim().split(/\s+/).filter(Boolean).length || 0
+            wordCount: wordCount,
+            
+            // --- NEW DATA OBJECTS ---
+            contentAnalysis: {
+                readabilityScore,
+                internalLinks,
+                externalLinks
+            },
+            performance: {
+                pageSizeKB,
+                resourceCounts
+            },
+            accessibility: a11y
         };
-
+    
         return { filename, title, description, keywords, url: isUrl ? url.pathname : '/' + filename, source: isUrl ? 'seo_crawler' : 'html_analysis', content, seo: seoData };
     }
 
@@ -305,51 +371,100 @@
         return { score, maxScore, color: '#dc3545', level: 'يحتاج لمراجعة' };
     }
 
+    // --- UPDATED ---: Renders the new advanced analysis sections.
     function renderSeoSummary(seo, itemId) {
         if (!seo) return '';
+        
         const h1 = seo.h1 ? `<span class="badge bg-success">موجود</span>` : `<span class="badge bg-danger">مفقود</span>`;
-        const canonical = seo.canonical ? `<span class="badge bg-success">موجود</span>` : `<span class="badge bg-danger">مفقود</span>`;
         const lang = seo.lang ? `<span class="badge bg-success">${seo.lang}</span>` : `<span class="badge bg-danger">مفقود</span>`;
+        const canonical = seo.canonical ? `<span class="badge bg-success">موجود</span>` : `<span class="badge bg-danger">مفقود</span>`;
+        const wordCount = `<span class="badge ${seo.wordCount > 300 ? 'bg-success' : 'bg-warning'}">${seo.wordCount}</span>`;
 
         let imgAltBadge;
         if (!seo.imageAltInfo || seo.imageAltInfo.total === 0) {
             imgAltBadge = `<span class="badge bg-secondary">لا يوجد</span>`;
-        } else if (seo.imageAltInfo.missing === 0) {
-            imgAltBadge = `<span class="badge bg-success">${seo.imageAltInfo.total}/${seo.imageAltInfo.total}</span>`;
         } else {
-            imgAltBadge = `<span class="badge bg-warning">${seo.imageAltInfo.total - seo.imageAltInfo.missing}/${seo.imageAltInfo.total}</span>`;
+            imgAltBadge = `<span class="badge ${seo.imageAltInfo.missing === 0 ? 'bg-success' : 'bg-warning'}">${seo.imageAltInfo.total - seo.imageAltInfo.missing}/${seo.imageAltInfo.total}</span>`;
         }
 
         const brokenLinksCount = seo.brokenLinksOnPage?.length || 0;
         let brokenLinksHtml;
         if (brokenLinksCount > 0) {
             const collapseId = `brokenLinks-${itemId}`;
-            brokenLinksHtml = `
-                    <span class="badge bg-danger cursor-pointer" data-bs-toggle="collapse" href="#${collapseId}" role="button">${brokenLinksCount}</span>
-                    <div class="collapse mt-2" id="${collapseId}">
-                        <ul class="list-group list-group-flush small">
-                            ${seo.brokenLinksOnPage.map(link => `<li class="list-group-item list-group-item-danger py-1 px-2 text-break">${link}</li>`).join('')}
-                        </ul>
-                    </div>`;
+            brokenLinksHtml = `<span class="badge bg-danger cursor-pointer" data-bs-toggle="collapse" href="#${collapseId}" role="button">${brokenLinksCount}</span>
+                <div class="collapse mt-2" id="${collapseId}"><ul class="list-group list-group-flush small">${seo.brokenLinksOnPage.map(link => `<li class="list-group-item list-group-item-danger py-1 px-2 text-break">${link}</li>`).join('')}</ul></div>`;
         } else {
             brokenLinksHtml = `<span class="badge bg-success">0</span>`;
         }
         
         const ogTags = (seo.ogTitle && seo.ogImage) ? `<span class="badge bg-success">موجود</span>` : `<span class="badge bg-warning" title="OG:Title أو OG:Image مفقود">ناقص</span>`;
         const structuredData = seo.hasStructuredData ? `<span class="badge bg-success">موجود</span>` : `<span class="badge bg-secondary">مفقود</span>`;
-        const wordCountBadgeColor = seo.wordCount > 300 ? 'bg-success' : 'bg-warning';
-        const wordCount = `<span class="badge ${wordCountBadgeColor}">${seo.wordCount}</span>`;
 
-        return `<div class="mt-2 pt-2 border-top border-opacity-10">
-                <div class="seo-summary-item"><strong>H1:</strong> ${h1}</div>
-                <div class="seo-summary-item"><strong>Lang:</strong> ${lang}</div>
-                <div class="seo-summary-item"><strong>Canonical:</strong> ${canonical}</div>
-                <div class="seo-summary-item"><strong>Img Alt:</strong> ${imgAltBadge}</div>
-                <div class="seo-summary-item"><strong>روابط مكسورة:</strong> ${brokenLinksHtml}</div>
-                <div class="seo-summary-item"><strong>OG Tags:</strong> ${ogTags}</div>
-                <div class="seo-summary-item"><strong>بيانات منظمة:</strong> ${structuredData}</div>
-                <div class="seo-summary-item"><strong>عدد الكلمات:</strong> ${wordCount}</div>
-            </div>`;
+        const basicSeoHtml = `<div class="mt-2 pt-2 border-top border-opacity-10">
+            <strong class="small text-body-secondary d-block mb-1">SEO أساسي:</strong>
+            <div class="seo-summary-item"><strong>H1:</strong> ${h1}</div>
+            <div class="seo-summary-item"><strong>Lang:</strong> ${lang}</div>
+            <div class="seo-summary-item"><strong>Canonical:</strong> ${canonical}</div>
+            <div class="seo-summary-item"><strong>Img Alt:</strong> ${imgAltBadge}</div>
+            <div class="seo-summary-item"><strong>روابط مكسورة:</strong> ${brokenLinksHtml}</div>
+            <div class="seo-summary-item"><strong>OG Tags:</strong> ${ogTags}</div>
+            <div class="seo-summary-item"><strong>بيانات منظمة:</strong> ${structuredData}</div>
+            <div class="seo-summary-item"><strong>عدد الكلمات:</strong> ${wordCount}</div>
+        </div>`;
+    
+        let contentHtml = '';
+        if (seo.contentAnalysis) {
+            const { readabilityScore, internalLinks, externalLinks } = seo.contentAnalysis;
+            let readabilityBadge;
+            if (readabilityScore === null) {
+                readabilityBadge = `<span class="badge bg-secondary">N/A</span>`;
+            } else if (readabilityScore >= 60) {
+                readabilityBadge = `<span class="badge bg-success" title="سهل القراءة">${readabilityScore}</span>`;
+            } else if (readabilityScore >= 30) {
+                readabilityBadge = `<span class="badge bg-warning" title="صعب القراءة قليلاً">${readabilityScore}</span>`;
+            } else {
+                readabilityBadge = `<span class="badge bg-danger" title="صعب القراءة جداً">${readabilityScore}</span>`;
+            }
+    
+            contentHtml = `<div class="mt-2 pt-2 border-top border-opacity-10">
+                    <strong class="small text-body-secondary d-block mb-1">تحليل المحتوى:</strong>
+                    <div class="seo-summary-item"><strong>سهولة القراءة:</strong> ${readabilityBadge}</div>
+                    <div class="seo-summary-item"><strong>روابط داخلية:</strong> <span class="badge bg-info">${internalLinks}</span></div>
+                    <div class="seo-summary-item"><strong>روابط خارجية:</strong> <span class="badge bg-info">${externalLinks}</span></div>
+                </div>`;
+        }
+    
+        let performanceHtml = '';
+        if (seo.performance) {
+            const { pageSizeKB, resourceCounts } = seo.performance;
+            const pageSizeBadgeColor = pageSizeKB > 500 ? 'bg-warning' : 'bg-success';
+            performanceHtml = `<div class="mt-2 pt-2 border-top border-opacity-10">
+                    <strong class="small text-body-secondary d-block mb-1">مقاييس الأداء:</strong>
+                    <div class="seo-summary-item"><strong>حجم الصفحة:</strong> <span class="badge ${pageSizeBadgeColor}">${pageSizeKB} KB</span></div>
+                    <div class="seo-summary-item" title="JS / CSS / Images"><strong>الموارد:</strong> <span class="badge bg-secondary">${resourceCounts.js}/${resourceCounts.css}/${resourceCounts.images}</span></div>
+                </div>`;
+        }
+    
+        let a11yHtml = '';
+        if (seo.accessibility) {
+            const { formLabels, semanticHeaders, semanticNav, semanticMain } = seo.accessibility;
+            const formLabelsBadge = formLabels.total === 0 ? `<span class="badge bg-secondary">لا يوجد</span>` :
+                                    formLabels.missing === 0 ? `<span class="badge bg-success">ممتاز</span>` :
+                                    `<span class="badge bg-danger" title="${formLabels.missing} عنصر بدون label">${formLabels.missing} خطأ</span>`;
+            
+            const semanticsScore = [semanticHeaders, semanticNav, semanticMain].filter(Boolean).length;
+            const semanticsBadge = semanticsScore === 3 ? `<span class="badge bg-success">ممتاز</span>` :
+                                   semanticsScore > 0 ? `<span class="badge bg-warning">ناقص</span>` :
+                                   `<span class="badge bg-danger">مفقود</span>`;
+    
+            a11yHtml = `<div class="mt-2 pt-2 border-top border-opacity-10">
+                    <strong class="small text-body-secondary d-block mb-1">إمكانية الوصول (a11y):</strong>
+                    <div class="seo-summary-item"><strong>Labels للنماذج:</strong> ${formLabelsBadge}</div>
+                    <div class="seo-summary-item"><strong>بنية دلالية:</strong> ${semanticsBadge}</div>
+                </div>`;
+        }
+    
+        return basicSeoHtml + contentHtml + performanceHtml + a11yHtml;
     };
 
     function displayResults(resultsToShow = null, openAccordionId = null) {
@@ -433,7 +548,6 @@
             const editBtn = itemClone.querySelector('.btn-edit');
             editBtn.setAttribute('aria-label', `تحرير نتيجة: ${item.title}`);
 
-            // --- NEW --- إضافة aria-label لزر الحذف الجديد
             const deleteBtn = itemClone.querySelector('.btn-delete');
             deleteBtn.setAttribute('aria-label', `حذف نتيجة: ${item.title}`);
 
@@ -492,7 +606,6 @@
         const results = appState.filteredResults.length > 0 ? appState.filteredResults : appState.searchIndex;
         displayResults(results, openAccordionId);
         
-        // --- FIX --- تمت إضافة هذا الجزء لحل مشكلة الفلترة التي ذكرتها سابقاً
         if (openAccordionId) {
             const accordionBodyToRender = dom.resultsAccordion.querySelector(`#${openAccordionId} .accordion-body`);
             if (accordionBodyToRender && parseInt(accordionBodyToRender.dataset.renderedCount, 10) === 0) {
@@ -680,7 +793,7 @@
         // 2. Top Keywords Data
         const allKeywords = appState.searchIndex.flatMap(item => item.tags || []);
         const keywordCount = allKeywords.reduce((acc, keyword) => {
-            if (keyword) { // Ensure keyword is not empty
+            if (keyword) { 
                 acc[keyword] = (acc[keyword] || 0) + 1;
             }
             return acc;
@@ -698,7 +811,7 @@
                 maxScore
             } = calculateSeoScore(item.seo);
             totalScore += score;
-            maxPossibleScore += maxScore; // Using the dynamic maxScore from the function
+            maxPossibleScore += maxScore;
         });
         const averageSeoPercentage = maxPossibleScore > 0 ? (totalScore / maxPossibleScore) * 100 : 0;
         renderSeoScoreChart(averageSeoPercentage);
@@ -1153,7 +1266,6 @@
         ['pageTitle', 'pageUrl', 'pageDescription', 'pageCategory', 'pageTags'].forEach(id => getEl(id).value = ''); showNotification(`تم إضافة: ${title} يدويًا. اضغط "توليد" لإظهارها.`, 'success'); debouncedSaveProject();
     }
 
-    // --- FIX --- تم إعادة كتابة الدالة بالكامل لإصلاح مشكلة التجمد عند الخطأ
     function toggleEdit(itemId) {
         const pageItem = document.querySelector(`.result-item[data-id="${itemId}"]`);
         if (!pageItem) return;
@@ -1164,11 +1276,9 @@
         if(!item) return;
 
         if (isEditing) {
-            // --- FIX ---: نقوم بجمع البيانات والتحقق من صحتها أولاً
             const fields = ['title', 'description', 'category', 'tags'];
             const updatedData = {};
-            let isValid = true;
-
+            
             fields.forEach(field => {
                 const input = pageItem.querySelector(`[data-edit-field="${field}"]`);
                 updatedData[field] = input.value.trim();
@@ -1176,11 +1286,9 @@
 
             if (!updatedData.title) {
                 showNotification('حقل العنوان لا يمكن أن يكون فارغاً!', 'danger');
-                // --- FIX ---: لا نغير شيئاً في الواجهة، فقط نرجع ليتمكن المستخدم من التصحيح
                 return; 
             }
 
-            // --- FIX ---: إذا كانت البيانات صالحة، نقوم الآن بالتحديث
             fields.forEach(field => {
                 const input = pageItem.querySelector(`[data-edit-field="${field}"]`);
                 const value = updatedData[field];
@@ -1202,7 +1310,7 @@
             updateAnalyticsDashboard();
             debouncedSaveProject();
 
-        } else { // هذا الجزء لم يتغير، مسؤول عن الدخول في وضع التحرير
+        } else {
             pageItem.classList.add('is-editing');
             
             pageItem.querySelectorAll('.editable-content').forEach((el, index) => {
@@ -1235,31 +1343,25 @@
         }
     }
 
-    // --- NEW --- دالة جديدة لحذف عنصر محدد
     function deleteItem(itemId) {
         const itemToDelete = appState.searchIndex.find(i => i.id === itemId);
         if (!itemToDelete) return;
     
         if (confirm(`هل أنت متأكد من حذف العنصر:\n"${itemToDelete.title}"`)) {
-            // إزالة العنصر من القائمة الرئيسية
             appState.searchIndex = appState.searchIndex.filter(i => i.id !== itemId);
     
-            // إزالة العنصر من قائمة النتائج المفلترة (إذا كانت مستخدمة)
             if (appState.filteredResults.length > 0) {
                 appState.filteredResults = appState.filteredResults.filter(i => i.id !== itemId);
             }
     
-            // إزالة العنصر من قائمة التحديد
             appState.selectedItemIds.delete(itemId);
     
-            // إعادة رسم الواجهة بالكامل
             updateAllUI();
     
             showNotification(`تم حذف العنصر بنجاح!`, 'success');
             debouncedSaveProject();
         }
     }
-
 
     function showSerpPreview(itemId) {
         const item = appState.searchIndex.find(i => i.id === itemId);
@@ -1451,33 +1553,29 @@
             }
         });
 
-        // --- FIX --- تم تحديث هذا الجزء ليشمل زر الحذف الجديد
         dom.results.addEventListener('click', function (e) {
-            const target = e.target.closest('button'); // استهداف الزر نفسه أو الأيقونة داخله
-            if (!target) return;
+            const button = e.target.closest('button');
+            if (!button) return;
 
-            if (target.classList.contains('load-more-btn')) {
-                handleLoadMore(target);
+            if (button.classList.contains('load-more-btn')) {
+                handleLoadMore(button);
                 return;
             }
             
-            const resultItem = target.closest('.result-item');
+            const resultItem = button.closest('.result-item');
             if (!resultItem) return;
 
             const itemId = parseInt(resultItem.dataset.id, 10);
             
-            if (target.classList.contains('btn-edit')) {
+            if (button.classList.contains('btn-edit')) {
                 toggleEdit(itemId);
-            } else if (target.classList.contains('btn-preview')) {
+            } else if (button.classList.contains('btn-preview')) {
                 showSerpPreview(itemId);
-            } else if (target.classList.contains('btn-delete')) { // --- NEW ---
+            } else if (button.classList.contains('btn-delete')) {
                 deleteItem(itemId);
-            } else if (target.closest('.item-select-checkbox')) { // تعديل بسيط للتعامل مع ال checkbox
-                 toggleItemSelection(target, itemId);
             }
         });
-        // --- FIX for checkbox clicking ---
-        // نحتاج لمستمع حدث منفصل للـ checkbox لأنه ليس زرًا
+        
         dom.results.addEventListener('change', function(e) {
             const target = e.target;
             if (target.classList.contains('item-select-checkbox')) {
