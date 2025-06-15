@@ -246,3 +246,7 @@
   word-wrap: break-word;
 }
 
+.toast.bg-info {
+  --bs-bg-opacity: 1;
+  background-color: rgba(13, 110, 253, var(--bs-bg-opacity)) !important; /* A darker, more accessible blue */
+}
