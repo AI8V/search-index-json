@@ -1,3 +1,4 @@
+
 (function () { // Start of IIFE to encapsulate code
     // --- Centralized Application State ---
     const DEFAULT_BASE_SCHEMA_OBJ = {
@@ -432,6 +433,11 @@
             const editBtn = itemClone.querySelector('.btn-edit');
             editBtn.setAttribute('aria-label', `تحرير نتيجة: ${item.title}`);
 
+            // --- NEW --- إضافة aria-label لزر الحذف الجديد
+            const deleteBtn = itemClone.querySelector('.btn-delete');
+            deleteBtn.setAttribute('aria-label', `حذف نتيجة: ${item.title}`);
+
+
             itemClone.querySelector('[data-populate="url"]').textContent = item.url;
             itemClone.querySelector('[data-populate="loadTime"]').textContent = item.seo?.loadTime ? `${item.seo.loadTime}ms` : '';
             
@@ -483,7 +489,22 @@
     }
 
     function updateAllUI(openAccordionId = null) {
-        displayResults(appState.filteredResults.length > 0 ? appState.filteredResults : appState.searchIndex, openAccordionId);
+        const results = appState.filteredResults.length > 0 ? appState.filteredResults : appState.searchIndex;
+        displayResults(results, openAccordionId);
+        
+        // --- FIX --- تمت إضافة هذا الجزء لحل مشكلة الفلترة التي ذكرتها سابقاً
+        if (openAccordionId) {
+            const accordionBodyToRender = dom.resultsAccordion.querySelector(`#${openAccordionId} .accordion-body`);
+            if (accordionBodyToRender && parseInt(accordionBodyToRender.dataset.renderedCount, 10) === 0) {
+                const source = accordionBodyToRender.dataset.source;
+                const itemsForThisGroup = results.filter(item => (item.source || 'unknown') === source);
+                if (itemsForThisGroup.length > 0) {
+                    accordionBodyToRender.innerHTML = '';
+                    renderItemChunk(accordionBodyToRender, itemsForThisGroup, 0);
+                }
+            }
+        }
+
         updateAnalyticsDashboard();
         updateLiveCounter();
         updateFilterOptions();
@@ -491,6 +512,7 @@
         dom.selectionControls.classList.toggle('d-none', appState.searchIndex.length === 0);
         dom.schemaGeneratorSection.classList.toggle('d-none', appState.searchIndex.length === 0);
     }
+
 
     function updateLiveCounter() {
         if (appState.searchIndex.length > 0) {
@@ -699,7 +721,6 @@
     }
 
     function applyFilters() {
-        // FIX: Preserve open accordion state during filtering
         const openAccordion = dom.resultsAccordion.querySelector('.accordion-collapse.show');
         const openAccordionId = openAccordion ? openAccordion.id : null;
 
@@ -711,11 +732,9 @@
             return matchesCategory && matchesKeyword;
         });
         
-        // Pass the open accordion ID to restore its state
-        displayResults(appState.filteredResults, openAccordionId);
+        updateAllUI(openAccordionId);
     }
     
-    // UI-only update for selection, no data change
     function updateSelectionUI() {
         document.querySelectorAll('.result-item').forEach(itemDiv => {
             const itemId = parseInt(itemDiv.dataset.id, 10);
@@ -1134,6 +1153,7 @@
         ['pageTitle', 'pageUrl', 'pageDescription', 'pageCategory', 'pageTags'].forEach(id => getEl(id).value = ''); showNotification(`تم إضافة: ${title} يدويًا. اضغط "توليد" لإظهارها.`, 'success'); debouncedSaveProject();
     }
 
+    // --- FIX --- تم إعادة كتابة الدالة بالكامل لإصلاح مشكلة التجمد عند الخطأ
     function toggleEdit(itemId) {
         const pageItem = document.querySelector(`.result-item[data-id="${itemId}"]`);
         if (!pageItem) return;
@@ -1144,13 +1164,26 @@
         if(!item) return;
 
         if (isEditing) {
+            // --- FIX ---: نقوم بجمع البيانات والتحقق من صحتها أولاً
             const fields = ['title', 'description', 'category', 'tags'];
+            const updatedData = {};
             let isValid = true;
+
             fields.forEach(field => {
                 const input = pageItem.querySelector(`[data-edit-field="${field}"]`);
-                const value = input.value.trim();
-                if (field === 'title' && !value) isValid = false;
-                
+                updatedData[field] = input.value.trim();
+            });
+
+            if (!updatedData.title) {
+                showNotification('حقل العنوان لا يمكن أن يكون فارغاً!', 'danger');
+                // --- FIX ---: لا نغير شيئاً في الواجهة، فقط نرجع ليتمكن المستخدم من التصحيح
+                return; 
+            }
+
+            // --- FIX ---: إذا كانت البيانات صالحة، نقوم الآن بالتحديث
+            fields.forEach(field => {
+                const input = pageItem.querySelector(`[data-edit-field="${field}"]`);
+                const value = updatedData[field];
                 item[field] = field === 'tags' ? value.split(',').map(t => t.trim()).filter(Boolean) : value;
 
                 const staticEl = document.createElement(input.dataset.originalTag);
@@ -1159,12 +1192,6 @@
                 staticEl.textContent = value;
                 input.replaceWith(staticEl);
             });
-
-            if(!isValid) {
-                 showNotification('حقل العنوان لا يمكن أن يكون فارغاً!', 'danger');
-                 toggleEdit(itemId); 
-                 return;
-            }
 
             pageItem.classList.remove('is-editing');
             editBtn.innerHTML = 'تحرير';
@@ -1175,7 +1202,7 @@
             updateAnalyticsDashboard();
             debouncedSaveProject();
 
-        } else {
+        } else { // هذا الجزء لم يتغير، مسؤول عن الدخول في وضع التحرير
             pageItem.classList.add('is-editing');
             
             pageItem.querySelectorAll('.editable-content').forEach((el, index) => {
@@ -1207,6 +1234,32 @@
             showSerpPreview(itemId);
         }
     }
+
+    // --- NEW --- دالة جديدة لحذف عنصر محدد
+    function deleteItem(itemId) {
+        const itemToDelete = appState.searchIndex.find(i => i.id === itemId);
+        if (!itemToDelete) return;
+    
+        if (confirm(`هل أنت متأكد من حذف العنصر:\n"${itemToDelete.title}"`)) {
+            // إزالة العنصر من القائمة الرئيسية
+            appState.searchIndex = appState.searchIndex.filter(i => i.id !== itemId);
+    
+            // إزالة العنصر من قائمة النتائج المفلترة (إذا كانت مستخدمة)
+            if (appState.filteredResults.length > 0) {
+                appState.filteredResults = appState.filteredResults.filter(i => i.id !== itemId);
+            }
+    
+            // إزالة العنصر من قائمة التحديد
+            appState.selectedItemIds.delete(itemId);
+    
+            // إعادة رسم الواجهة بالكامل
+            updateAllUI();
+    
+            showNotification(`تم حذف العنصر بنجاح!`, 'success');
+            debouncedSaveProject();
+        }
+    }
+
 
     function showSerpPreview(itemId) {
         const item = appState.searchIndex.find(i => i.id === itemId);
@@ -1269,7 +1322,7 @@
 
         const itemsToProcess = getSelectedItems();
         if (itemsToProcess.length === 0) {
-            showNotification('<strong>خطوة ناقصة:</strong> يجب أولاً توليد قائمة بالصفحات.', 'warning', 7000);
+           showNotification('<strong>خطوة ناقصة:</strong> يجب أولاً توليد قائمة بالصفحات.', 'warning', 7000);
             dom.results.classList.add('border', 'border-warning', 'border-3', 'shadow');
             setTimeout(() => dom.results.classList.remove('border', 'border-warning', 'border-3', 'shadow'), 2500);
             return;
@@ -1398,9 +1451,11 @@
             }
         });
 
+        // --- FIX --- تم تحديث هذا الجزء ليشمل زر الحذف الجديد
         dom.results.addEventListener('click', function (e) {
-            const target = e.target;
-            
+            const target = e.target.closest('button'); // استهداف الزر نفسه أو الأيقونة داخله
+            if (!target) return;
+
             if (target.classList.contains('load-more-btn')) {
                 handleLoadMore(target);
                 return;
@@ -1410,14 +1465,30 @@
             if (!resultItem) return;
 
             const itemId = parseInt(resultItem.dataset.id, 10);
+            
             if (target.classList.contains('btn-edit')) {
                 toggleEdit(itemId);
             } else if (target.classList.contains('btn-preview')) {
                 showSerpPreview(itemId);
-            } else if (target.classList.contains('item-select-checkbox')) {
-                toggleItemSelection(target, itemId);
+            } else if (target.classList.contains('btn-delete')) { // --- NEW ---
+                deleteItem(itemId);
+            } else if (target.closest('.item-select-checkbox')) { // تعديل بسيط للتعامل مع ال checkbox
+                 toggleItemSelection(target, itemId);
             }
         });
+        // --- FIX for checkbox clicking ---
+        // نحتاج لمستمع حدث منفصل للـ checkbox لأنه ليس زرًا
+        dom.results.addEventListener('change', function(e) {
+            const target = e.target;
+            if (target.classList.contains('item-select-checkbox')) {
+                const resultItem = target.closest('.result-item');
+                if (resultItem) {
+                    const itemId = parseInt(resultItem.dataset.id, 10);
+                    toggleItemSelection(target, itemId);
+                }
+            }
+        });
+
 
         dom.resultsAccordion.addEventListener('show.bs.collapse', handleAccordionShow);
         
