@@ -111,19 +111,34 @@
             await new Promise(r => setTimeout(r, 100));
         }
 
-        dom.crawlerCurrentUrl.textContent = 'اكتمل الزحف! جاري تحليل البيانات...';
+        dom.crawlerCurrentUrl.innerHTML = '<p class="text-center text-success fw-bold">اكتمل الزحف! جاري تحليل البيانات...</p>';
         dom.crawlerProgressBar.style.width = '100%';
 
+        // --- START: ADVANCED ARCHITECTURE ANALYSIS ---
         const allFoundUrls = new Set(crawledData.keys());
         const allLinkedToUrls = new Set();
-        crawledData.forEach(data => data.outgoingLinks.forEach(link => {
-            const cleanLink = link.split('#')[0].split('?')[0];
-            if (allFoundUrls.has(cleanLink)) allLinkedToUrls.add(cleanLink);
-        }));
-        crawledData.forEach((data, url) => {
-            data.analysis.seo.isOrphan = !allLinkedToUrls.has(url) && url !== baseUrl;
-            data.analysis.seo.brokenLinksOnPage = data.outgoingLinks.filter(link => brokenLinks.has(link));
+        const linkEquityMap = new Map();
+
+        crawledData.forEach(data => {
+            data.outgoingLinks.forEach(link => {
+                const cleanLink = link.split('#')[0].split('?')[0];
+                if (allFoundUrls.has(cleanLink)) {
+                   allLinkedToUrls.add(cleanLink);
+                   // Increment link count for the target page
+                   linkEquityMap.set(cleanLink, (linkEquityMap.get(cleanLink) || 0) + 1);
+                }
+            });
         });
+        
+        crawledData.forEach((data, url) => {
+            // Assign Orphan status
+            data.analysis.seo.isOrphan = !allLinkedToUrls.has(url) && url !== baseUrl;
+            // Assign Broken links
+            data.analysis.seo.brokenLinksOnPage = data.outgoingLinks.filter(link => brokenLinks.has(link));
+            // Assign Link Equity Score
+            data.analysis.seo.internalLinkEquity = linkEquityMap.get(url) || 0;
+        });
+        // --- END: ADVANCED ARCHITECTURE ANALYSIS ---
         
         const orphanCount = [...crawledData.values()].filter(d => d.analysis.seo.isOrphan).length;
         if (orphanCount > 0) showNotification(`<i class="bi bi-exclamation-diamond-fill ms-2"></i> تم اكتشاف ${orphanCount} صفحة معزولة!`, 'warning', 7000);
@@ -139,7 +154,10 @@
         );
         
         if (brokenLinks.size > 0) showNotification(`<i class="bi bi-exclamation-octagon-fill ms-2"></i> تم العثور على ${brokenLinks.size} رابط داخلي مكسور.`, 'danger', 7000);
-        setTimeout(() => dom.crawlerStatus.classList.add('d-none'), 5000);
+        setTimeout(() => {
+            dom.crawlerStatus.classList.add('d-none');
+            dom.crawlerCurrentUrl.textContent = 'بدء العملية...';
+        }, 5000);
         updateAllUI();
         debouncedSaveProject();
     }
@@ -189,6 +207,7 @@
             loadTime: options.loadTime || null,
             isNoIndex: /noindex/i.test(doc.querySelector('meta[name="robots"]')?.content),
             isOrphan: false,
+            internalLinkEquity: 0,
             ogTitle: doc.querySelector('meta[property="og:title"]')?.content || null,
             ogImage: doc.querySelector('meta[property="og:image"]')?.content || null,
             hasStructuredData: !!doc.querySelector('script[type="application/ld+json"]'),
@@ -272,9 +291,18 @@
         const createBadge = (text, type, title = '') => `<span class="badge bg-${type}" title="${title}">${text}</span>`;
         const pageTypeLabels = { 'generic': 'عامة', 'article': 'مقالة', 'product': 'منتج', 'contact': 'اتصال', 'about': 'من نحن', 'homepage': 'رئيسية' };
         
+        let equityBadge = '';
+        if (typeof seo.internalLinkEquity === 'number') {
+            let badgeType = 'secondary';
+            if (seo.internalLinkEquity > 10) badgeType = 'warning text-dark';
+            else if (seo.internalLinkEquity > 3) badgeType = 'info';
+            equityBadge = `<div class="seo-summary-item"><strong>قوة الصفحة:</strong> ${createBadge(seo.internalLinkEquity, badgeType, 'قوة الربط الداخلي: عدد الروابط الداخلية التي تشير لهذه الصفحة.')}</div>`;
+        }
+        
         const basicSeoHtml = `<div class="mt-2 pt-2 border-top border-opacity-10">
             <strong class="small text-body-secondary d-block mb-1">SEO أساسي:</strong>
             <div class="seo-summary-item"><strong>نوع الصفحة:</strong> ${createBadge(pageTypeLabels[seo.pageTypeHint] || 'غير محدد', 'primary')}</div>
+            ${equityBadge}
             <div class="seo-summary-item"><strong>H1:</strong> ${createBadge(seo.h1 ? 'موجود' : 'مفقود', seo.h1 ? 'success' : 'danger')}</div>
             <div class="seo-summary-item"><strong>Lang:</strong> ${createBadge(seo.lang || 'مفقود', seo.lang ? 'success' : 'danger')}</div>
             <div class="seo-summary-item"><strong>Canonical:</strong> ${createBadge(seo.canonical ? 'موجود' : 'مفقود', seo.canonical ? 'success' : 'danger')}</div>
@@ -360,6 +388,7 @@
             itemClone.querySelector('.page-title').textContent = title;
             itemClone.querySelector('.no-index-badge').classList.toggle('d-none', !seo?.isNoIndex);
             itemClone.querySelector('.orphan-page-badge').classList.toggle('d-none', !seo?.isOrphan);
+            itemClone.querySelector('.orphan-page-prompt').classList.toggle('d-none', !seo?.isOrphan);
             ['preview', 'edit', 'delete'].forEach(action => itemClone.querySelector(`.btn-${action}`).setAttribute('aria-label', `${action}: ${title}`));
             
             itemClone.querySelector('[data-populate="url"]').textContent = url;
@@ -404,20 +433,36 @@
     }
 
     function updateAllUI(openAccordionId = null) {
-        const results = appState.filteredResults.length > 0 ? appState.filteredResults : appState.searchIndex;
+        const results = (dom.keywordFilter.value || dom.categoryFilter.value || dom.orphanFilter.checked) ? appState.filteredResults : appState.searchIndex;
         displayResults(results, openAccordionId);
-        if (openAccordionId) {
-            const accordionBody = dom.resultsAccordion.querySelector(`#${openAccordionId} .accordion-body`);
+        
+        // This logic ensures the correct accordion group is opened after filtering
+        if (openAccordionId && !document.getElementById(openAccordionId)) {
+            const firstResult = results[0];
+            if (firstResult) {
+                const source = firstResult.source || 'unknown';
+                const firstGroup = dom.resultsAccordion.querySelector(`[data-source="${source}"]`);
+                if(firstGroup) {
+                    const collapseElement = firstGroup.closest('.accordion-collapse');
+                    if (collapseElement) new bootstrap.Collapse(collapseElement, {show: true});
+                }
+            }
+        } else if (openAccordionId) {
+             const accordionBody = dom.resultsAccordion.querySelector(`#${openAccordionId} .accordion-body`);
             if (accordionBody && parseInt(accordionBody.dataset.renderedCount, 10) === 0) {
                 const source = accordionBody.dataset.source;
                 const items = results.filter(item => (item.source || 'unknown') === source);
                 if (items.length > 0) renderItemChunk(accordionBody, items, 0);
             }
         }
-        updateAnalyticsDashboard(); updateLiveCounter(); updateFilterOptions();
+        
+        updateAnalyticsDashboard(); 
+        updateLiveCounter(); 
+        updateFilterOptions();
+        
         const hasResults = appState.searchIndex.length > 0;
         dom.filterSection.classList.toggle('d-none', !hasResults);
-        dom.selectionControls.classList.toggle('d-none', !hasResults);
+        dom.selectionControls.classList.toggle('d-none', !hasResults || results.length === 0);
         dom.schemaGeneratorSection.classList.toggle('d-none', !hasResults);
     }
 
@@ -437,77 +482,80 @@
         return new Chart(context, config);
     }
 
+    function updateAnalyticsDashboard() {
+        const hasData = appState.searchIndex && appState.searchIndex.length > 0;
+        dom.analyticsDashboard.classList.toggle('d-none', !hasData);
+        if (!hasData) {
+            if (sourceChartInstance) sourceChartInstance.destroy();
+            if (keywordsChartInstance) keywordsChartInstance.destroy();
+            if (seoScoreChartInstance) seoScoreChartInstance.destroy();
+            sourceChartInstance = keywordsChartInstance = seoScoreChartInstance = null;
+            return;
+        }
 
-function updateAnalyticsDashboard() {
-    // --- THIS IS THE FIX ---
-    // If there's no data, or if the charts would be empty, hide the dashboard and exit.
-    if (!appState.searchIndex || appState.searchIndex.length === 0) {
-        if (sourceChartInstance) sourceChartInstance.destroy();
-        if (keywordsChartInstance) keywordsChartInstance.destroy();
-        if (seoScoreChartInstance) seoScoreChartInstance.destroy();
-        sourceChartInstance = keywordsChartInstance = seoScoreChartInstance = null;
+        // Source Distribution Chart
+        const sourceCounts = appState.searchIndex.reduce((acc, item) => {
+            const source = item.source || 'unknown';
+            acc[source] = (acc[source] || 0) + 1;
+            return acc;
+        }, {});
+        const sourceLabelsMap = { 'seo_crawler': `زاحف SEO`, 'html_analysis': `تحليل HTML`, 'manual': `إدخال يدوي`, 'url_generation': `من الروابط`, 'sitemap': `من Sitemap`, 'robots': `من robots.txt`, 'spa_analysis': `تحليل SPA`, 'unknown': 'غير معروف' };
+        sourceChartInstance = renderChart(sourceChartInstance, dom.sourceDistributionChart.getContext('2d'), {
+            type: 'pie',
+            data: {
+                labels: Object.keys(sourceCounts).map(l => sourceLabelsMap[l] || l),
+                datasets: [{ label: 'عدد الصفحات', data: Object.values(sourceCounts), backgroundColor: ['#4bc0c0', '#ff6384', '#ffcd56', '#36a2eb', '#9966ff', '#c9cbcf', '#ff9f40'] }]
+            },
+            options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: document.documentElement.getAttribute('data-bs-theme') === 'dark' ? 'rgba(255, 255, 255, 0.85)' : '#495057', boxWidth: 12, padding: 15 } } } }
+        });
+
+        // Top Keywords Chart
+        const allKeywords = appState.searchIndex.flatMap(item => item.tags || []);
+        const keywordCount = allKeywords.reduce((acc, keyword) => {
+            if (keyword) acc[keyword] = (acc[keyword] || 0) + 1;
+            return acc;
+        }, {});
+        const sortedKeywords = Object.entries(keywordCount).sort((a, b) => b[1] - a[1]).slice(0, 10);
+        keywordsChartInstance = renderChart(keywordsChartInstance, dom.topKeywordsChart.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: sortedKeywords.map(e => e[0]),
+                datasets: [{ label: 'عدد التكرارات', data: sortedKeywords.map(e => e[1]), backgroundColor: 'rgba(75, 192, 192, 0.6)' }]
+            },
+            options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { ticks: { color: document.documentElement.getAttribute('data-bs-theme') === 'dark' ? 'rgba(255, 255, 255, 0.85)' : '#495057' } }, y: { ticks: { color: document.documentElement.getAttribute('data-bs-theme') === 'dark' ? 'rgba(255, 255, 255, 0.85)' : '#495057' } } } }
+        });
+
+        // Average SEO Score Chart
+        let totalScore = 0, maxPossibleScore = 0;
+        appState.searchIndex.forEach(item => {
+            const { score, maxScore } = calculateSeoScore(item.seo);
+            totalScore += score;
+            maxPossibleScore += maxScore;
+        });
+        const avgPercentage = maxPossibleScore > 0 ? (totalScore / maxPossibleScore) * 100 : 0;
+        dom.seoScoreText.textContent = `${Math.round(avgPercentage)}%`;
+        const scoreColor = avgPercentage >= 80 ? '#4bc0c0' : avgPercentage >= 50 ? '#ffcd56' : '#ff6384';
+        seoScoreChartInstance = renderChart(seoScoreChartInstance, dom.averageSeoScoreChart.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                datasets: [{
+                    data: [avgPercentage, 100 - avgPercentage],
+                    backgroundColor: [scoreColor, 'rgba(255, 255, 255, 0.2)'],
+                    circumference: 180, rotation: 270, cutout: '75%'
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: true, plugins: { tooltip: { enabled: false } } }
+        });
         
-        dom.analyticsDashboard.classList.add('d-none');
-        return;
+        // Orphan Pages Report Card
+        const orphanCount = appState.searchIndex.filter(item => item.seo?.isOrphan).length;
+        dom.orphanPagesCard.classList.toggle('d-none', orphanCount === 0);
+        if(orphanCount > 0) {
+            dom.orphanPagesCount.textContent = orphanCount;
+        }
     }
-    dom.analyticsDashboard.classList.remove('d-none');
 
-    // Source Distribution Chart
-    const sourceCounts = appState.searchIndex.reduce((acc, item) => {
-        const source = item.source || 'unknown';
-        acc[source] = (acc[source] || 0) + 1;
-        return acc;
-    }, {});
-    const sourceLabelsMap = { 'seo_crawler': `زاحف SEO`, 'html_analysis': `تحليل HTML`, 'manual': `إدخال يدوي`, 'url_generation': `من الروابط`, 'sitemap': `من Sitemap`, 'robots': `من robots.txt`, 'spa_analysis': `تحليل SPA`, 'unknown': 'غير معروف' };
-    sourceChartInstance = renderChart(sourceChartInstance, dom.sourceDistributionChart.getContext('2d'), {
-        type: 'pie',
-        data: {
-            labels: Object.keys(sourceCounts).map(l => sourceLabelsMap[l] || l),
-            datasets: [{ label: 'عدد الصفحات', data: Object.values(sourceCounts), backgroundColor: ['#4bc0c0', '#ff6384', '#ffcd56', '#36a2eb', '#9966ff', '#c9cbcf', '#ff9f40'] }]
-        },
-        options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: 'rgba(255, 255, 255, 0.85)', boxWidth: 12, padding: 15 } } } }
-    });
-
-    // Top Keywords Chart
-    const allKeywords = appState.searchIndex.flatMap(item => item.tags || []);
-    const keywordCount = allKeywords.reduce((acc, keyword) => {
-        if (keyword) acc[keyword] = (acc[keyword] || 0) + 1;
-        return acc;
-    }, {});
-    const sortedKeywords = Object.entries(keywordCount).sort((a, b) => b[1] - a[1]).slice(0, 10);
-    keywordsChartInstance = renderChart(keywordsChartInstance, dom.topKeywordsChart.getContext('2d'), {
-        type: 'bar',
-        data: {
-            labels: sortedKeywords.map(e => e[0]),
-            datasets: [{ label: 'عدد التكرارات', data: sortedKeywords.map(e => e[1]), backgroundColor: 'rgba(75, 192, 192, 0.6)' }]
-        },
-        options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { ticks: { color: 'rgba(255, 255, 255, 0.85)' } }, y: { ticks: { color: 'rgba(255, 255, 255, 0.85)' } } } }
-    });
-
-    // Average SEO Score Chart
-    let totalScore = 0, maxPossibleScore = 0;
-    appState.searchIndex.forEach(item => {
-        const { score, maxScore } = calculateSeoScore(item.seo);
-        totalScore += score;
-        maxPossibleScore += maxScore;
-    });
-    const avgPercentage = maxPossibleScore > 0 ? (totalScore / maxPossibleScore) * 100 : 0;
-    dom.seoScoreText.textContent = `${Math.round(avgPercentage)}%`;
-    const scoreColor = avgPercentage >= 80 ? '#4bc0c0' : avgPercentage >= 50 ? '#ffcd56' : '#ff6384';
-    seoScoreChartInstance = renderChart(seoScoreChartInstance, dom.averageSeoScoreChart.getContext('2d'), {
-        type: 'doughnut',
-        data: {
-            datasets: [{
-                data: [avgPercentage, 100 - avgPercentage],
-                backgroundColor: [scoreColor, 'rgba(255, 255, 255, 0.2)'],
-                circumference: 180, rotation: 270, cutout: '75%'
-            }]
-        },
-        options: { responsive: true, maintainAspectRatio: true, plugins: { tooltip: { enabled: false } } }
-    });
-}
-
-    function setupFilters() { dom.categoryFilter.addEventListener('change', applyFilters); dom.keywordFilter.addEventListener('input', applyFilters); }
+    function setupFilters() { dom.categoryFilter.addEventListener('change', applyFilters); dom.keywordFilter.addEventListener('input', applyFilters); dom.orphanFilter.addEventListener('change', applyFilters); }
 
     function updateFilterOptions() {
         const currentCategory = dom.categoryFilter.value;
@@ -520,9 +568,12 @@ function updateAnalyticsDashboard() {
         const openAccordionId = dom.resultsAccordion.querySelector('.accordion-collapse.show')?.id;
         const categoryFilter = dom.categoryFilter.value;
         const keywordFilter = dom.keywordFilter.value.toLowerCase();
+        const orphanFilter = dom.orphanFilter.checked;
+
         appState.filteredResults = appState.searchIndex.filter(item => 
             (!categoryFilter || item.category === categoryFilter) &&
-            (!keywordFilter || (item.title + item.description + (item.tags || []).join(' ')).toLowerCase().includes(keywordFilter))
+            (!keywordFilter || (item.title + item.description + (item.tags || []).join(' ')).toLowerCase().includes(keywordFilter)) &&
+            (!orphanFilter || item.seo?.isOrphan)
         );
         updateAllUI(openAccordionId);
     }
@@ -531,7 +582,8 @@ function updateAnalyticsDashboard() {
         document.querySelectorAll('.result-item').forEach(itemDiv => {
             const isSelected = appState.selectedItemIds.has(parseInt(itemDiv.dataset.id, 10));
             itemDiv.classList.toggle('selected', isSelected);
-            itemDiv.querySelector('.item-select-checkbox').checked = isSelected;
+            const checkbox = itemDiv.querySelector('.item-select-checkbox');
+            if (checkbox) checkbox.checked = isSelected;
         });
         dom.selectionCounter.textContent = appState.selectedItemIds.size;
     }
@@ -542,19 +594,23 @@ function updateAnalyticsDashboard() {
     }
     
     function selectAllItems() {
-        (appState.filteredResults.length > 0 ? appState.filteredResults : appState.searchIndex).forEach(item => appState.selectedItemIds.add(item.id));
+        const itemsToSelect = (dom.keywordFilter.value || dom.categoryFilter.value || dom.orphanFilter.checked) ? appState.filteredResults : appState.searchIndex;
+        itemsToSelect.forEach(item => appState.selectedItemIds.add(item.id));
         updateSelectionUI();
     }
 
     function deselectAllItems() {
-        const idsToDeselect = new Set((appState.filteredResults.length > 0 ? appState.filteredResults : appState.searchIndex).map(i => i.id));
-        appState.selectedItemIds = new Set([...appState.selectedItemIds].filter(id => !idsToDeselect.has(id)));
+        const itemsToDeselect = new Set(((dom.keywordFilter.value || dom.categoryFilter.value || dom.orphanFilter.checked) ? appState.filteredResults : appState.searchIndex).map(i => i.id));
+        appState.selectedItemIds = new Set([...appState.selectedItemIds].filter(id => !itemsToDeselect.has(id)));
         updateSelectionUI();
     }
 
     function getSelectedItems() {
+        const activeFilters = dom.keywordFilter.value || dom.categoryFilter.value || dom.orphanFilter.checked;
+        const baseList = activeFilters ? appState.filteredResults : appState.searchIndex;
+        
         return appState.selectedItemIds.size === 0 
-            ? (appState.filteredResults.length > 0 ? appState.filteredResults : appState.searchIndex)
+            ? baseList
             : appState.searchIndex.filter(item => appState.selectedItemIds.has(item.id));
     }
 
@@ -615,6 +671,9 @@ function updateAnalyticsDashboard() {
         Object.assign(appState, { searchIndex: [], manualPages: [], analyzedFiles: [], sitemapUrls: [], robotsUrls: [], manifestData: {}, filteredResults: [], schemaConfig: { baseUrl: '', pageSchemaType: 'WebPage', baseSchema: DEFAULT_BASE_SCHEMA_STR } });
         appState.selectedItemIds.clear();
         ['urlInput', 'customProxyUrl', 'projectNameInput', 'projectSelector', 'schemaBaseUrl'].forEach(id => getEl(id).value = '');
+        dom.orphanFilter.checked = false;
+        dom.keywordFilter.value = '';
+        dom.categoryFilter.value = '';
         dom.schemaPageType.value = 'WebPage';
         dom.schemaBaseEditor.value = appState.schemaConfig.baseSchema;
         validateSchemaEditor();
@@ -632,12 +691,14 @@ function updateAnalyticsDashboard() {
                 dom.urlInput.value = data.urlInput || '';
                 dom.customProxyUrl.value = data.customProxyUrl || '';
                 dom.projectNameInput.value = name;
+                dom.orphanFilter.checked = false;
                 dom.schemaBaseUrl.value = appState.schemaConfig.baseUrl;
                 dom.schemaPageType.value = appState.schemaConfig.pageSchemaType;
                 dom.schemaBaseEditor.value = appState.schemaConfig.baseSchema;
                 validateSchemaEditor();
                 localStorage.setItem(LAST_PROJECT_KEY, name);
-                updateAllUI(); updateProjectListDropdown();
+                applyFilters(); // Apply empty filters to reset view
+                updateProjectListDropdown();
                 showNotification(`تم تحميل مشروع "${name}"! <i class="bi bi-folder2-open ms-2"></i>`, 'info');
             }
         } catch (e) { showNotification('خطأ في تحميل المشروع: ' + e.message, 'warning'); }
@@ -820,7 +881,7 @@ function updateAnalyticsDashboard() {
             appState.searchIndex = appState.searchIndex.filter(i => i.id !== itemId);
             appState.filteredResults = appState.filteredResults.filter(i => i.id !== itemId);
             appState.selectedItemIds.delete(itemId);
-            updateAllUI();
+            applyFilters(); // Re-apply filters to refresh the view
             showNotification(`تم حذف العنصر بنجاح!`, 'success');
             debouncedSaveProject();
         }
@@ -892,7 +953,7 @@ function updateAnalyticsDashboard() {
     }
 
     function init() {
-        const domIds = ['darkModeToggle', 'liveCounter', 'counterValue', 'seoCrawlerUrl', 'seoCrawlerDepth', 'customProxyUrl', 'spaUrl', 'urlInput', 'manualInput', 'manualInputSection', 'projectSelector', 'projectNameInput', 'analyticsDashboard', 'sourceDistributionChart', 'topKeywordsChart', 'averageSeoScoreChart', 'seoScoreText', 'filterSection', 'categoryFilter', 'keywordFilter', 'selectionControls', 'selectionCounter', 'results', 'resultsAccordion', 'resultsPlaceholder', 'exportButtons', 'zipProgress', 'zipProgressBar', 'copyOptions', 'schemaGeneratorSection', 'schemaBaseUrl', 'schemaPageType', 'schemaBaseEditor', 'crawlerStatus', 'crawlerCurrentUrl', 'crawlerProgressBar', 'crawlerProgressText', 'crawlerQueueCount', 'urlsFileInput'];
+        const domIds = ['darkModeToggle', 'liveCounter', 'counterValue', 'seoCrawlerUrl', 'seoCrawlerDepth', 'customProxyUrl', 'spaUrl', 'urlInput', 'manualInput', 'manualInputSection', 'projectSelector', 'projectNameInput', 'analyticsDashboard', 'sourceDistributionChart', 'topKeywordsChart', 'averageSeoScoreChart', 'seoScoreText', 'orphanPagesCard', 'orphanPagesCount', 'viewOrphanPagesBtn', 'filterSection', 'categoryFilter', 'keywordFilter', 'orphanFilter', 'selectionControls', 'selectionCounter', 'results', 'resultsAccordion', 'resultsPlaceholder', 'exportButtons', 'zipProgress', 'zipProgressBar', 'copyOptions', 'schemaGeneratorSection', 'schemaBaseUrl', 'schemaPageType', 'schemaBaseEditor', 'crawlerStatus', 'crawlerCurrentUrl', 'crawlerProgressBar', 'crawlerProgressText', 'crawlerQueueCount', 'urlsFileInput'];
         domIds.forEach(id => dom[id] = getEl(id));
         resultItemTemplate = getEl('resultItemTemplate');
         
@@ -924,7 +985,8 @@ function updateAnalyticsDashboard() {
             'generateSchemaBtn': { 'click': generateAndDownloadSchema },
             'schemaBaseUrl': { 'change': () => { appState.schemaConfig.baseUrl = dom.schemaBaseUrl.value.trim(); debouncedSaveProject(); } },
             'schemaPageType': { 'change': () => { appState.schemaConfig.pageSchemaType = dom.schemaPageType.value; debouncedSaveProject(); } },
-            'schemaBaseEditor': { 'input': validateSchemaEditor, 'blur': () => { if (validateSchemaEditor()) { appState.schemaConfig.baseSchema = dom.schemaBaseEditor.value; debouncedSaveProject(); } } }
+            'schemaBaseEditor': { 'input': validateSchemaEditor, 'blur': () => { if (validateSchemaEditor()) { appState.schemaConfig.baseSchema = dom.schemaBaseEditor.value; debouncedSaveProject(); } } },
+            'viewOrphanPagesBtn': { 'click': () => { dom.orphanFilter.checked = true; applyFilters(); dom.results.scrollIntoView({ behavior: 'smooth' }); } }
         };
         
         for (const id in listeners) {
@@ -973,7 +1035,7 @@ function updateAnalyticsDashboard() {
         setupDragDrop('manifestDropZone', 'manifestFileInput', /\.json$/, textualFileHandler(c => { const d = JSON.parse(c); return [...(d.icons?.map(i => i.src) || []), ...(d.screenshots?.map(s => s.src) || []), d.start_url, ...(d.shortcuts?.map(s => s.url) || [])].filter(Boolean); }, len => `تم استخراج ${len} مسار من manifest.json!`, 'لم يتم العثور على مسارات.', e => `خطأ: ${e}`));
         setupDragDrop('sitemapDropZone', 'sitemapFileInput', /\.xml$/, textualFileHandler(c => { const d = new DOMParser().parseFromString(c, 'text/xml'); if (d.querySelector('parsererror')) throw new Error('XML غير صالح'); return [...d.querySelectorAll('url > loc, sitemap > loc')].map(el => { try { return new URL(el.textContent.trim()).pathname; } catch { return el.textContent.trim(); } }).filter(Boolean); }, len => `تم استخراج ${len} رابط من Sitemap!`, 'لم يتم العثور على روابط.', e => `خطأ: ${e}`));
         setupDragDrop('fileDropZone', 'htmlFileInput', /\.html?$/, processHtmlFiles);
-        setupTextareaDragDrop();
+        
         setupFilters();
     }
 
