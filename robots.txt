@@ -1,5 +1,5 @@
 # ===================================================================
-# robots.txt for ai8v.com
+# robots.txt for ai8v.github.io/search-index-json/
 # 
 # This file tells search engine crawlers which pages or files 
 # they can or can't request from your site.
@@ -29,4 +29,4 @@ Allow: /assets/img/
 # --- Sitemap ---
 # Provide the location of the sitemap file. This is very important.
 # It helps crawlers discover all your important pages.
-Sitemap: https://ai8v.com/sitemap.xml
+Sitemap: https://ai8v.github.io/search-index-json/sitemap.xml
