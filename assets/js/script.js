@@ -437,24 +437,75 @@
         return new Chart(context, config);
     }
 
-    function updateAnalyticsDashboard() {
-        if (appState.searchIndex.length === 0) { dom.analyticsDashboard.classList.add('d-none'); return; }
-        dom.analyticsDashboard.classList.remove('d-none');
+
+function updateAnalyticsDashboard() {
+    // --- THIS IS THE FIX ---
+    // If there's no data, or if the charts would be empty, hide the dashboard and exit.
+    if (!appState.searchIndex || appState.searchIndex.length === 0) {
+        if (sourceChartInstance) sourceChartInstance.destroy();
+        if (keywordsChartInstance) keywordsChartInstance.destroy();
+        if (seoScoreChartInstance) seoScoreChartInstance.destroy();
+        sourceChartInstance = keywordsChartInstance = seoScoreChartInstance = null;
         
-        const sourceCounts = appState.searchIndex.reduce((acc, item) => { const source = item.source || 'unknown'; acc[source] = (acc[source] || 0) + 1; return acc; }, {});
-        const sourceLabels = { 'seo_crawler': `زاحف SEO`, 'html_analysis': `تحليل HTML`, 'manual': `إدخال يدوي`, 'url_generation': `من الروابط`, 'sitemap': `من Sitemap`, 'robots': `من robots.txt`, 'spa_analysis': `تحليل SPA`, 'unknown': 'غير معروف' };
-        sourceChartInstance = renderChart(sourceChartInstance, dom.sourceDistributionChart.getContext('2d'), { type: 'pie', data: { labels: Object.keys(sourceCounts).map(l => sourceLabels[l] || l), datasets: [{ label: 'عدد الصفحات', data: Object.values(sourceCounts), backgroundColor: ['#4bc0c0', '#ff6384', '#ffcd56', '#36a2eb', '#9966ff', '#c9cbcf', '#ff9f40'] }] }, options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: 'rgba(255, 255, 255, 0.85)', boxWidth: 12, padding: 15 } } } } });
-
-        const keywordCount = appState.searchIndex.flatMap(item => item.tags || []).reduce((acc, keyword) => { if (keyword) acc[keyword] = (acc[keyword] || 0) + 1; return acc; }, {});
-        const sortedKeywords = Object.entries(keywordCount).sort((a, b) => b[1] - a[1]).slice(0, 10);
-        keywordsChartInstance = renderChart(keywordsChartInstance, dom.topKeywordsChart.getContext('2d'), { type: 'bar', data: { labels: sortedKeywords.map(e => e[0]), datasets: [{ label: 'عدد التكرارات', data: sortedKeywords.map(e => e[1]), backgroundColor: 'rgba(75, 192, 192, 0.6)' }] }, options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { ticks: { color: 'rgba(255, 255, 255, 0.85)' } }, y: { ticks: { color: 'rgba(255, 255, 255, 0.85)' } } } } });
-
-        let totalScore = 0, maxPossibleScore = 0;
-        appState.searchIndex.forEach(item => { const { score, maxScore } = calculateSeoScore(item.seo); totalScore += score; maxPossibleScore += maxScore; });
-        const avgPercentage = maxPossibleScore > 0 ? (totalScore / maxPossibleScore) * 100 : 0;
-        dom.seoScoreText.textContent = `${Math.round(avgPercentage)}%`;
-        seoScoreChartInstance = renderChart(seoScoreChartInstance, dom.averageSeoScoreChart.getContext('2d'), { type: 'doughnut', data: { datasets: [{ data: [avgPercentage, 100 - avgPercentage], backgroundColor: [avgPercentage >= 80 ? '#4bc0c0' : avgPercentage >= 50 ? '#ffcd56' : '#ff6384', 'rgba(255, 255, 255, 0.2)'], circumference: 180, rotation: 270, cutout: '75%' }] }, options: { plugins: { tooltip: { enabled: false } } } });
+        dom.analyticsDashboard.classList.add('d-none');
+        return;
     }
+    dom.analyticsDashboard.classList.remove('d-none');
+
+    // Source Distribution Chart
+    const sourceCounts = appState.searchIndex.reduce((acc, item) => {
+        const source = item.source || 'unknown';
+        acc[source] = (acc[source] || 0) + 1;
+        return acc;
+    }, {});
+    const sourceLabelsMap = { 'seo_crawler': `زاحف SEO`, 'html_analysis': `تحليل HTML`, 'manual': `إدخال يدوي`, 'url_generation': `من الروابط`, 'sitemap': `من Sitemap`, 'robots': `من robots.txt`, 'spa_analysis': `تحليل SPA`, 'unknown': 'غير معروف' };
+    sourceChartInstance = renderChart(sourceChartInstance, dom.sourceDistributionChart.getContext('2d'), {
+        type: 'pie',
+        data: {
+            labels: Object.keys(sourceCounts).map(l => sourceLabelsMap[l] || l),
+            datasets: [{ label: 'عدد الصفحات', data: Object.values(sourceCounts), backgroundColor: ['#4bc0c0', '#ff6384', '#ffcd56', '#36a2eb', '#9966ff', '#c9cbcf', '#ff9f40'] }]
+        },
+        options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: 'rgba(255, 255, 255, 0.85)', boxWidth: 12, padding: 15 } } } }
+    });
+
+    // Top Keywords Chart
+    const allKeywords = appState.searchIndex.flatMap(item => item.tags || []);
+    const keywordCount = allKeywords.reduce((acc, keyword) => {
+        if (keyword) acc[keyword] = (acc[keyword] || 0) + 1;
+        return acc;
+    }, {});
+    const sortedKeywords = Object.entries(keywordCount).sort((a, b) => b[1] - a[1]).slice(0, 10);
+    keywordsChartInstance = renderChart(keywordsChartInstance, dom.topKeywordsChart.getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: sortedKeywords.map(e => e[0]),
+            datasets: [{ label: 'عدد التكرارات', data: sortedKeywords.map(e => e[1]), backgroundColor: 'rgba(75, 192, 192, 0.6)' }]
+        },
+        options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { ticks: { color: 'rgba(255, 255, 255, 0.85)' } }, y: { ticks: { color: 'rgba(255, 255, 255, 0.85)' } } } }
+    });
+
+    // Average SEO Score Chart
+    let totalScore = 0, maxPossibleScore = 0;
+    appState.searchIndex.forEach(item => {
+        const { score, maxScore } = calculateSeoScore(item.seo);
+        totalScore += score;
+        maxPossibleScore += maxScore;
+    });
+    const avgPercentage = maxPossibleScore > 0 ? (totalScore / maxPossibleScore) * 100 : 0;
+    dom.seoScoreText.textContent = `${Math.round(avgPercentage)}%`;
+    const scoreColor = avgPercentage >= 80 ? '#4bc0c0' : avgPercentage >= 50 ? '#ffcd56' : '#ff6384';
+    seoScoreChartInstance = renderChart(seoScoreChartInstance, dom.averageSeoScoreChart.getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            datasets: [{
+                data: [avgPercentage, 100 - avgPercentage],
+                backgroundColor: [scoreColor, 'rgba(255, 255, 255, 0.2)'],
+                circumference: 180, rotation: 270, cutout: '75%'
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: true, plugins: { tooltip: { enabled: false } } }
+    });
+}
 
     function setupFilters() { dom.categoryFilter.addEventListener('change', applyFilters); dom.keywordFilter.addEventListener('input', applyFilters); }
 
