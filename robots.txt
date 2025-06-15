@@ -1,0 +1,32 @@
+# ===================================================================
+# robots.txt for ai8v.com
+# 
+# This file tells search engine crawlers which pages or files 
+# they can or can't request from your site.
+# ===================================================================
+
+User-agent: *
+# This applies to all crawlers (Googlebot, Bingbot, etc.)
+
+# --- Allow ---
+# Allow full access to all important files and directories.
+# This ensures that crawlers can render the page correctly.
+Allow: /assets/bootstrap/
+Allow: /assets/css/
+Allow: /assets/js/
+Allow: /assets/img/
+
+# --- Disallow ---
+# Disallow access to directories or files that are not useful
+# for search results or might contain sensitive information.
+#
+# (No specific directories to disallow in your current project structure,
+#  but it's good practice to have this section for future use. 
+#  For example, if you add an /admin/ or /includes/ directory).
+# Disallow: /admin/
+
+
+# --- Sitemap ---
+# Provide the location of the sitemap file. This is very important.
+# It helps crawlers discover all your important pages.
+Sitemap: https://ai8v.com/sitemap.xml

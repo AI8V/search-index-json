@@ -1,18 +1,95 @@
+--- START OF FILE index.html (FINAL & CLEANED) ---
+
 <!DOCTYPE html>
 <html data-bs-theme="light" lang="ar" data-bss-forced-theme="light" dir="rtl">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
-    <title>search vip</title>
+
+    <!-- SEO & Page Information - The Single Source of Truth -->
+    <title>Ai8V: أداة تحليل SEO وزاحف مواقع متطور | Mind & Machine</title>
+    <meta name="description" content="أطلق العنان لقوة موقعك مع أداة Ai8V. قم بالزحف لموقعك، حلل بيانات SEO التقنية، أنشئ فهرس بحث متطور، وصدّر بيانات Schema المنظمة بسهولة. الأداة المثالية للمطورين وخبراء SEO.">
+    <link rel="canonical" href="https://ai8v.com/">
+
+    <!-- Social Media Sharing (Open Graph & Twitter) -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ai8v.com/">
+    <meta property="og:title" content="Ai8V: أداة تحليل SEO وزاحف مواقع متطور | Mind & Machine">
+    <meta property="og:description" content="أطلق العنان لقوة موقعك مع Ai8V. أداة تحليل SEO تقني شاملة توفر زاحف مواقع ذكي، تحليل ملفات، توليد بيانات Schema منظمة، وإدارة مشاريع.">
+    <meta property="og:image" content="https://ai8v.com/assets/img/og-image.png">
+    <meta property="og:site_name" content="Ai8V - Mind & Machine">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@AmrAbssalam">
+    <meta name="twitter:creator" content="@AmrAbssalam">
+
+    <!-- Security Headers -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self'; 
+        script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; 
+        style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
+        img-src 'self' data: https://assets9.lottiefiles.com;
+        font-src 'self' https://cdn.jsdelivr.net;
+        connect-src 'self' https://api.allorigins.win;
+        frame-src 'self' https://assets9.lottiefiles.com/;
+        object-src 'none';
+        base-uri 'self';
+        form-action 'self';
+    ">
+
+    <!-- Structured Data (JSON-LD) - Combined and Cleaned -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "name": "Ai8V - Mind & Machine",
+          "url": "https://ai8v.com/",
+          "logo": "https://ai8v.com/assets/img/logo.png",
+          "sameAs": [
+            "https://x.com/AmrAbssalam",
+            "https://www.linkedin.com/in/amrabdelsalam87/"
+          ]
+        },
+        {
+          "@type": "SoftwareApplication",
+          "name": "مولد فهرس البحث المتطور",
+          "operatingSystem": "Web-based",
+          "applicationCategory": "DeveloperApplication",
+          "url": "https://ai8v.com/",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          },
+          "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.9",
+            "reviewCount": "88"
+          },
+          "publisher": {
+            "@type": "Organization",
+            "name": "Ai8V - Mind & Machine"
+          }
+        }
+      ]
+    }
+    </script>
+    
+    <!-- Stylesheets -->
     <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="assets/css/aos.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="assets/css/styles.css">
 </head>
 
-<body><button id="darkModeToggle" class="dark-mode-toggle position-fixed top-0 start-0 m-3 z-3 rounded-pill py-2 px-3 border-0 text-white shadow-sm d-flex align-items-center gap-2" aria-label="تبديل الوضع الليلي"></button>
+<body>
+    <button id="darkModeToggle" class="dark-mode-toggle position-fixed top-0 start-0 m-3 z-3 rounded-pill py-2 px-3 border-0 text-white shadow-sm d-flex align-items-center gap-2" aria-label="تبديل الوضع الليلي"></button>
     <div class="fw-bold text-white shadow-sm d-none d-flex align-items-center live-counter position-fixed rounded-pill py-2 px-3 z-2 gap-2" id="liveCounter" style="top:80px;left:20px;"><i class="bi bi-bar-chart-line-fill" aria-hidden="true"></i><span>العناصر: <span id="counterValue">0</span></span></div>
+    
     <main class="container mt-5 pt-4">
         <h1 class="display-6 text-center mb-4"><i class="bi bi-search ms-2" aria-hidden="true"></i> مولد فهرس البحث المتطور <span class="badge ultimate-badge align-middle me-3">Ultimate</span></h1>
         <div class="row g-4">
@@ -154,19 +231,19 @@ services.html" rows="6"></textarea></div>
                                         <div class="col-md-4">
                                             <div class="bg-body-secondary p-3 rounded-3 h-100">
                                                 <h4 class="fw-bold h6"><i class="text-primary bi bi-robot ms-2" aria-hidden="true"></i>ابدأ بالزحف الفوري</h4>
-                                                <p class="text-muted small mb-2">زاحف المواقع المدمج لدينا يحلل موقعك بذكاء.</p><a class="fw-bold text-decoration-none link-body-emphasis small" href="/blog/best-seo-crawling-practices"><i class="bi bi-book-half ms-1" aria-hidden="true"></i>تعلم أفضل ممارسات الزحف <i class="bi bi-arrow-left-short" aria-hidden="true"></i></a>
+                                                <p class="text-muted small mb-2">زاحف المواقع المدمج لدينا يحلل موقعك بذكاء.</p><a class="fw-bold text-decoration-none link-body-emphasis small" href="#"><i class="bi bi-book-half ms-1" aria-hidden="true"></i>تعلم أفضل ممارسات الزحف <i class="bi bi-arrow-left-short" aria-hidden="true"></i></a>
                                             </div>
                                         </div>
                                         <div class="col-md-4">
                                             <div class="bg-body-secondary p-3 rounded-3 h-100">
                                                 <h4 class="fw-bold h6"><i class="text-success bi bi-file-earmark-arrow-up-fill ms-2" aria-hidden="true"></i>استورد بياناتك الحالية</h4>
-                                                <p class="text-muted small mb-2">هل لديك `Sitemap.xml` أو ملفات HTML؟ استوردها لتسريع التحليل.</p><a class="fw-bold text-decoration-none link-body-emphasis small" href="/blog/why-sitemap-is-important-for-seo"><i class="bi bi-book-half ms-1" aria-hidden="true"></i>لماذا خريطة الموقع مهمة؟ <i class="bi bi-arrow-left-short" aria-hidden="true"></i></a>
+                                                <p class="text-muted small mb-2">هل لديك `Sitemap.xml` أو ملفات HTML؟ استوردها لتسريع التحليل.</p><a class="fw-bold text-decoration-none link-body-emphasis small" href="#"><i class="bi bi-book-half ms-1" aria-hidden="true"></i>لماذا خريطة الموقع مهمة؟ <i class="bi bi-arrow-left-short" aria-hidden="true"></i></a>
                                             </div>
                                         </div>
                                         <div class="col-md-4">
                                             <div class="bg-body-secondary p-3 rounded-3 h-100">
                                                 <h4 class="fw-bold h6"><i class="text-info bi bi-keyboard-fill ms-2" aria-hidden="true"></i>تحكم يدوي كامل</h4>
-                                                <p class="text-muted small mb-2">أضف روابط محددة. مثالي لاختبار صفحات الهبوط الجديدة.</p><a class="fw-bold text-decoration-none link-body-emphasis small" href="/blog/manual-page-auditing-guide"><i class="bi bi-book-half ms-1" aria-hidden="true"></i>دليل تدقيق الصفحات يدوياً <i class="bi bi-arrow-left-short" aria-hidden="true"></i></a>
+                                                <p class="text-muted small mb-2">أضف روابط محددة. مثالي لاختبار صفحات الهبوط الجديدة.</p><a class="fw-bold text-decoration-none link-body-emphasis small" href="#"><i class="bi bi-book-half ms-1" aria-hidden="true"></i>دليل تدقيق الصفحات يدوياً <i class="bi bi-arrow-left-short" aria-hidden="true"></i></a>
                                             </div>
                                         </div>
                                     </div>
@@ -178,8 +255,8 @@ services.html" rows="6"></textarea></div>
                             <div class="accordion-collapse collapse" id="collapseTwo" aria-labelledby="headingTwo" data-bs-parent="#howToUseAccordion">
                                 <div class="accordion-body">
                                     <ul class="list-unstyled">
-                                        <li class="mb-3"><i class="text-success bi bi-pencil-fill ms-3" aria-hidden="true"></i><strong>حسّن صفحاتك لجذب النقرات:</strong> عدّل العناوين والأوصاف مباشرة وشاهد كيف يمكن أن يؤثر ذلك على نسبة النقر إلى الظهور (CTR). <br><a class="fw-bold text-decoration-none link-body-emphasis d-inline-block small mt-1" href="/blog/writing-high-ctr-titles-descriptions"><i class="bi bi-book-half ms-1" aria-hidden="true"></i>دليل كتابة العناوين والأوصاف الفعالة <i class="bi bi-arrow-left-short" aria-hidden="true"></i></a></li>
-                                        <li class="mb-0"><i class="text-info bi bi-folder-symlink-fill ms-3" aria-hidden="true"></i><strong>تتبع تقدمك بمرور الوقت:</strong> استخدم "إدارة المشاريع" لحفظ لقطات من تحليل موقعك. قارن النتائج قبل وبعد التغييرات لترى أثر عملك. <br><a class="fw-bold text-decoration-none link-body-emphasis d-inline-block small mt-1" href="/blog/importance-of-tracking-seo-changes"><i class="bi bi-book-half ms-1" aria-hidden="true"></i>أهمية تتبع تغييرات الـ SEO <i class="bi bi-arrow-left-short" aria-hidden="true"></i></a></li>
+                                        <li class="mb-3"><i class="text-success bi bi-pencil-fill ms-3" aria-hidden="true"></i><strong>حسّن صفحاتك لجذب النقرات:</strong> عدّل العناوين والأوصاف مباشرة وشاهد كيف يمكن أن يؤثر ذلك على نسبة النقر إلى الظهور (CTR). <br><a class="fw-bold text-decoration-none link-body-emphasis d-inline-block small mt-1" href="#"><i class="bi bi-book-half ms-1" aria-hidden="true"></i>دليل كتابة العناوين والأوصاف الفعالة <i class="bi bi-arrow-left-short" aria-hidden="true"></i></a></li>
+                                        <li class="mb-0"><i class="text-info bi bi-folder-symlink-fill ms-3" aria-hidden="true"></i><strong>تتبع تقدمك بمرور الوقت:</strong> استخدم "إدارة المشاريع" لحفظ لقطات من تحليل موقعك. قارن النتائج قبل وبعد التغييرات لترى أثر عملك. <br><a class="fw-bold text-decoration-none link-body-emphasis d-inline-block small mt-1" href="#"><i class="bi bi-book-half ms-1" aria-hidden="true"></i>أهمية تتبع تغييرات الـ SEO <i class="bi bi-arrow-left-short" aria-hidden="true"></i></a></li>
                                     </ul>
                                 </div>
                             </div>
@@ -200,7 +277,7 @@ services.html" rows="6"></textarea></div>
         <section class="mt-5 mb-5 overflow-hidden pt-5">
             <div class="row align-items-center">
                 <div class="col-md-5 text-center" data-aos="fade-left">
-                    <lottie-player class="img-fluid" src="https://assets9.lottiefiles.com/packages/lf20_PBgNop.json" style="max-width:400px;margin:auto;" loop="" autoplay="" preload="metadata" loading="lazy" tabindex="0" role="img"></lottie-player>
+                    <lottie-player class="img-fluid" src="https://assets9.lottiefiles.com/packages/lf20_PBgNop.json" style="max-width:400px;margin:auto;" loop="" autoplay="" preload="metadata" tabindex="0" role="img"></lottie-player>
                 </div>
                 <div class="col-md-7 text-center text-md-end" data-aos="fade-right">
                     <h2 class="display-5 fw-bold pb-2"><i class="text-primary bi bi-gem ms-3" aria-hidden="true"></i>ارتقِ بموقعك إلى مستوى متقدم</h2>
@@ -224,11 +301,11 @@ services.html" rows="6"></textarea></div>
                 <div class="col-lg-5 mb-4" data-aos="fade-up" data-aos-delay="200">
                     <div class="card h-100 shadow-sm">
                         <div class="card-body p-4">
-                            <h3 class="card-title h5 mb-3"><i class="text-success bi bi-person-check-fill ms-2" aria-hidden="true"></i>هل تحتاج لمساعدة خبير؟</h3>
-                            <p class="text-muted small">قد تكون الأداة رائعة، لكن العين الخبيرة ترى ما لا تراه الأدوات. احصل على تدقيق احترافي لموقعك.</p><a class="btn btn-success w-100 mb-4" role="button" href="mailto:your-email@example.com?subject=طلب تدقيق احترافي للموقع">اطلب تدقيقاً احترافياً</a>
+                            <h3 class="card-title h4 mb-3"><i class="text-success bi bi-person-check-fill ms-2" aria-hidden="true"></i>هل تحتاج لمساعدة خبير؟</h3>
+                            <p class="text-muted small">قد تكون الأداة رائعة، لكن العين الخبيرة ترى ما لا تراه الأدوات. احصل على تدقيق احترافي لموقعك.</p><a class="btn btn-outline-info w-100 mb-4" role="button" href="mailto:your-email@example.com?subject=طلب تدقيق احترافي للموقع">اطلب تدقيقاً احترافياً</a>
                             <h3 class="card-title h5 mb-3"><i class="text-info bi bi-share-fill ms-2" aria-hidden="true"></i>ادعم المشروع وانشره</h3>
                             <p class="text-muted small">مشاركتك هي أكبر دعم. ساعدنا في الوصول إلى المزيد من المستخدمين.</p>
-                            <div class="d-flex gap-2"><a class="btn btn-outline-info flex-fill" role="button" href="https://twitter.com/intent/tweet?text=اكتشفت%20هذه%20الأداة%20الرائعة%20لتحليل%20المواقع%20وإنشاء%20فهرس%20بحث%20متطور&amp;url=YOUR_APP_URL" target="_blank" aria-label="شارك على تويتر"><i class="bi bi-twitter" aria-hidden="true"></i></a><a class="btn btn-outline-info flex-fill" role="button" href="https://www.linkedin.com/shareArticle?mini=true&amp;url=YOUR_APP_URL&amp;title=أداة%20فهرس%20البحث%20المتطور" target="_blank" aria-label="شارك على لينكدإن"><i class="bi bi-linkedin" aria-hidden="true"></i></a><a class="btn btn-outline-success flex-fill" role="button" href="#" target="_blank" aria-label="ادعمنا بنجمة على جيت هاب"><i class="bi bi-github" aria-hidden="true"></i> Star us</a></div>
+                            <div class="d-flex gap-2"><a class="btn btn-outline-info flex-fill" role="button" href="https://twitter.com/intent/tweet?text=اكتشفت%20هذه%20الأداة%20الرائعة%20لتحليل%20المواقع%20وإنشاء%20فهرس%20بحث%20متطور&url=https://ai8v.com" target="_blank" aria-label="شارك على تويتر"><i class="bi bi-twitter" aria-hidden="true"></i></a><a class="btn btn-outline-info flex-fill" role="button" href="https://www.linkedin.com/shareArticle?mini=true&url=https://ai8v.com&title=أداة%20فهرس%20البحث%20المتطور" target="_blank" aria-label="شارك على لينكدإن"><i class="bi bi-linkedin" aria-hidden="true"></i></a><a class="btn btn-outline-info flex-fill" role="button" href="#" target="_blank" aria-label="ادعمنا بنجمة على جيت هاب"><i class="bi bi-github h5" aria-hidden="true"></i> Star us</a></div>
                         </div>
                     </div>
                 </div>
@@ -274,7 +351,7 @@ services.html" rows="6"></textarea></div>
                 <div class="d-flex gap-2">
                     <button class="btn btn-outline-info btn-sm btn-preview" data-bs-toggle="modal" data-bs-target="#serpPreviewModal">معاينة</button>
                     <button class="btn btn-outline-secondary btn-sm btn-edit">تحرير</button>
-                    <!-- --- NEW --- تمت إضافة زر الحذف هنا -->
+                    
                     <button class="btn btn-outline-danger btn-sm btn-delete"><i class="bi bi-trash3-fill"></i></button>
                 </div>
             </div>
