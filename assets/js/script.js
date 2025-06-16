@@ -1,4 +1,3 @@
-
 (function () {
     'use strict';
 
@@ -47,13 +46,17 @@
      */
     const DOMManager = (function () {
         const dom = {};
-        // ✅ FIX: Removed SPA-related IDs and added new analytics modal IDs.
         const domIds = ['darkModeToggle', 'liveCounter', 'counterValue', 'seoCrawlerUrl', 'seoCrawlerDepth', 'seoCrawlerConcurrency', 'seoCrawlerDelay', 'seoCrawlerNoSaveHtml', 'customProxyUrl', 'urlInput', 'manualInput', 'manualInputSection', 'projectSelector', 'projectNameInput', 'showAnalyticsBtn', 'analyticsModal', 'sourceDistributionChart', 'topKeywordsChart', 'averageSeoScoreChart', 'seoScoreText', 'orphanPagesCard', 'orphanPagesCount', 'viewOrphanPagesBtn', 'filterSection', 'categoryFilter', 'keywordFilter', 'orphanFilter', 'selectionControls', 'selectionCounter', 'results', 'resultsAccordion', 'resultsPlaceholder', 'exportButtons', 'downloadJsonBtn', 'downloadCsvBtn', 'downloadZipBtn', 'toggleCopyBtn', 'exportReportBtn', 'zipProgress', 'zipProgressBar', 'copyOptions', 'schemaGeneratorSection', 'schemaBaseUrl', 'schemaPageType', 'schemaBaseEditor', 'crawlerStatus', 'crawlerCurrentUrl', 'crawlerProgressBar', 'crawlerProgressText', 'crawlerQueueCount', 'urlsFileInput', 'resultItemTemplate', 'robotsDropZone', 'robotsFileInput', 'manifestDropZone', 'manifestFileInput', 'sitemapDropZone', 'sitemapFileInput', 'fileDropZone', 'htmlFileInput', 'reportModal', 'reportModalBody', 'printReportBtn', 'startCrawlerBtn', 'importUrlsFileBtn', 'addManualPageBtn', 'generateIndexBtn', 'saveProjectBtn', 'deleteProjectBtn', 'clearFormBtn', 'selectAllBtn', 'deselectAllBtn', 'hideCrawlerStatusBtn', 'generateSchemaBtn'];
         
         const getEl = (id) => document.getElementById(id);
         
         function init() {
-            domIds.forEach(id => dom[id] = getEl(id));
+            domIds.forEach(id => {
+                const el = getEl(id);
+                if (el) {
+                    dom[id] = el;
+                }
+            });
         }
         
         return { init, dom, getEl };
@@ -89,7 +92,7 @@
         const readFileContent = (file) => new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = e => resolve(e.target.result); reader.onerror = reject; reader.readAsText(file); });
         
         return { showNotification, getProxyUrl, downloadFile, readFileContent };
-    })();
+    })(DOMManager);
     
     /**
      * =================================================================
@@ -204,7 +207,6 @@
     const UIManager = (function (State, DOM, Analyzer, Utils) {
         let sourceChartInstance, keywordsChartInstance, seoScoreChartInstance, scrollObserver;
 
-        // --- DOM Getters ---
         const getProjectName = () => DOM.dom.projectNameInput.value.trim();
         const getSelectedProjectName = () => DOM.dom.projectSelector.value;
         const getSeoCrawlerConfig = () => ({ 
@@ -221,7 +223,6 @@
         const getSchemaConfigFromDOM = () => ({ baseUrl: DOM.dom.schemaBaseUrl.value.trim(), pageSchemaType: DOM.dom.schemaPageType.value, baseSchema: DOM.dom.schemaBaseEditor.value });
         const isManualInputChecked = () => DOM.dom.manualInput.checked;
 
-        // --- DOM Setters/Updaters ---
         const setFormValues = (projectData) => {
             DOM.dom.urlInput.value = projectData.urlInput || '';
             DOM.dom.customProxyUrl.value = projectData.customProxyUrl || '';
@@ -678,6 +679,8 @@
      * =================================================================
      */
     const CoreFeatures = (function (State, DOM, Analyzer, DataHandler, UI, Utils, ProjectManager) {
+        
+        // ✅ BUG FIX & PERFORMANCE: Rewrote the crawler to be truly concurrent and robust.
         async function startSeoCrawler(config) {
             let { baseUrl, maxDepth, crawlDelay, saveHtmlContent, concurrency } = config;
             try {
@@ -694,9 +697,10 @@
             let crawledData = new Map();
             let brokenLinks = new Set();
             let processedCount = 0;
+            let activeWorkers = 0;
 
             const updateCrawlerUI = () => {
-                const total = processedCount + queue.length;
+                const total = processedCount + queue.length + activeWorkers;
                 DOM.dom.crawlerProgressBar.style.width = total > 0 ? `${(processedCount / total) * 100}%` : '0%';
                 DOM.dom.crawlerProgressText.textContent = `${processedCount}/${total}`;
                 DOM.dom.crawlerQueueCount.textContent = `في الانتظار: ${queue.length}`;
@@ -705,14 +709,21 @@
             updateCrawlerUI();
 
             const worker = async () => {
-                while (queue.length > 0) {
+                while (true) {
                     const task = queue.shift();
-                    if (!task) continue;
+                    if (!task) {
+                        if (activeWorkers === 0) break; // All tasks are done and all workers are idle
+                        else {
+                            await new Promise(r => setTimeout(r, 50)); // Wait for more tasks
+                            continue;
+                        }
+                    }
 
-                    processedCount++;
+                    activeWorkers++;
+                    updateCrawlerUI();
+                    
                     const { url, depth } = task;
                     DOM.dom.crawlerCurrentUrl.textContent = `فحص: ${new URL(url).pathname}...`;
-                    updateCrawlerUI();
 
                     try {
                         const startTime = performance.now();
@@ -728,7 +739,7 @@
                             try {
                                 const absoluteUrl = new URL(href, url).href.split('#')[0];
                                 linksOnPage.add(absoluteUrl);
-                                if (absoluteUrl.startsWith(origin) && !visited.has(absoluteUrl) && depth < maxDepth && !/\.(jpg|jpeg|png|gif|svg|css|js|pdf|zip)$/i.test(absoluteUrl)) {
+                                if (absoluteUrl.startsWith(origin) && !visited.has(absoluteUrl) && depth < maxDepth && !/\.(jpg|jpeg|png|gif|svg|css|js|pdf|zip|webp|avif)$/i.test(absoluteUrl)) {
                                     visited.add(absoluteUrl);
                                     queue.push({ url: absoluteUrl, depth: depth + 1 });
                                 }
@@ -744,8 +755,12 @@
                         console.error(`فشل في جلب ${url}:`, error);
                         brokenLinks.add(url);
                         Utils.showNotification(`<i class="bi bi-exclamation-triangle-fill ms-2"></i> فشل الاتصال بـ: ${new URL(url).pathname}`, 'warning');
+                    } finally {
+                        processedCount++;
+                        activeWorkers--;
+                        updateCrawlerUI();
+                        await new Promise(r => setTimeout(r, crawlDelay));
                     }
-                    await new Promise(r => setTimeout(r, crawlDelay));
                 }
             };
             
@@ -761,7 +776,7 @@
             const orphanCount = [...crawledData.values()].filter(d => d.analysis.seo.isOrphan).length;
             if (orphanCount > 0) Utils.showNotification(`<i class="bi bi-exclamation-diamond-fill ms-2"></i> تم اكتشاف ${orphanCount} صفحة معزولة!`, 'warning', 7000);
             
-            const newItems = Array.from(crawledData.values()).map(({ analysis }) => ({ ...analysis, category: 'زاحف SEO', tags: analysis.keywords.length > 0 ? analysis.keywords : Analyzer.extractTagsFromUrl(analysis.url), source: 'seo_crawler' }));
+            const newItems = Array.from(crawledData.values()).map(({ analysis }) => ({ ...analysis, category: 'زاحف SEO', tags: (analysis.keywords || []).length > 0 ? analysis.keywords : Analyzer.extractTagsFromUrl(analysis.url), source: 'seo_crawler' }));
             const addedCount = DataHandler.addItemsToIndex(newItems);
             
             Utils.showNotification( addedCount > 0 ? `<i class="bi bi-check-circle-fill ms-2"></i> اكتمل الزحف! تمت إضافة ${addedCount} صفحة جديدة.` : crawledData.size > 0 ? '🏁 اكتمل الزحف. جميع الصفحات التي تم العثور عليها موجودة بالفعل.' : '❌ فشل الزحف. لم يتم العثور على أي صفحات قابلة للوصول.', addedCount > 0 ? 'success' : (crawledData.size > 0 ? 'info' : 'danger'));
@@ -1002,8 +1017,8 @@
                 </div>
             `;
             
-            DOM.getEl('reportModalBody').innerHTML = reportHtml;
-            const reportModal = new bootstrap.Modal(DOM.getEl('reportModal'));
+            DOM.dom.reportModalBody.innerHTML = reportHtml;
+            const reportModal = new bootstrap.Modal(DOM.dom.reportModal);
             reportModal.show();
         }
 
@@ -1064,7 +1079,6 @@
                 'viewOrphanPagesBtn': { 'click': () => { DOM.dom.orphanFilter.checked = true; applyFilters(); DOM.dom.results.scrollIntoView({ behavior: 'smooth' }); } },
                 'exportReportBtn': { 'click': handleExportReport },
                 'printReportBtn': { 'click': () => window.print() },
-                // ✅ FIX: The analytics modal is shown on button click. The charts are now rendered just-in-time.
                 'analyticsModal': { 'show.bs.modal': UI.updateAnalyticsDashboard }
             };
             for (const id in listeners) { 
