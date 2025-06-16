@@ -30,3 +30,4 @@ Allow: /assets/img/
 # Provide the location of the sitemap file. This is very important.
 # It helps crawlers discover all your important pages.
 Sitemap: https://ai8v.github.io/search-index-json/sitemap.xml
+

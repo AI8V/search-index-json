@@ -9,7 +9,6 @@
   --gradient-robots: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
   --gradient-manifest: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
   --gradient-github: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%);
-  --gradient-spa: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
   --gradient-seo-crawler: linear-gradient(135deg, #5ee7df 0%, #b490ca 100%);
   --gradient-feature: linear-gradient(45deg, #28a745, #20c997);
   --gradient-pro: linear-gradient(45deg, #6f42c1, #e83e8c);
@@ -77,29 +76,27 @@
   color: white;
 }
 
+.robots-section,
+.manifest-section,
+.github-section,
+.seo-crawler-section {
+  color: var(--bs-dark-text-emphasis);
+}
+
 .robots-section {
   background: var(--gradient-robots);
-  color: #333;
 }
 
 .manifest-section {
   background: var(--gradient-manifest);
-  color: #333;
 }
 
 .github-section {
   background: var(--gradient-github);
-  color: #333;
-}
-
-.spa-section {
-  background: var(--gradient-spa);
-  color: #333;
 }
 
 .seo-crawler-section {
   background: var(--gradient-seo-crawler);
-  color: #333;
 }
 
 /* New Style for SEO Crawler section */
@@ -114,11 +111,11 @@
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-.robots-section .drop-zone, .manifest-section .drop-zone, .github-section .drop-zone, .spa-section .drop-zone, .seo-crawler-section .drop-zone {
+.robots-section .drop-zone, .manifest-section .drop-zone, .github-section .drop-zone, .seo-crawler-section .drop-zone {
   border-color: rgba(0, 0, 0, 0.3);
 }
 
-.robots-section .drop-zone:hover, .manifest-section .drop-zone:hover, .github-section .drop-zone:hover, .spa-section .drop-zone:hover, .seo-crawler-section .drop-zone:hover {
+.robots-section .drop-zone:hover, .manifest-section .drop-zone:hover, .github-section .drop-zone:hover, .seo-crawler-section .drop-zone:hover {
   border-color: #333;
   background-color: rgba(0, 0, 0, 0.05);
 }
@@ -249,4 +246,67 @@
 .toast.bg-info {
   --bs-bg-opacity: 1;
   background-color: rgba(13, 110, 253, var(--bs-bg-opacity)) !important; /* A darker, more accessible blue */
+}
+
+
+/* NEW: Report Modal & Print Styles */
+.report-content .list-group-item {
+  background-color: transparent;
+  padding: 0.5rem 0.25rem;
+}
+
+.report-content .list-group-item:not(:last-child) {
+  border-bottom: 1px solid var(--bs-border-color-translucent);
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .report-content, .report-content * {
+    visibility: visible;
+  }
+
+  .report-content {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+
+  .modal-dialog {
+    max-width: 100% !important;
+  }
+}
+
+/* ✅ --- ACCESSIBILITY FIXES --- */
+
+/* 1. Improve contrast for btn-outline-secondary */
+.btn-outline-secondary {
+  --bs-btn-color: var(--bs-secondary-text-emphasis);
+  --bs-btn-border-color: var(--bs-secondary-border-subtle);
+  --bs-btn-hover-bg: var(--bs-secondary-bg-subtle);
+  --bs-btn-hover-border-color: var(--bs-secondary-border-subtle);
+  --bs-btn-active-bg: var(--bs-secondary-bg-subtle);
+  --bs-btn-active-color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .btn-outline-secondary {
+    --bs-btn-color: var(--bs-tertiary-color);
+    --bs-btn-border-color: var(--bs-secondary-border-subtle);
+    --bs-btn-hover-color: var(--bs-white);
+    --bs-btn-hover-bg: var(--bs-secondary);
+    --bs-btn-active-bg: var(--bs-secondary);
+    --bs-btn-active-color: var(--bs-white);
+}
+
+/* 2. Improve contrast for .text-muted */
+.text-muted {
+    --bs-text-opacity: 1;
+    color: var(--bs-secondary-color) !important;
+}
+
+[data-bs-theme="dark"] .text-muted {
+    color: var(--bs-tertiary-color) !important;
 }
