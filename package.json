@@ -1,0 +1,13 @@
+{
+  "name": "ai8v-search-index-generator",
+  "version": "1.0.0",
+  "description": "Advanced SEO crawler and search index generator.",
+  "main": "script.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^30.0.0"
+  }
+}

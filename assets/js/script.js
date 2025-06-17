@@ -1,13 +1,7 @@
-(function () {
+const exportedModules = (function () { 
     'use strict';
 
-    /**
-     * =================================================================
-     * M O D U L E: StateManager
-     * -----------------------------------------------------------------
-     * مسؤول عن إدارة حالة التطبيق المركزية والبيانات الثابتة.
-     * =================================================================
-     */
+    // ... (StateManager, DOMManager, Utils, Analyzer كما هي بدون تغيير في هذا السياق) ...
     const StateManager = (function () {
         const DEFAULT_BASE_SCHEMA_OBJ = { "@context": "https://schema.org", "@type": ["WebSite", "Organization"], "@id": "https://example.com/#website", name: "Your Organization Name", url: "https://example.com", logo: "https://example.com/logo.png", sameAs: ["https://www.facebook.com/your-profile", "https://twitter.com/your-profile"], potentialAction: { "@type": "SearchAction", target: { "@type": "EntryPoint", urlTemplate: "https://example.com/search?q={search_term_string}" }, "query-input": "required name=search_term_string" } };
         const DEFAULT_BASE_SCHEMA_STR = JSON.stringify(DEFAULT_BASE_SCHEMA_OBJ, null, 2);
@@ -37,16 +31,9 @@
         return { appState, CONSTANTS, DEFAULT_BASE_SCHEMA_STR, resetAppState };
     })();
 
-    /**
-     * =================================================================
-     * M O D U L E: DOMManager
-     * -----------------------------------------------------------------
-     * مسؤول عن إدارة جميع عناصر الـ DOM وتوفير مرجع مركزي لها.
-     * =================================================================
-     */
     const DOMManager = (function () {
         const dom = {};
-        const domIds = ['darkModeToggle', 'liveCounter', 'counterValue', 'seoCrawlerUrl', 'seoCrawlerDepth', 'seoCrawlerConcurrency', 'seoCrawlerDelay', 'seoCrawlerNoSaveHtml', 'customProxyUrl', 'urlInput', 'manualInput', 'manualInputSection', 'projectSelector', 'projectNameInput', 'showAnalyticsBtn', 'analyticsModal', 'sourceDistributionChart', 'topKeywordsChart', 'averageSeoScoreChart', 'seoScoreText', 'orphanPagesCard', 'orphanPagesCount', 'viewOrphanPagesBtn', 'filterSection', 'categoryFilter', 'keywordFilter', 'orphanFilter', 'selectionControls', 'selectionCounter', 'results', 'resultsAccordion', 'resultsPlaceholder', 'exportButtons', 'downloadJsonBtn', 'downloadCsvBtn', 'downloadZipBtn', 'toggleCopyBtn', 'exportReportBtn', 'zipProgress', 'zipProgressBar', 'copyOptions', 'schemaGeneratorSection', 'schemaBaseUrl', 'schemaPageType', 'schemaBaseEditor', 'crawlerStatus', 'crawlerCurrentUrl', 'crawlerProgressBar', 'crawlerProgressText', 'crawlerQueueCount', 'urlsFileInput', 'resultItemTemplate', 'robotsDropZone', 'robotsFileInput', 'manifestDropZone', 'manifestFileInput', 'sitemapDropZone', 'sitemapFileInput', 'fileDropZone', 'htmlFileInput', 'reportModal', 'reportModalBody', 'printReportBtn', 'startCrawlerBtn', 'importUrlsFileBtn', 'addManualPageBtn', 'generateIndexBtn', 'saveProjectBtn', 'deleteProjectBtn', 'clearFormBtn', 'selectAllBtn', 'deselectAllBtn', 'hideCrawlerStatusBtn', 'generateSchemaBtn'];
+        const domIds = ['darkModeToggle', 'liveCounter', 'counterValue', 'seoCrawlerUrl', 'seoCrawlerDepth', 'seoCrawlerConcurrency', 'seoCrawlerDelay', 'seoCrawlerNoSaveHtml', 'customProxyUrl', 'urlInput', 'manualInput', 'manualInputSection', 'projectSelector', 'projectNameInput', 'showAnalyticsBtn', 'analyticsModal', 'sourceDistributionChart', 'topKeywordsChart', 'averageSeoScoreChart', 'seoScoreText', 'orphanPagesCard', 'orphanPagesCount', 'viewOrphanPagesBtn', 'filterSection', 'categoryFilter', 'keywordFilter', 'orphanFilter', 'selectionControls', 'selectionCounter', 'results', 'resultsAccordion', 'resultsPlaceholder', 'exportButtons', 'downloadJsonBtn', 'downloadCsvBtn', 'downloadZipBtn', 'toggleCopyBtn', 'exportReportBtn', 'zipProgress', 'zipProgressBar', 'copyOptions', 'schemaGeneratorSection', 'schemaBaseUrl', 'schemaPageType', 'schemaBaseEditor', 'crawlerStatus', 'crawlerCurrentUrl', 'crawlerProgressBar', 'crawlerProgressText', 'crawlerQueueCount', 'urlsFileInput', 'resultItemTemplate', 'robotsDropZone', 'robotsFileInput', 'manifestDropZone', 'manifestFileInput', 'sitemapDropZone', 'sitemapFileInput', 'fileDropZone', 'htmlFileInput', 'reportModal', 'reportModalBody', 'printReportBtn', 'startCrawlerBtn', 'importUrlsFileBtn', 'addManualPageBtn', 'generateIndexBtn', 'saveProjectBtn', 'deleteProjectBtn', 'clearFormBtn', 'selectAllBtn', 'deselectAllBtn', 'hideCrawlerStatusBtn', 'generateSchemaBtn', 'advisor-list', 'advisorPlaceholder', 'advisor-count'];
         
         const getEl = (id) => document.getElementById(id);
         
@@ -62,13 +49,6 @@
         return { init, dom, getEl };
     })();
 
-    /**
-     * =================================================================
-     * M O D U L E: Utils
-     * -----------------------------------------------------------------
-     * يحتوي على دوال مساعدة عامة تستخدم في جميع أنحاء التطبيق.
-     * =================================================================
-     */
     const Utils = (function (DOM) {
         function showNotification(message, type = 'info', duration = 5000) {
             const container = document.querySelector('.toast-container');
@@ -84,7 +64,7 @@
         }
 
         function getProxyUrl(targetUrl) {
-            const customProxy = DOM.dom.customProxyUrl.value.trim();
+            const customProxy = DOM.dom.customProxyUrl && DOM.dom.customProxyUrl.value.trim(); // Add check for DOM.dom.customProxyUrl
             return customProxy ? customProxy.replace('{url}', encodeURIComponent(targetUrl)) : `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
         }
         
@@ -94,13 +74,6 @@
         return { showNotification, getProxyUrl, downloadFile, readFileContent };
     })(DOMManager);
     
-    /**
-     * =================================================================
-     * M O D U L E: Analyzer
-     * -----------------------------------------------------------------
-     * مسؤول عن منطق تحليل المحتوى وحساب التقييمات.
-     * =================================================================
-     */
     const Analyzer = (function () {
         function analyzeHtmlContent(content, urlOrFilename, options = {}) {
             const doc = new DOMParser().parseFromString(content, 'text/html');
@@ -117,7 +90,10 @@
             else if (filename === 'index.html' || url?.pathname === '/') pageTypeHint = 'homepage';
 
             const title = doc.querySelector('title')?.textContent.trim() || filename.replace(/\.(html?|htm)$/i, '').replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-            const description = doc.querySelector('meta[name="description"]')?.getAttribute('content') || doc.querySelector('meta[property="og:description"]')?.getAttribute('content') || `صفحة ${title}`;
+            
+            const descContent = doc.querySelector('meta[name="description"]')?.getAttribute('content') || doc.querySelector('meta[property="og:description"]')?.getAttribute('content');
+            const description = descContent || `صفحة ${title}`;
+            
             const bodyText = doc.body?.textContent.trim() || '';
             const words = bodyText.split(/\s+/).filter(Boolean);
             const sentences = bodyText.match(/[^.!?]+[.!?]+/g) || [];
@@ -147,6 +123,7 @@
                 loadTime: options.loadTime || null,
                 isNoIndex: /noindex/i.test(doc.querySelector('meta[name="robots"]')?.content),
                 isOrphan: false,
+                isDefaultDescription: !descContent,
                 internalLinkEquity: 0,
                 ogTitle: doc.querySelector('meta[property="og:title"]')?.content || null,
                 ogImage: doc.querySelector('meta[property="og:image"]')?.content || null,
@@ -158,7 +135,9 @@
             };
 
             const result = { filename, title, description, keywords: doc.querySelector('meta[name="keywords"]')?.content?.split(',').map(k => k.trim()).filter(Boolean) || [], url: isUrl ? url.pathname : '/' + filename, source: isUrl ? 'seo_crawler' : 'html_analysis', seo: seoData };
-            result.content = content;
+            if (options.saveHtmlContent) {
+                result.content = content;
+            }
             return result;
         }
         
@@ -183,6 +162,7 @@
 
         function extractTagsFromUrl(url) {
             if (!url) return [];
+             if (url === '/') return ['الرئيسية']; // <--- تعديل هنا لمعالجة حالة الجذر
             try {
                 const path = new URL(url, url.startsWith('http') ? undefined : 'http://dummy.com').pathname;
                 const parts = path.split('/').filter(Boolean);
@@ -196,15 +176,8 @@
         return { analyzeHtmlContent, calculateSeoScore, extractTagsFromUrl };
     })();
 
-
-    /**
-     * =================================================================
-     * M O D U L E: UIManager
-     * -----------------------------------------------------------------
-     * مسؤول عن جميع تحديثات واجهة المستخدم، بما في ذلك القراءة من الـ DOM وعرض البيانات.
-     * =================================================================
-     */
     const UIManager = (function (State, DOM, Analyzer, Utils) {
+        // ... (getProjectName, getSelectedProjectName, إلخ. كما هي) ...
         let sourceChartInstance, keywordsChartInstance, seoScoreChartInstance, scrollObserver;
 
         const getProjectName = () => DOM.dom.projectNameInput.value.trim();
@@ -219,7 +192,13 @@
         const getUrlInput = () => DOM.dom.urlInput.value.trim();
         const getCustomProxyUrl = () => DOM.dom.customProxyUrl.value.trim();
         const getManualPageData = () => ({ title: DOM.getEl('pageTitle').value.trim(), url: DOM.getEl('pageUrl').value.trim(), description: DOM.getEl('pageDescription').value.trim(), category: DOM.getEl('pageCategory').value.trim(), tags: DOM.getEl('pageTags').value.split(',').map(t => t.trim()).filter(Boolean) });
-        const getFilterState = () => ({ category: DOM.dom.categoryFilter.value, keyword: DOM.dom.keywordFilter.value.toLowerCase(), isOrphan: DOM.dom.orphanFilter.checked });
+        
+        // تعديل: حماية ضد عناصر DOM غير موجودة
+        const getFilterState = () => ({ 
+            category: DOM.dom.categoryFilter ? DOM.dom.categoryFilter.value : '', 
+            keyword: DOM.dom.keywordFilter ? DOM.dom.keywordFilter.value.toLowerCase() : '', 
+            isOrphan: DOM.dom.orphanFilter ? DOM.dom.orphanFilter.checked : false
+        });
         const getSchemaConfigFromDOM = () => ({ baseUrl: DOM.dom.schemaBaseUrl.value.trim(), pageSchemaType: DOM.dom.schemaPageType.value, baseSchema: DOM.dom.schemaBaseEditor.value });
         const isManualInputChecked = () => DOM.dom.manualInput.checked;
 
@@ -297,11 +276,11 @@
                 const seoScore = Analyzer.calculateSeoScore(seo);
                 const resultItemEl = itemClone.querySelector('.result-item');
                 resultItemEl.dataset.id = id;
-                resultItemEl.classList.toggle('selected', State.appState.selectedItemIds.has(id));
+                resultItemEl.classList.toggle('selected', State.appState.selectedItemIds.has(id)); // <--- مهم هنا
                 const seoDot = itemClone.querySelector('.seo-score-dot');
                 seoDot.style.backgroundColor = seoScore.color;
                 seoDot.title = `تقييم SEO: ${seoScore.level} (${seoScore.score}/${seoScore.maxScore})`;
-                itemClone.querySelector('.item-select-checkbox').checked = State.appState.selectedItemIds.has(id);
+                itemClone.querySelector('.item-select-checkbox').checked = State.appState.selectedItemIds.has(id); // <--- مهم هنا
                 itemClone.querySelector('.page-title').textContent = title;
                 itemClone.querySelector('.no-index-badge').classList.toggle('d-none', !seo?.isNoIndex);
                 itemClone.querySelector('.orphan-page-badge').classList.toggle('d-none', !seo?.isOrphan);
@@ -357,35 +336,98 @@
         function displayResults(resultsToShow = null, openAccordionId = null) {
             const results = resultsToShow || State.appState.searchIndex;
             const hasResults = results.length > 0;
-            DOM.dom.selectionControls.classList.toggle('d-none', !hasResults);
-            DOM.dom.exportButtons.classList.toggle('d-none', !hasResults);
-            DOM.dom.resultsPlaceholder.classList.toggle('d-none', hasResults);
             
-            if(scrollObserver) DOM.dom.resultsAccordion.querySelectorAll('.scroll-sentinel').forEach(el => scrollObserver.unobserve(el));
+            // Toggle visibility of controls based on whether there are *any* results in searchIndex
+            const anyResultsAtAll = State.appState.searchIndex.length > 0;
+            DOM.dom.selectionControls.classList.toggle('d-none', !anyResultsAtAll);
+            DOM.dom.exportButtons.classList.toggle('d-none', !anyResultsAtAll);
+            DOM.dom.schemaGeneratorSection.classList.toggle('d-none', !anyResultsAtAll);
+            DOM.dom.filterSection.classList.toggle('d-none', !anyResultsAtAll);
+
+            DOM.dom.resultsPlaceholder.classList.toggle('d-none', hasResults); // Placeholder based on current `resultsToShow`
             
-            DOM.dom.resultsAccordion.innerHTML = '';
-            if (!hasResults) return;
+            if(scrollObserver && DOM.dom.resultsAccordion) { // Add null check for resultsAccordion
+                DOM.dom.resultsAccordion.querySelectorAll('.scroll-sentinel').forEach(el => scrollObserver.unobserve(el));
+            }
+            
+            if (DOM.dom.resultsAccordion) DOM.dom.resultsAccordion.innerHTML = ''; // Clear previous results
+            if (!hasResults && anyResultsAtAll) { 
+                //  If no results to show (e.g. filter yields nothing) but there are items in searchIndex,
+                //  we still want to update the selection UI to show 0 selected.
+                updateSelectionUI();
+                return;
+            }
+            if (!hasResults) { // No results at all
+                 updateSelectionUI(); // Ensure counter shows 0
+                 return;
+            }
+
             const grouped = results.reduce((acc, item) => { (acc[item.source || 'unknown'] = acc[item.source || 'unknown'] || []).push(item); return acc; }, {});
             Object.entries(grouped).forEach(([source, items], index) => renderAccordionGroup(source, items, index, openAccordionId));
-            updateSelectionUI();
+            updateSelectionUI(); // تحديث حالة التحديد بعد عرض النتائج
         }
 
         const updateFilterOptions = () => {
+            if (!DOM.dom.categoryFilter) return; // حماية
             const currentCategory = DOM.dom.categoryFilter.value;
             const categories = [...new Set(State.appState.searchIndex.map(item => item.category).filter(Boolean))].sort();
             DOM.dom.categoryFilter.innerHTML = '<option value="">جميع الفئات</option>';
             categories.forEach(cat => DOM.dom.categoryFilter.add(new Option(cat, cat, false, cat === currentCategory)));
         };
-        const updateSelectionUI = () => {
-            document.querySelectorAll('.result-item').forEach(itemDiv => {
-                const isSelected = State.appState.selectedItemIds.has(parseInt(itemDiv.dataset.id, 10));
-                itemDiv.classList.toggle('selected', isSelected);
+        
+        // دالة مساعدة جديدة للحصول على العناصر النشطة حاليًا (إما المفلترة أو كل شيء)
+        function getCurrentActiveItemsList() {
+            const filters = getFilterState();
+            if (filters.keyword || filters.category || filters.isOrphan) {
+                return State.appState.filteredResults;
+            }
+            return State.appState.searchIndex;
+        }
+
+        function updateSelectionUI() {
+            if (!DOM.dom.selectionCounter || !DOM.dom.resultsAccordion) return; 
+
+            const selectedCount = State.appState.selectedItemIds.size;
+            DOM.dom.selectionCounter.textContent = selectedCount;
+
+            // تحديث مربعات الاختيار للعناصر المرئية في DOM
+            DOM.dom.resultsAccordion.querySelectorAll('.result-item').forEach(itemDiv => {
+                const itemId = parseInt(itemDiv.dataset.id, 10);
+                if (isNaN(itemId)) return;
+
+                const isSelected = State.appState.selectedItemIds.has(itemId);
                 const checkbox = itemDiv.querySelector('.item-select-checkbox');
-                if (checkbox) checkbox.checked = isSelected;
+                
+                if (checkbox) {
+                    checkbox.checked = isSelected;
+                }
+                itemDiv.classList.toggle('selected', isSelected);
             });
-            DOM.dom.selectionCounter.textContent = State.appState.selectedItemIds.size;
-        };
+            updateSelectAllDeselectAllButtonsState();
+        }
+        
+        function updateSelectAllDeselectAllButtonsState() {
+            if (!DOM.dom.selectAllBtn || !DOM.dom.deselectAllBtn) return;
+
+            const activeItems = getCurrentActiveItemsList(); // استخدم الدالة المساعدة
+            const selectedCount = State.appState.selectedItemIds.size;
+            
+            let allCurrentlyVisibleOrFilteredAreSelected = false;
+            if (activeItems.length > 0) {
+                // تحقق مما إذا كانت جميع العناصر النشطة (المفلترة أو المعروضة) محددة بالفعل
+                 allCurrentlyVisibleOrFilteredAreSelected = activeItems.every(item => State.appState.selectedItemIds.has(item.id));
+            }
+
+            DOM.dom.selectAllBtn.disabled = activeItems.length === 0 || allCurrentlyVisibleOrFilteredAreSelected;
+            
+            // هل هناك أي عناصر نشطة محددة حاليًا؟
+            const anyActiveItemSelected = activeItems.some(item => State.appState.selectedItemIds.has(item.id));
+            DOM.dom.deselectAllBtn.disabled = activeItems.length === 0 || !anyActiveItemSelected;
+        }
+
+
         const updateLiveCounter = () => {
+            if (!DOM.dom.liveCounter || !DOM.dom.counterValue) return; // حماية
             const count = State.appState.searchIndex.length;
             DOM.dom.liveCounter.classList.toggle('d-none', count === 0);
             if (count > 0) DOM.dom.counterValue.textContent = count;
@@ -395,8 +437,9 @@
             return new Chart(context, config);
         };
         
-        // ✅ FIX: This function now only updates the charts when the modal is shown.
         function updateAnalyticsDashboard() {
+            if (!DOM.dom.showAnalyticsBtn) return; // حماية
+
             const hasData = State.appState.searchIndex && State.appState.searchIndex.length > 0;
             DOM.dom.showAnalyticsBtn.classList.toggle('d-none', !hasData);
             if (!hasData) {
@@ -432,15 +475,17 @@
         function updateAllUI(openAccordionId = null) {
             const filters = getFilterState();
             const results = (filters.keyword || filters.category || filters.isOrphan) ? State.appState.filteredResults : State.appState.searchIndex;
-            displayResults(results, openAccordionId);
-            if (openAccordionId && !document.getElementById(openAccordionId)) {
+            
+            displayResults(results, openAccordionId); // هذه ستستدعي updateSelectionUI داخليًا
+
+            if (openAccordionId && DOM.dom.resultsAccordion && !DOM.dom.resultsAccordion.querySelector(`#${openAccordionId}`)) { // Add null check
                 const firstResult = results[0];
                 if (firstResult) {
                     const source = firstResult.source || 'unknown';
                     const firstGroup = DOM.dom.resultsAccordion.querySelector(`[data-source="${source}"]`);
                     if(firstGroup) { const collapseElement = firstGroup.closest('.accordion-collapse'); if (collapseElement) new bootstrap.Collapse(collapseElement, {show: true}); }
                 }
-            } else if (openAccordionId) {
+            } else if (openAccordionId && DOM.dom.resultsAccordion) { // Add null check
                 const accordionBody = DOM.dom.resultsAccordion.querySelector(`#${openAccordionId} .accordion-body`);
                 if (accordionBody && parseInt(accordionBody.dataset.renderedCount, 10) === 0) {
                     const source = accordionBody.dataset.source;
@@ -448,13 +493,11 @@
                     if (items.length > 0) renderItemChunk(accordionBody, items, 0);
                 }
             }
-            updateAnalyticsDashboard(); // This now just toggles the button visibility
+            // استدعاءات التحديث الأخرى
+            if (typeof Chart !== 'undefined') updateAnalyticsDashboard(); // تأكد من وجود Chart
             updateLiveCounter();
             updateFilterOptions();
-            const hasResults = State.appState.searchIndex.length > 0;
-            DOM.dom.filterSection.classList.toggle('d-none', !hasResults);
-            DOM.dom.selectionControls.classList.toggle('d-none', !hasResults || results.length === 0);
-            DOM.dom.schemaGeneratorSection.classList.toggle('d-none', !hasResults);
+            // تم نقل التحكم في visibility إلى displayResults بناءً على anyResultsAtAll
         }
 
         const showSerpPreview = (itemId) => {
@@ -505,6 +548,7 @@
         };
 
         const updateProjectListDropdown = (currentProjectName) => {
+            if(!DOM.dom.projectSelector) return;
             const projects = JSON.parse(localStorage.getItem(State.CONSTANTS.PROJECTS_MASTER_KEY) || '[]');
             DOM.dom.projectSelector.innerHTML = '<option value="">-- اختر مشروعًا --</option>';
             projects.forEach(p => DOM.dom.projectSelector.add(new Option(p, p, false, p === currentProjectName)));
@@ -512,30 +556,27 @@
 
         const initObserver = () => {
             if (scrollObserver) scrollObserver.disconnect();
+            if (!DOM.dom.results) return; // حماية
             scrollObserver = new IntersectionObserver(handleIntersection, {
-                root: DOM.dom.results, // Observe inside the scrollable container
-                rootMargin: '0px 0px 200px 0px' // Load content 200px before it's visible
+                root: DOM.dom.results, 
+                rootMargin: '0px 0px 200px 0px' 
             });
         };
-
+        
         return {
+            getFilterState, // تأكد من تصدير هذه
+            updateSelectionUI, // تأكد من تصدير هذه
+            // ... بقية الصادرات
             getProjectName, getSelectedProjectName, getSeoCrawlerConfig, getUrlInput, getCustomProxyUrl,
-            getManualPageData, getFilterState, getSchemaConfigFromDOM, isManualInputChecked,
+            getManualPageData, getSchemaConfigFromDOM, isManualInputChecked,
             setFormValues, clearManualPageForm, clearFilterInputs,
             setDarkMode, toggleDarkMode, updateAllUI, handleAccordionShow, showSerpPreview, validateSchemaEditor,
-            enterEditMode, saveEditMode, updateProjectListDropdown, initObserver
+            enterEditMode, saveEditMode, updateProjectListDropdown, initObserver, updateAnalyticsDashboard
         };
     })(StateManager, DOMManager, Analyzer, Utils);
 
-
-    /**
-     * =================================================================
-     * M O D U L E: DataHandler
-     * -----------------------------------------------------------------
-     * مسؤول عن معالجة البيانات، الإضافة، الحذف، والتوليد.
-     * =================================================================
-     */
-    const DataHandler = (function (State, Analyzer, UI) {
+    // ... (DataHandler, ProjectManager, CoreFeatures كما هي في ردك السابق، مع التأكد من تمرير UIManager كـ UI) ...
+    const DataHandler = (function (State, Analyzer, UI) { // UI هو UIManager
         function addItemsToIndex(itemsToAdd) {
             const existingUrls = new Set(State.appState.searchIndex.map(item => (item.url.endsWith('/') && item.url.length > 1 ? item.url.slice(0, -1) : item.url)));
             let idCounter = State.appState.searchIndex.length > 0 ? Math.max(0, ...State.appState.searchIndex.map(item => item.id)) + 1 : 1;
@@ -554,7 +595,6 @@
                 const urlKey = item.url.endsWith('/') && item.url.length > 1 ? item.url.slice(0, -1) : item.url;
                 if (!existingUrls.has(urlKey)) newItems.push(item);
             };
-            // ✅ FIX: Defensive coding ensures that if properties are missing from an old project, it doesn't crash.
             (State.appState.analyzedFiles || []).forEach(file => addItem({ ...file, category: file.category || (file.source === 'seo_crawler' ? 'زاحف SEO' : 'تحليل تلقائي'), tags: file.keywords?.length > 0 ? file.keywords : Analyzer.extractTagsFromUrl(file.url), source: file.source || 'html_analysis' }));
             if (isManualChecked) (State.appState.manualPages || []).forEach(page => addItem({ ...page, source: 'manual' }));
             urlInputValue.split('\n').filter(Boolean).forEach(urlStr => {
@@ -598,14 +638,6 @@
         return { addItemsToIndex, generateSearchIndexFromInputs, addManualPage, deleteItem, getSelectedItems };
     })(StateManager, Analyzer, UIManager);
 
-
-    /**
-     * =================================================================
-     * M O D U L E: ProjectManager
-     * -----------------------------------------------------------------
-     * مسؤول عن حفظ وتحميل وإدارة المشاريع في LocalStorage.
-     * =================================================================
-     */
     const ProjectManager = (function (State, UI, Utils) {
         let saveTimeout;
 
@@ -645,9 +677,10 @@
             try {
                 const saved = localStorage.getItem(getProjectStorageKey(name));
                 if (saved) {
-                    State.resetAppState();
+                    
+                    State.resetAppState(); 
                     const data = JSON.parse(saved);
-                    Object.assign(State.appState, data);
+                    Object.assign(State.appState, data);                    
                     State.appState.selectedItemIds = new Set();
                     State.appState.schemaConfig = { ...StateManager.DEFAULT_BASE_SCHEMA_OBJ, ...(data.schemaConfig || {}) };
                     UI.setFormValues({ name, ...data });
@@ -657,7 +690,10 @@
                     UI.updateProjectListDropdown(name);
                     Utils.showNotification(`تم تحميل مشروع "${name}"! <i class="bi bi-folder2-open ms-2"></i>`, 'info');
                 }
-            } catch (e) { Utils.showNotification('خطأ في تحميل المشروع: ' + e.message, 'warning'); }
+            } catch (e) { 
+                console.error("Failed to load project:", e);
+                Utils.showNotification('خطأ في تحميل المشروع: ' + e.message, 'warning');
+            }
         }
 
         function deleteProject(name) {
@@ -670,23 +706,18 @@
         return { debouncedSaveProject, clearCurrentState, loadProject, deleteProject, saveProject, getProjectList };
     })(StateManager, UIManager, Utils);
 
-
-    /**
-     * =================================================================
-     * M O D U L E: CoreFeatures
-     * -----------------------------------------------------------------
-     * يحتوي على الميزات الأساسية للتطبيق مثل الزحف، التصدير، إلخ.
-     * =================================================================
-     */
     const CoreFeatures = (function (State, DOM, Analyzer, DataHandler, UI, Utils, ProjectManager) {
         
-        // ✅ BUG FIX & PERFORMANCE: Rewrote the crawler to be truly concurrent and robust.
-        async function startSeoCrawler(config) {
+        async function startSeoCrawler(config, onComplete) {
             let { baseUrl, maxDepth, crawlDelay, saveHtmlContent, concurrency } = config;
             try {
                 if (!/^https?:\/\//i.test(baseUrl)) { baseUrl = 'https://' + baseUrl; }
                 new URL(baseUrl);
-            } catch (e) { return Utils.showNotification('رابط الموقع غير صالح', 'danger'); }
+            } catch (e) {
+                Utils.showNotification('رابط الموقع غير صالح', 'danger');
+                if (onComplete) onComplete();
+                return;
+            }
 
             const origin = new URL(baseUrl).origin;
             Utils.showNotification(`<i class="bi bi-rocket-takeoff-fill ms-2"></i> بدء زحف SEO لـ ${origin}...`, 'info');
@@ -698,11 +729,13 @@
             let brokenLinks = new Set();
             let processedCount = 0;
             let activeWorkers = 0;
+            let totalToProcess = 1;
 
             const updateCrawlerUI = () => {
-                const total = processedCount + queue.length + activeWorkers;
-                DOM.dom.crawlerProgressBar.style.width = total > 0 ? `${(processedCount / total) * 100}%` : '0%';
-                DOM.dom.crawlerProgressText.textContent = `${processedCount}/${total}`;
+                const percentage = totalToProcess > 0 ? (processedCount / totalToProcess) * 100 : 0;
+                DOM.dom.crawlerProgressBar.style.width = `${percentage}%`;
+                DOM.dom.crawlerProgressBar.parentElement.setAttribute('aria-valuenow', percentage);
+                DOM.dom.crawlerProgressText.textContent = `${processedCount}/${totalToProcess}`;
                 DOM.dom.crawlerQueueCount.textContent = `في الانتظار: ${queue.length}`;
             };
             
@@ -710,56 +743,65 @@
 
             const worker = async () => {
                 while (true) {
-                    const task = queue.shift();
-                    if (!task) {
-                        if (activeWorkers === 0) break; // All tasks are done and all workers are idle
-                        else {
-                            await new Promise(r => setTimeout(r, 50)); // Wait for more tasks
-                            continue;
-                        }
-                    }
-
                     activeWorkers++;
-                    updateCrawlerUI();
+                    const task = queue.shift();
+
+                    if (!task) {
+                        activeWorkers--;
+                        if (activeWorkers === 0 && queue.length === 0) break;
+                        await new Promise(r => setTimeout(r, 50));
+                        continue;
+                    }
                     
-                    const { url, depth } = task;
-                    DOM.dom.crawlerCurrentUrl.textContent = `فحص: ${new URL(url).pathname}...`;
+                    DOM.dom.crawlerCurrentUrl.textContent = `فحص: ${new URL(task.url).pathname}...`;
 
                     try {
                         const startTime = performance.now();
-                        const response = await fetch(Utils.getProxyUrl(url));
+                        const response = await fetch(Utils.getProxyUrl(task.url));
                         if (!response.ok) throw new Error(`Status ${response.status}`);
                         const html = await response.text();
-                        const analysis = Analyzer.analyzeHtmlContent(html, url, { loadTime: Math.round(performance.now() - startTime) });
+                        const analysis = Analyzer.analyzeHtmlContent(html, task.url, { loadTime: Math.round(performance.now() - startTime), saveHtmlContent });
 
                         const linksOnPage = new Set();
                         new DOMParser().parseFromString(html, 'text/html').querySelectorAll('a[href]').forEach(link => {
                             const href = link.getAttribute('href');
                             if (!href || href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:')) return;
                             try {
-                                const absoluteUrl = new URL(href, url).href.split('#')[0];
+                                const absoluteUrl = new URL(href, task.url).href.split('#')[0];
                                 linksOnPage.add(absoluteUrl);
-                                if (absoluteUrl.startsWith(origin) && !visited.has(absoluteUrl) && depth < maxDepth && !/\.(jpg|jpeg|png|gif|svg|css|js|pdf|zip|webp|avif)$/i.test(absoluteUrl)) {
+                                if (absoluteUrl.startsWith(origin) && !visited.has(absoluteUrl) && task.depth < maxDepth && !/\.(jpg|jpeg|png|gif|svg|css|js|pdf|zip|webp|avif)$/i.test(absoluteUrl)) {
                                     visited.add(absoluteUrl);
-                                    queue.push({ url: absoluteUrl, depth: depth + 1 });
+                                    queue.push({ url: absoluteUrl, depth: task.depth + 1 });
+                                    totalToProcess++;
                                 }
                             } catch (e) {}
                         });
-
-                        const dataForThisUrl = { analysis, outgoingLinks: [...linksOnPage] };
-                        if (!saveHtmlContent) {
-                            delete dataForThisUrl.analysis.content;
-                        }
-                        crawledData.set(url, dataForThisUrl);
-                    } catch (error) {
-                        console.error(`فشل في جلب ${url}:`, error);
-                        brokenLinks.add(url);
-                        Utils.showNotification(`<i class="bi bi-exclamation-triangle-fill ms-2"></i> فشل الاتصال بـ: ${new URL(url).pathname}`, 'warning');
+                        crawledData.set(task.url, { analysis, outgoingLinks: [...linksOnPage] });
+                    } catch (error) { // تم تحسين هذا الجزء في الخطوات السابقة للاختبار
+                        console.error(`فشل في جلب ${task.url}:`, error);
+                        brokenLinks.add(task.url);
+                        const getDetailedFetchError = (err, urlPath) => { // دالة مساعدة من اقتراح سابق
+                            if (err.message.includes('Failed to fetch')) {
+                                return `فشل الشبكة أو مشكلة CORS عند محاولة الوصول إلى: ${urlPath}. تأكد من أن البروكسي يعمل.`;
+                            }
+                            if (err.message.startsWith('Status')) {
+                                const status = err.message.split(' ')[1];
+                                let reason = '';
+                                if (status === '404') reason = ' (لم يتم العثور على الصفحة)';
+                                if (status === '403') reason = ' (الوصول مرفوض)';
+                                if (status === '500') reason = ' (خطأ في الخادم)';
+                                return `فشل الاتصال بـ: ${urlPath} (الحالة: ${status}${reason})`;
+                            }
+                            return `فشل الاتصال بـ: ${urlPath} (خطأ غير معروف)`;
+                        };
+                        const pathname = new URL(task.url).pathname;
+                        const userMessage = getDetailedFetchError(error, pathname);
+                        Utils.showNotification(`<i class="bi bi-exclamation-triangle-fill ms-2"></i> ${userMessage}`, 'warning', 6000);
                     } finally {
                         processedCount++;
-                        activeWorkers--;
                         updateCrawlerUI();
-                        await new Promise(r => setTimeout(r, crawlDelay));
+                        if (crawlDelay > 0) await new Promise(r => setTimeout(r, crawlDelay));
+                        activeWorkers--;
                     }
                 }
             };
@@ -769,6 +811,7 @@
             
             DOM.dom.crawlerCurrentUrl.innerHTML = '<p class="text-center text-success fw-bold">اكتمل الزحف! جاري تحليل البيانات...</p>';
             DOM.dom.crawlerProgressBar.style.width = '100%';
+            DOM.dom.crawlerProgressBar.parentElement.setAttribute('aria-valuenow', 100);
 
             const allFoundUrls = new Set(crawledData.keys()), allLinkedToUrls = new Set(), linkEquityMap = new Map();
             crawledData.forEach(data => { data.outgoingLinks.forEach(link => { const cleanLink = link.split('#')[0].split('?')[0]; if (allFoundUrls.has(cleanLink)) { allLinkedToUrls.add(cleanLink); linkEquityMap.set(cleanLink, (linkEquityMap.get(cleanLink) || 0) + 1); } }); });
@@ -781,7 +824,9 @@
             
             Utils.showNotification( addedCount > 0 ? `<i class="bi bi-check-circle-fill ms-2"></i> اكتمل الزحف! تمت إضافة ${addedCount} صفحة جديدة.` : crawledData.size > 0 ? '🏁 اكتمل الزحف. جميع الصفحات التي تم العثور عليها موجودة بالفعل.' : '❌ فشل الزحف. لم يتم العثور على أي صفحات قابلة للوصول.', addedCount > 0 ? 'success' : (crawledData.size > 0 ? 'info' : 'danger'));
             if (brokenLinks.size > 0) Utils.showNotification(`<i class="bi bi-exclamation-octagon-fill ms-2"></i> تم العثور على ${brokenLinks.size} رابط داخلي مكسور.`, 'danger', 7000);
-            setTimeout(() => { DOM.dom.crawlerStatus.classList.add('d-none'); DOM.dom.crawlerCurrentUrl.textContent = 'بدء العملية...'; }, 5000);
+            setTimeout(() => { if(DOM.dom.crawlerStatus) DOM.dom.crawlerStatus.classList.add('d-none'); if(DOM.dom.crawlerCurrentUrl) DOM.dom.crawlerCurrentUrl.textContent = 'بدء العملية...'; }, 5000);
+            
+            if (onComplete) onComplete();
         }
 
         async function processTextualFile(file, urlExtractor, successMsg, noDataMsg, errorMsg) {
@@ -801,7 +846,7 @@
             for (const file of files) {
                 if (!(State.appState.analyzedFiles || []).some(f => f.filename === file.name)) {
                     try {
-                        const analysis = Analyzer.analyzeHtmlContent(await Utils.readFileContent(file), file.name);
+                        const analysis = Analyzer.analyzeHtmlContent(await Utils.readFileContent(file), file.name, { saveHtmlContent: true });
                         if (!State.appState.analyzedFiles) State.appState.analyzedFiles = [];
                         State.appState.analyzedFiles.push(analysis); newFilesAnalyzed++;
                     } catch (e) { console.error('Error processing file:', file.name, e); Utils.showNotification(`خطأ في معالجة ${file.name}`, 'danger'); }
@@ -874,18 +919,100 @@
     })(StateManager, DOMManager, Analyzer, DataHandler, UIManager, Utils, ProjectManager);
 
 
-    /**
-     * =================================================================
-     * M A I N  A P P L I C A T I O N  (The Orchestrator)
-     * -----------------------------------------------------------------
-     * نقطة الدخول الرئيسية، مسؤول عن ربط الوحدات وإعداد معالجات الأحداث.
-     * =================================================================
-     */
-    (function (State, DOM, UI, Data, Core, PM, Utils) {
+    (function (State, DOM, UI, Data, Core, PM, Utils, Ai8vPlus) {
+        
+        // دالة مساعدة للحصول على العناصر النشطة حاليًا (إما المفلترة أو كل شيء)
+        function getCurrentlyDisplayedOrFilteredItems() {
+            const filters = UI.getFilterState(); // UI هو UIManager هنا
+            if (filters.keyword || filters.category || filters.isOrphan) {
+                return State.appState.filteredResults;
+            }
+            return State.appState.searchIndex;
+        }
+
+        function selectAllItems() {
+            const itemsToSelect = getCurrentlyDisplayedOrFilteredItems();
+            itemsToSelect.forEach(item => State.appState.selectedItemIds.add(item.id));
+            UI.updateSelectionUI(); // UI هو UIManager
+        }
+
+        function deselectAllItems() {
+            const itemsToDeselect = getCurrentlyDisplayedOrFilteredItems();
+            itemsToDeselect.forEach(item => State.appState.selectedItemIds.delete(item.id));
+            UI.updateSelectionUI(); // UI هو UIManager
+        }
+        
+        function toggleItemSelection(checkboxElement, itemId) {
+            if (checkboxElement.checked) {
+                State.appState.selectedItemIds.add(itemId);
+            } else {
+                State.appState.selectedItemIds.delete(itemId);
+            }
+            UI.updateSelectionUI(); // UI هو UIManager
+        }
+
+        function applyFilters() {
+            const openAccordionId = DOM.dom.resultsAccordion ? DOM.dom.resultsAccordion.querySelector('.accordion-collapse.show')?.id : null;
+            const filters = UI.getFilterState(); // UI هو UIManager
+            State.appState.filteredResults = State.appState.searchIndex.filter(item => 
+                (!filters.category || item.category === filters.category) &&
+                (!filters.keyword || (item.title + item.description + (item.tags || []).join(' ')).toLowerCase().includes(filters.keyword)) &&
+                (!filters.isOrphan || item.seo?.isOrphan)
+            );
+            UI.updateAllUI(openAccordionId); // UI هو UIManager
+        }
+        
+        function updateAdvisorTasks() {
+            if (!window.Ai8vPlus || typeof window.Ai8vPlus.analyzeAndPrioritize !== 'function') {
+                return; 
+            }
+            const tasks = Ai8vPlus.analyzeAndPrioritize(State.appState.searchIndex);
+            const advisorList = DOM.dom['advisor-list']; // من DOMManager
+            const advisorPlaceholder = DOM.dom.advisorPlaceholder; // من DOMManager
+            const advisorCountBadge = DOM.dom['advisor-count']; // من DOMManager
+        
+            if (!advisorList || !advisorPlaceholder || !advisorCountBadge) return;
+        
+            advisorList.innerHTML = '';
+            if (tasks.length === 0) {
+                advisorPlaceholder.classList.remove('d-none');
+                advisorCountBadge.classList.add('d-none');
+                return;
+            }
+        
+            advisorPlaceholder.classList.add('d-none');
+            advisorCountBadge.textContent = tasks.length;
+            advisorCountBadge.classList.remove('d-none');
+        
+            const fragment = document.createDocumentFragment();
+            tasks.forEach(task => {
+                const collapseId = `task-details-${task.id}`;
+                const taskElement = document.createElement('div');
+                taskElement.className = 'list-group-item';
+                taskElement.innerHTML = `
+                    <div class="d-flex w-100 justify-content-between align-items-center">
+                        <h5 class="mb-1 h6"><i class="bi ${task.priority.icon} ms-2 text-${task.priority.color}"></i> ${task.description}</h5>
+                        <small><span class="badge bg-${task.priority.color}">${task.priority.label}</span></small>
+                    </div>
+                    <p class="mb-1 small">
+                        <a class="fw-bold text-decoration-none" data-bs-toggle="collapse" href="#${collapseId}" role="button" aria-expanded="false" aria-controls="${collapseId}">
+                            عرض الصفحات المتأثرة (${task.details.length})
+                        </a>
+                    </p>
+                    <div class="collapse" id="${collapseId}">
+                        <ul class="list-unstyled mt-2 small ps-4">
+                            ${task.details.map(d => `<li><span class="text-muted" dir="ltr">${d.url}</span> (${d.title})</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+                fragment.appendChild(taskElement);
+            });
+            advisorList.appendChild(fragment);
+        }
         
         function handleGenerateClick() {
-            const urlInput = UI.getUrlInput();
-            const isManualChecked = UI.isManualInputChecked();
+            const urlInput = UI.getUrlInput(); // UI هو UIManager
+            const isManualChecked = UI.isManualInputChecked(); // UI هو UIManager
             const newItems = Data.generateSearchIndexFromInputs(urlInput, isManualChecked);
 
             if (newItems.length === 0 && State.appState.searchIndex.length === 0) return Utils.showNotification('يرجى إدخال بيانات أولاً', 'warning');
@@ -893,64 +1020,74 @@
             const addedCount = Data.addItemsToIndex(newItems);
             Utils.showNotification(addedCount > 0 ? `تم إضافة ${addedCount} عنصر جديد! الإجمالي: ${State.appState.searchIndex.length}` : 'لا توجد عناصر جديدة للإضافة. النتائج محدّثة.', addedCount > 0 ? 'success' : 'info');
             
-            UI.updateAllUI();
+            UI.updateAllUI(); // UI هو UIManager
+            updateAdvisorTasks();
             PM.debouncedSaveProject();
         }
 
         function handleAddManualPage() {
-            const pageData = UI.getManualPageData();
+            const pageData = UI.getManualPageData(); // UI هو UIManager
             if (!pageData.title || !pageData.url) return Utils.showNotification('يرجى إدخال العنوان والرابط على الأقل', 'warning');
             
             Data.addManualPage(pageData);
-            UI.clearManualPageForm();
+            UI.clearManualPageForm(); // UI هو UIManager
             Utils.showNotification(`تم إضافة: ${pageData.title} يدويًا. اضغط "توليد" لإظهارها.`, 'success');
             PM.debouncedSaveProject();
         }
 
         function handleManualSave() {
-            const projectName = UI.getProjectName();
+            const projectName = UI.getProjectName(); // UI هو UIManager
             if (!projectName) return Utils.showNotification('يرجى إدخال اسم للمشروع.', 'warning');
             
-            if (UI.validateSchemaEditor()) {
-                State.appState.schemaConfig = UI.getSchemaConfigFromDOM();
+            if (UI.validateSchemaEditor()) { // UI هو UIManager
+                State.appState.schemaConfig = UI.getSchemaConfigFromDOM(); // UI هو UIManager
             } else {
                 Utils.showNotification('تم حفظ المشروع، لكن "السكيما الأساسية" تحتوي على أخطاء.', 'warning', 6000);
             }
-            const dataToSave = { ...State.appState, analyzedFiles: (State.appState.analyzedFiles || []).map(({ content, ...rest }) => rest), urlInput: UI.getUrlInput(), customProxyUrl: UI.getCustomProxyUrl(), timestamp: new Date().toISOString() };
+            const dataToSave = { ...State.appState, analyzedFiles: (State.appState.analyzedFiles || []).map(({ content, ...rest }) => rest), urlInput: UI.getUrlInput(), customProxyUrl: UI.getCustomProxyUrl(), timestamp: new Date().toISOString() }; // UI هو UIManager
             PM.saveProject(projectName, dataToSave);
             Utils.showNotification(`تم حفظ المشروع "${projectName}"! <i class="bi bi-save-fill ms-2"></i>`, 'success');
         }
 
         function handleDeleteProject() {
-            const projectName = UI.getSelectedProjectName();
+            const projectName = UI.getSelectedProjectName(); // UI هو UIManager
             if (!projectName) return Utils.showNotification('يرجى اختيار مشروع لحذفه.', 'warning');
             if (confirm(`هل أنت متأكد من حذف المشروع "${projectName}"؟`)) {
                 PM.deleteProject(projectName);
-                if (UI.getProjectName() === projectName) PM.clearCurrentState();
+                if (UI.getProjectName() === projectName) PM.clearCurrentState(); // UI هو UIManager
             }
         }
         
         async function handleStartCrawler() {
-            const config = UI.getSeoCrawlerConfig();
+            const config = UI.getSeoCrawlerConfig(); // UI هو UIManager
             if (!config.baseUrl) return Utils.showNotification('يرجى إدخال رابط الموقع للزحف', 'warning');
-            await Core.startSeoCrawler(config);
-            UI.updateAllUI(); // Refresh UI after crawl
-            PM.debouncedSaveProject();
+            await Core.startSeoCrawler(config, () => {
+                UI.updateAllUI(); // UI هو UIManager
+                updateAdvisorTasks();
+                PM.debouncedSaveProject();
+            });
         }
 
         async function handleGenerateSchema() {
-            if (!UI.validateSchemaEditor()) {
+            if (!UI.validateSchemaEditor()) { // UI هو UIManager
                 Utils.showNotification('يرجى تصحيح الأخطاء في "السكيما الأساسية" قبل المتابعة.', 'danger');
-                DOM.dom.schemaBaseEditor.focus();
+                if (DOM.dom.schemaBaseEditor) DOM.dom.schemaBaseEditor.focus();
                 return;
             }
-            const schemaConfig = UI.getSchemaConfigFromDOM();
+            const schemaConfig = UI.getSchemaConfigFromDOM(); // UI هو UIManager
             if (!schemaConfig.baseUrl) return Utils.showNotification('يرجى إدخال رابط الموقع الأساسي.', 'warning');
             
             State.appState.schemaConfig = schemaConfig;
             await Core.generateAndDownloadSchema(schemaConfig);
         }
         
+        function handlePrintReport() {
+            const originalTitle = document.title;
+            document.title = "Ai8V | SEO Tools | Mind & Machine";
+            window.print();
+            document.title = originalTitle;
+        }
+
         function handleExportReport() {
             const items = State.appState.searchIndex;
             if (items.length === 0) {
@@ -961,7 +1098,7 @@
             const orphanPages = items.filter(i => i.seo?.isOrphan);
             const noIndexPages = items.filter(i => i.seo?.isNoIndex);
             const missingH1 = items.filter(i => i.seo && !i.seo.h1);
-            const missingDesc = items.filter(i => !i.description || i.description.startsWith('صفحة '));
+            const missingDesc = items.filter(i => i.seo?.isDefaultDescription);
             const pagesWithBrokenLinks = items.filter(i => i.seo?.brokenLinksOnPage?.length > 0);
 
             let totalScore = 0, maxPossibleScore = 0;
@@ -978,9 +1115,9 @@
                     <h4 class="h6 mt-4">${title} <span class="badge bg-${badgeClass} ms-2">${pages.length}</span></h4>
                     <ul class="list-group list-group-flush">
                         ${pages.map(p => `<li class="list-group-item small d-flex justify-content-between align-items-center">
-    <span>${p.title}</span>
-    <span class="text-muted" dir="ltr">${p.url}</span>
-</li>`).join('')}
+                            <span>${p.title}</span>
+                            <span class="text-muted" dir="ltr">${p.url}</span>
+                        </li>`).join('')}
                     </ul>`;
             };
 
@@ -1017,9 +1154,11 @@
                 </div>
             `;
             
-            DOM.dom.reportModalBody.innerHTML = reportHtml;
-            const reportModal = new bootstrap.Modal(DOM.dom.reportModal);
-            reportModal.show();
+            if (DOM.dom.reportModalBody) DOM.dom.reportModalBody.innerHTML = reportHtml;
+            if (DOM.dom.reportModal) {
+                 const reportModal = new bootstrap.Modal(DOM.dom.reportModal);
+                 reportModal.show();
+            }
         }
 
         function toggleEdit(itemId) {
@@ -1027,62 +1166,58 @@
             if (!pageItem) return;
             const editBtn = pageItem.querySelector('.btn-edit');
             const item = State.appState.searchIndex.find(i => i.id === itemId);
-            if (!item) return;
-            if (pageItem.classList.contains('is-editing')) UI.saveEditMode(item, pageItem, editBtn, PM.debouncedSaveProject);
-            else { UI.enterEditMode(item, pageItem, editBtn); UI.showSerpPreview(itemId); }
+            if (!item || !editBtn) return; // Add null check for editBtn
+            if (pageItem.classList.contains('is-editing')) UI.saveEditMode(item, pageItem, editBtn, () => { // UI هو UIManager
+                PM.debouncedSaveProject();
+                updateAdvisorTasks();
+            });
+            else { UI.enterEditMode(item, pageItem, editBtn); UI.showSerpPreview(itemId); } // UI هو UIManager
         }
 
-        function toggleItemSelection(checkbox, itemId) {
-            State.appState.selectedItemIds[checkbox.checked ? 'add' : 'delete'](itemId);
-            UI.updateSelectionUI();
-        }
-
-        function selectAllItems() {
-            const filters = UI.getFilterState();
-            const itemsToSelect = (filters.keyword || filters.category || filters.isOrphan) ? State.appState.filteredResults : State.appState.searchIndex;
-            itemsToSelect.forEach(item => State.appState.selectedItemIds.add(item.id));
-            UI.updateSelectionUI();
-        }
-
-        function deselectAllItems() {
-            const filters = UI.getFilterState();
-            const itemsToDeselect = new Set(((filters.keyword || filters.category || filters.isOrphan) ? State.appState.filteredResults : State.appState.searchIndex).map(i => i.id));
-            State.appState.selectedItemIds = new Set([...State.appState.selectedItemIds].filter(id => !itemsToDeselect.has(id)));
-            UI.updateSelectionUI();
-        }
-
-        function applyFilters() {
-            const openAccordionId = DOM.dom.resultsAccordion.querySelector('.accordion-collapse.show')?.id;
-            const filters = UI.getFilterState();
-            State.appState.filteredResults = State.appState.searchIndex.filter(item => 
-                (!filters.category || item.category === filters.category) &&
-                (!filters.keyword || (item.title + item.description + (item.tags || []).join(' ')).toLowerCase().includes(filters.keyword)) &&
-                (!filters.isOrphan || item.seo?.isOrphan)
-            );
-            UI.updateAllUI(openAccordionId);
-        }
 
         function setupEventListeners() {
             const listeners = {
-                'darkModeToggle': { 'click': UI.toggleDarkMode }, 'startCrawlerBtn': { 'click': handleStartCrawler },
-                'importUrlsFileBtn': { 'click': () => { const file = DOM.dom.urlsFileInput.files[0]; if(file) Core.processTextualFile(file, c => c.split('\n').filter(Boolean), len => `تم استخراج ${len} رابط من الملف!`, 'لم يتم العثور على روابط.', e => `خطأ: ${e}`); else Utils.showNotification('يرجى اختيار ملف أولاً', 'warning'); } },
-                'addManualPageBtn': { 'click': handleAddManualPage }, 'generateIndexBtn': { 'click': handleGenerateClick },
-                'selectAllBtn': { 'click': selectAllItems }, 'deselectAllBtn': { 'click': deselectAllItems },
-                'downloadJsonBtn': { 'click': Core.downloadJson }, 'downloadCsvBtn': { 'click': Core.downloadCSV },
-                'downloadZipBtn': { 'click': Core.downloadZip }, 'toggleCopyBtn': { 'click': () => DOM.dom.copyOptions.classList.toggle('d-none') },
-                'saveProjectBtn': { 'click': handleManualSave }, 'projectSelector': { 'change': (e) => PM.loadProject(e.target.value) },
-                'deleteProjectBtn': { 'click': handleDeleteProject }, 'clearFormBtn': { 'click': () => { if (confirm('هل أنت متأكد من مسح جميع البيانات الحالية؟')) { PM.clearCurrentState(); Utils.showNotification('تم مسح كل شيء.', 'info'); } } },
-                'manualInput': { 'change': (e) => DOM.dom.manualInputSection.classList.toggle('d-none', !e.target.checked) },
-                'hideCrawlerStatusBtn': { 'click': () => DOM.dom.crawlerStatus.classList.add('d-none') },
-                'generateSchemaBtn': { 'click': handleGenerateSchema }, 'schemaBaseUrl': { 'change': PM.debouncedSaveProject },
-                'schemaPageType': { 'change': PM.debouncedSaveProject }, 'schemaBaseEditor': { 'input': UI.validateSchemaEditor, 'blur': () => { if (UI.validateSchemaEditor()) PM.debouncedSaveProject(); } },
-                'viewOrphanPagesBtn': { 'click': () => { DOM.dom.orphanFilter.checked = true; applyFilters(); DOM.dom.results.scrollIntoView({ behavior: 'smooth' }); } },
+                'darkModeToggle': { 'click': UI.toggleDarkMode }, 
+                'startCrawlerBtn': { 'click': handleStartCrawler },
+                'importUrlsFileBtn': { 'click': () => { 
+                    if (!DOM.dom.urlsFileInput) return;
+                    const file = DOM.dom.urlsFileInput.files[0]; 
+                    if(file) Core.processTextualFile(file, c => c.split('\n').filter(Boolean), len => `تم استخراج ${len} رابط من الملف!`, 'لم يتم العثور على روابط.', e => `خطأ: ${e}`); 
+                    else Utils.showNotification('يرجى اختيار ملف أولاً', 'warning'); 
+                } },
+                'addManualPageBtn': { 'click': handleAddManualPage }, 
+                'generateIndexBtn': { 'click': handleGenerateClick },
+                'downloadJsonBtn': { 'click': Core.downloadJson }, 
+                'downloadCsvBtn': { 'click': Core.downloadCSV },
+                'downloadZipBtn': { 'click': Core.downloadZip }, 
+                'toggleCopyBtn': { 'click': () => DOM.dom.copyOptions.classList.toggle('d-none') },
+                'saveProjectBtn': { 'click': handleManualSave }, 
+                'projectSelector': { 'change': (e) => { PM.loadProject(e.target.value); updateAdvisorTasks(); } },
+                'deleteProjectBtn': { 'click': handleDeleteProject }, 
+                'clearFormBtn': { 'click': () => { if (confirm('هل أنت متأكد من مسح جميع البيانات الحالية؟')) { PM.clearCurrentState(); updateAdvisorTasks(); Utils.showNotification('تم مسح كل شيء.', 'info'); } } },
+                'manualInput': { 'change': (e) => { if (DOM.dom.manualInputSection) DOM.dom.manualInputSection.classList.toggle('d-none', !e.target.checked) } },
+                'hideCrawlerStatusBtn': { 'click': () => { if (DOM.dom.crawlerStatus) DOM.dom.crawlerStatus.classList.add('d-none') } },
+                'generateSchemaBtn': { 'click': handleGenerateSchema }, 
+                'schemaBaseUrl': { 'change': PM.debouncedSaveProject },
+                'schemaPageType': { 'change': PM.debouncedSaveProject }, 
+                'schemaBaseEditor': { 'input': UI.validateSchemaEditor, 'blur': () => { if (UI.validateSchemaEditor()) PM.debouncedSaveProject(); } },
+                'viewOrphanPagesBtn': { 'click': () => { 
+                    if (!DOM.dom.analyticsModal || !DOM.dom.orphanFilter || !DOM.dom.results) return;
+                    const analyticsModalEl = DOM.dom.analyticsModal;
+                    const modalInstance = bootstrap.Modal.getInstance(analyticsModalEl);
+                    if (modalInstance) {
+                        modalInstance.hide();
+                    }
+                    DOM.dom.orphanFilter.checked = true; 
+                    applyFilters(); 
+                    DOM.dom.results.scrollIntoView({ behavior: 'smooth' }); 
+                } },
                 'exportReportBtn': { 'click': handleExportReport },
-                'printReportBtn': { 'click': () => window.print() },
+                'printReportBtn': { 'click': handlePrintReport },
                 'analyticsModal': { 'show.bs.modal': UI.updateAnalyticsDashboard }
             };
             for (const id in listeners) { 
-                const el = DOM.getEl(id);
+                const el = DOM.getEl(id); // DOMManager.getEl
                 if (el) {
                     for (const event in listeners[id]) {
                         el.addEventListener(event, listeners[id][event]);
@@ -1090,29 +1225,71 @@
                 }
             }
 
-            DOM.dom.categoryFilter.addEventListener('change', applyFilters); DOM.dom.keywordFilter.addEventListener('input', applyFilters); DOM.dom.orphanFilter.addEventListener('change', applyFilters);
-            DOM.dom.results.addEventListener('click', (e) => {
-                const target = e.target.closest('button, .item-select-checkbox'); if (!target) return;
-                const resultItem = target.closest('.result-item'); if (!resultItem) return;
-                const itemId = parseInt(resultItem.dataset.id, 10);
-                const actions = { 
-                    'btn-edit': () => toggleEdit(itemId), 
-                    'btn-preview': () => UI.showSerpPreview(itemId), 
-                    'btn-delete': () => Data.deleteItem(itemId, () => { UI.updateAllUI(); PM.debouncedSaveProject(); }), 
-                    'item-select-checkbox': () => toggleItemSelection(target, itemId) 
-                };
-                for (const className in actions) { if (target.classList.contains(className)) return actions[className](); }
-            });
-            DOM.dom.resultsAccordion.addEventListener('show.bs.collapse', UI.handleAccordionShow);
-            if (DOM.dom.copyOptions) DOM.dom.copyOptions.addEventListener('click', e => { const btn = e.target.closest('button[data-copy-type]'); if (btn) Core.copyToClipboard(btn.dataset.copyType); });
+            // ربط أحداث الفلترة وأزرار التحديد
+            if (DOM.dom.categoryFilter) DOM.dom.categoryFilter.addEventListener('change', applyFilters); 
+            if (DOM.dom.keywordFilter) DOM.dom.keywordFilter.addEventListener('input', applyFilters); 
+            if (DOM.dom.orphanFilter) DOM.dom.orphanFilter.addEventListener('change', applyFilters);
+            
+            if (DOM.dom.selectAllBtn) DOM.dom.selectAllBtn.addEventListener('click', selectAllItems);
+            if (DOM.dom.deselectAllBtn) DOM.dom.deselectAllBtn.addEventListener('click', deselectAllItems);
+            
+            if (DOM.dom.results) {
+                DOM.dom.results.addEventListener('click', (e) => {
+                    const target = e.target; 
+                    const resultItem = target.closest('.result-item');
+                    if (!resultItem) return;
+
+                    const itemId = parseInt(resultItem.dataset.id, 10);
+                    if (isNaN(itemId)) return;
+
+                    if (target.classList.contains('item-select-checkbox')) {
+                        toggleItemSelection(target, itemId); 
+                        return; 
+                    }
+                    
+                    const buttonTarget = target.closest('button');
+                    if (!buttonTarget) return;
+
+                    if (buttonTarget.classList.contains('btn-edit')) {
+                        toggleEdit(itemId); 
+                    } else if (buttonTarget.classList.contains('btn-preview')) {
+                        UI.showSerpPreview(itemId);
+                    } else if (buttonTarget.classList.contains('btn-delete')) {
+                        Data.deleteItem(itemId, () => { UI.updateAllUI(); updateAdvisorTasks(); PM.debouncedSaveProject(); });
+                    }
+                });
+            }
+
+            if (DOM.dom.resultsAccordion) DOM.dom.resultsAccordion.addEventListener('show.bs.collapse', UI.handleAccordionShow);
+            
+            if (DOM.dom.copyOptions) {
+                DOM.dom.copyOptions.addEventListener('click', e => { 
+                    const btn = e.target.closest('button[data-copy-type]'); 
+                    if (btn) Core.copyToClipboard(btn.dataset.copyType); 
+                });
+            }
         
             const setupDragDrop = (dropZoneId, fileInputId, fileTypeRegex, processFunction) => {
-                const dropZone = DOM.getEl(dropZoneId); const fileInput = DOM.getEl(fileInputId); if (!dropZone || !fileInput) return;
+                const dropZone = DOM.getEl(dropZoneId); 
+                const fileInput = DOM.getEl(fileInputId); 
+                if (!dropZone || !fileInput) return;
                 dropZone.addEventListener('click', () => fileInput.click());
-                ['dragover', 'dragleave', 'drop'].forEach(eventName => dropZone.addEventListener(eventName, e => { e.preventDefault(); e.stopPropagation(); dropZone.classList.toggle('dragover', eventName === 'dragover' || eventName === 'drop'); if (eventName === 'drop') { const files = [...e.dataTransfer.files].filter(f => fileTypeRegex.test(f.name)); if (files.length > 0) processFunction(fileInput.multiple ? files : files[0]); } }));
-                fileInput.addEventListener('change', (e) => { if (e.target.files.length > 0) processFunction(fileInput.multiple ? [...e.target.files] : e.target.files[0]); });
+                ['dragover', 'dragleave', 'drop'].forEach(eventName => dropZone.addEventListener(eventName, e => { 
+                    e.preventDefault(); 
+                    e.stopPropagation(); 
+                    dropZone.classList.toggle('dragover', eventName === 'dragover' || eventName === 'drop'); 
+                    if (eventName === 'drop') { 
+                        const files = [...e.dataTransfer.files].filter(f => fileTypeRegex.test(f.name)); 
+                        if (files.length > 0) processFunction(fileInput.multiple ? files : files[0]); 
+                    } 
+                }));
+                fileInput.addEventListener('change', (e) => { 
+                    if (e.target.files.length > 0) processFunction(fileInput.multiple ? [...e.target.files] : e.target.files[0]); 
+                });
             };
+            
             const textualFileHandler = (extractor, success, noData, error) => file => Core.processTextualFile(file, extractor, success, noData, error);
+            
             setupDragDrop('robotsDropZone', 'robotsFileInput', /\.txt$/, textualFileHandler(c => c.split('\n').filter(l => /^(dis)?allow:/i.test(l.trim())).map(l => l.split(':')[1]?.trim()).filter(Boolean), len => `تم استخراج ${len} مسار من robots.txt!`, 'لم يتم العثور على مسارات.', e => `خطأ: ${e}`));
             setupDragDrop('manifestDropZone', 'manifestFileInput', /\.json$/, textualFileHandler(c => { try { const d = JSON.parse(c); return [...(d.icons?.map(i => i.src) || []), ...(d.screenshots?.map(s => s.src) || []), d.start_url, ...(d.shortcuts?.map(s => s.url) || [])].filter(Boolean); } catch(err) { throw new Error('JSON غير صالح'); } }, len => `تم استخراج ${len} مسار من manifest.json!`, 'لم يتم العثور على مسارات.', e => `خطأ: ${e.message}`));
             setupDragDrop('sitemapDropZone', 'sitemapFileInput', /\.xml$/, textualFileHandler(c => { const d = new DOMParser().parseFromString(c, 'text/xml'); if (d.querySelector('parsererror')) throw new Error('XML غير صالح'); return [...d.querySelectorAll('url > loc, sitemap > loc')].map(el => { try { return new URL(el.textContent.trim()).pathname; } catch { return el.textContent.trim(); } }).filter(Boolean); }, len => `تم استخراج ${len} رابط من Sitemap!`, 'لم يتم العثور على روابط.', e => `خطأ: ${e.message}`));
@@ -1122,6 +1299,7 @@
         function init() {
             DOM.init();
             UI.initObserver();
+            
             const initialDarkMode = localStorage.getItem('darkMode') === 'true' || (localStorage.getItem('darkMode') === null && window.matchMedia('(prefers-color-scheme: dark)').matches);
             UI.setDarkMode(initialDarkMode);
             const lastProject = localStorage.getItem(State.CONSTANTS.LAST_PROJECT_KEY);
@@ -1131,11 +1309,26 @@
                 UI.updateProjectListDropdown();
                 UI.validateSchemaEditor();
             }
+            updateAdvisorTasks(); 
             setupEventListeners();
+            UI.updateAllUI(); // <--- استدعاء updateAllUI هنا لضمان تحديث كل شيء بما في ذلك أزرار التحديد
         }
 
         window.addEventListener('DOMContentLoaded', init);
 
-    })(StateManager, DOMManager, UIManager, DataHandler, CoreFeatures, ProjectManager, Utils);
+    })(StateManager, DOMManager, UIManager, DataHandler, CoreFeatures, ProjectManager, Utils, window.Ai8vPlus);
 
+    return {
+        StateManager,
+        Analyzer,
+        DataHandler,
+        UIManager, // <--- تأكد من تصدير UIManager
+        DOMManager,
+        Utils
+    };
+    
 })();
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = exportedModules;
+}

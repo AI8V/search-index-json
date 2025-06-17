@@ -32,9 +32,9 @@
     <meta http-equiv="Content-Security-Policy" content="
         default-src 'self'; 
         script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; 
-        style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
+        style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com;
         img-src 'self' data: https://assets9.lottiefiles.com;
-        font-src 'self' https://cdn.jsdelivr.net;
+        font-src 'self' https://cdn.jsdelivr.net https://fonts.gstatic.com;
         connect-src 'self' https://api.allorigins.win https://assets9.lottiefiles.com;
         frame-src 'self' https://assets9.lottiefiles.com/;
         frame-ancestors 'self';
@@ -96,104 +96,116 @@
     <!-- Stylesheets -->
     <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="assets/css/aos.min.css">
-    <link rel="preload" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"></noscript>
     <link rel="stylesheet" href="assets/css/styles.css">
 </head>
 
 <body>
-<button id="darkModeToggle" class="dark-mode-toggle position-fixed top-0 start-0 m-3 z-3 rounded-pill py-2 px-3 border-0 text-white shadow-sm d-flex align-items-center gap-2" aria-label="تبديل الوضع الليلي"></button>
-    <div class="fw-bold text-white shadow-sm d-none d-flex align-items-center d-flex live-counter position-fixed rounded-pill py-2 px-3 z-2 gap-2" id="liveCounter" style="top:80px;left:20px;"><i class="bi bi-bar-chart-line-fill" aria-hidden="true"></i><span>العناصر: <span id="counterValue">0</span></span></div>
-    <main class="container mt-5 pt-4">
-        <h1 class="display-6 d-grid d-flex justify-content-center mb-4 pb-5 mt-5"><i class="bi bi-search ms-4" aria-hidden="true"></i> Mind & Machine <span class="badge ultimate-badge align-middle me-3">Ultimate</span></h1>
-        <div class="row g-4">
-            <div class="col-lg-6">
-                <div class="card h-100 shadow-sm">
-                    <div class="card-header bg-transparent">
-                        <h2 class="h5 mb-0"><i class="bi bi-pencil-square ms-2" aria-hidden="true"></i>إدخال صفحات الموقع</h2>
+<button id="darkModeToggle" class="dark-mode-toggle position-fixed top-0 start-0 m-3 z-3 rounded-pill py-2 px-3 border-0 text-white shadow-sm d-flex align-items-center gap-2 d-print-none" aria-label="تبديل الوضع الليلي"></button>
+<div class="fw-bold text-white shadow-sm d-none d-print-none d-flex align-items-center live-counter position-fixed rounded-pill py-2 px-3 z-2 gap-2" id="liveCounter" style="top:80px;left:20px;"><i class="bi bi-bar-chart-line-fill" aria-hidden="true"></i><span>العناصر: <span id="counterValue">0</span></span></div>
+<main class="d-print-none container mt-5 pt-4">
+    <h1 class="display-6 d-flex justify-content-center mb-4 pb-5 mt-5"><i class="bi bi-search ms-4" aria-hidden="true"></i> Mind & Machine <span class="badge ultimate-badge align-middle me-3">Ultimate</span></h1>
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-transparent">
+                    <h2 class="h5 mb-0"><i class="bi bi-pencil-square ms-2" aria-hidden="true"></i>إدخال صفحات الموقع</h2>
+                </div>
+                <div class="card-body overflow-y-auto">
+                    <div class="seo-crawler-section rounded-3 p-3 my-3">
+                        <h3 class="h6"><i class="bi bi-robot ms-2" aria-hidden="true"></i>زاحف SEO وتحليل الموقع <span class="badge ultimate-badge me-5">جديد</span></h3>
+                        <div class="input-group mb-2"><input class="form-control" type="url" aria-label="رابط الموقع للزحف" dir="ltr" id="seoCrawlerUrl" placeholder="https://example.com"><button class="btn btn-dark me-2" id="startCrawlerBtn" type="button"><i class="bi bi-rocket-takeoff-fill ms-2" aria-hidden="true"></i>زحف وتحليل</button></div>
+                        <div class="row g-2 mb-2">
+                            <div class="col-sm-4"><label class="form-label small" for="seoCrawlerDepth">أقصى عمق</label><input class="form-control form-control-sm text-center" type="number" aria-label="عمق الزحف" id="seoCrawlerDepth" max="10" min="0" title="عمق الزحف (0 = الصفحة الحالية فقط)" value="1"></div>
+                            <div class="col-sm-4"><label class="form-label small" for="seoCrawlerConcurrency">طلبات متوازية</label><input class="form-control form-control-sm text-center" type="number" aria-label="الطلبات المتوازية" id="seoCrawlerConcurrency" max="10" min="1" title="عدد الطلبات التي يتم إرسالها في نفس الوقت" value="3"></div>
+                            <div class="col-sm-4"><label class="form-label small" for="seoCrawlerDelay">التأخير (ms)</label><input class="form-control form-control-sm text-center" type="number" aria-label="التأخير بين الطلبات" id="seoCrawlerDelay" min="0" step="50" title="التأخير بالمللي ثانية بين كل طلب (لكل عامل متوازي)" value="100"></div>
+                        </div>
+                        <div class="form-check form-switch mb-2"><input type="checkbox" checked="" class="form-check-input" id="seoCrawlerNoSaveHtml" role="switch"><label class="form-check-label small" for="seoCrawlerNoSaveHtml">عدم حفظ محتوى HTML (لتوفير الذاكرة)</label></div>
+                        <div class="mb-2"><label class="form-label text-muted small" for="customProxyUrl">بروكسي مخصص (اختياري)</label><input class="form-control form-control-sm" type="url" dir="ltr" id="customProxyUrl" placeholder="https://my-proxy.com/?url={url}" title="استخدم بروكسي لتجاوز قيود CORS أو للزحف من IP مختلف. يجب أن يقبل البروكسي رابط الموقع كمتغير {url}."></div>
                     </div>
-                    <div class="card-body">
-                        <div class="seo-crawler-section rounded-3 p-3 my-3">
-                            <h3 class="h6"><i class="bi bi-robot ms-2" aria-hidden="true"></i>زاحف SEO وتحليل الموقع <span class="badge ultimate-badge me-5">جديد</span></h3>
-                            <div class="input-group mb-2"><input class="form-control form-control ms-1" type="url" aria-label="رابط الموقع للزحف" dir="ltr" id="seoCrawlerUrl" placeholder="https://example.com"><button class="btn btn-dark me-2" id="startCrawlerBtn" type="button"><i class="bi bi-rocket-takeoff-fill ms-2" aria-hidden="true"></i>زحف وتحليل</button></div>
-                            <div class="row g-2 mb-2">
-                                <div class="col-sm-4"><label class="form-label small" for="seoCrawlerDepth">أقصى عمق</label><input class="form-control form-control-sm text-center" type="number" aria-label="عمق الزحف" id="seoCrawlerDepth" max="10" min="0" title="عمق الزحف (0 = الصفحة الحالية فقط)" value="1"></div>
-                                <div class="col-sm-4"><label class="form-label small" for="seoCrawlerConcurrency">طلبات متوازية</label><input class="form-control form-control-sm text-center" type="number" aria-label="الطلبات المتوازية" id="seoCrawlerConcurrency" max="10" min="1" title="عدد الطلبات التي يتم إرسالها في نفس الوقت" value="3"></div>
-                                <div class="col-sm-4"><label class="form-label small" for="seoCrawlerDelay">التأخير (ms)</label><input class="form-control form-control-sm text-center" type="number" aria-label="التأخير بين الطلبات" id="seoCrawlerDelay" min="0" step="50" title="التأخير بالمللي ثانية بين كل طلب (لكل عامل متوازي)" value="100"></div>
-                            </div>
-                            <div class="form-check form-switch mb-2"><input type="checkbox" class="form-check-input" id="seoCrawlerNoSaveHtml" role="switch" checked=""><label class="form-check-label small" for="seoCrawlerNoSaveHtml">عدم حفظ محتوى HTML (لتوفير الذاكرة)</label></div>
-                            <div class="mb-2"><label class="form-label small text-muted" for="customProxyUrl">بروكسي مخصص (اختياري)</label><input class="form-control-sm form-control" type="url" dir="ltr" id="customProxyUrl" placeholder="https://my-proxy.com/?url={url}" title="استخدم بروكسي لتجاوز قيود CORS أو للزحف من IP مختلف. يجب أن يقبل البروكسي رابط الموقع كمتغير {url}."></div>
+                    <div class="robots-section rounded-3 p-3 my-3">
+                        <h3 class="h6"><i class="bi bi-robot ms-2" aria-hidden="true"></i>استيراد من robots.txt </h3>
+                        <div class="text-center drop-zone rounded-3 p-3 cursor-pointer" id="robotsDropZone">
+                            <p class="mb-1">اسحب وأفلت ملف robots.txt هنا</p><input type="file" accept=".txt" class="d-none" id="robotsFileInput">
                         </div>
-                        <div class="robots-section rounded-3 p-3 my-3">
-                            <h3 class="h6"><i class="bi bi-robot ms-2" aria-hidden="true"></i>استيراد من robots.txt </h3>
-                            <div class="text-center drop-zone rounded-3 p-3 cursor-pointer" id="robotsDropZone">
-                                <p class="mb-1">اسحب وأفلت ملف robots.txt هنا</p><input type="file" accept=".txt" class="d-none" id="robotsFileInput">
-                            </div>
+                    </div>
+                    <div class="manifest-section rounded-3 p-3 my-3">
+                        <h3 class="h6"><i class="bi bi-pwa me-2" aria-hidden="true"></i>استيراد من manifest.json <span class="badge feature-badge me-3">PWA</span></h3>
+                        <div class="text-center drop-zone rounded-3 p-3 cursor-pointer" id="manifestDropZone">
+                            <p class="mb-1">اسحب وأفلت ملف manifest.json هنا</p><input type="file" accept=".json" class="d-none" id="manifestFileInput">
                         </div>
-                        <div class="manifest-section rounded-3 p-3 my-3">
-                            <h3 class="h6"><i class="bi bi-pwa me-2" aria-hidden="true"></i>استيراد من manifest.json <span class="badge feature-badge me-3">PWA</span></h3>
-                            <div class="text-center drop-zone rounded-3 p-3 cursor-pointer" id="manifestDropZone">
-                                <p class="mb-1">اسحب وأفلت ملف manifest.json هنا</p><input type="file" accept=".json" class="d-none" id="manifestFileInput">
-                            </div>
+                    </div>
+                    <div class="sitemap-section rounded-3 p-3 my-3">
+                        <h3 class="h6"><i class="bi bi-map-fill ms-2" aria-hidden="true"></i>استيراد من Sitemap.xml </h3>
+                        <div class="text-center drop-zone rounded-3 p-3 cursor-pointer" id="sitemapDropZone">
+                            <p class="mb-1">اسحب وأفلت ملف sitemap.xml هنا</p><input type="file" accept=".xml" class="d-none" id="sitemapFileInput">
                         </div>
-                        <div class="sitemap-section rounded-3 p-3 my-3">
-                            <h3 class="h6"><i class="bi bi-map-fill ms-2" aria-hidden="true"></i>استيراد من Sitemap.xml </h3>
-                            <div class="text-center drop-zone rounded-3 p-3 cursor-pointer" id="sitemapDropZone">
-                                <p class="mb-1">اسحب وأفلت ملف sitemap.xml هنا</p><input type="file" accept=".xml" class="d-none" id="sitemapFileInput">
-                            </div>
+                    </div>
+                    <div class="mb-4"><label class="form-label" for="fileDropZone"><i aria-hidden="true" class="bi bi-file-earmark-text-fill ms-2"></i>تحليل ملفات HTML </label>
+                        <div class="text-center bg-body-secondary border-2 file-drop-zone border border-dashed rounded-3 p-4 cursor-pointer" id="fileDropZone">
+                            <p class="mb-1">اسحب وأفلت ملفات HTML هنا</p><input type="file" accept=".html,.htm" class="d-none" id="htmlFileInput" multiple="">
                         </div>
-                        <div class="mb-4"><label class="form-label" for="fileDropZone"><i aria-hidden="true" class="bi bi-file-earmark-text-fill ms-2"></i>تحليل ملفات HTML </label>
-                            <div class="text-center bg-body-secondary border-2 file-drop-zone border border-dashed rounded-3 p-4 cursor-pointer" id="fileDropZone">
-                                <p class="mb-1">اسحب وأفلت ملفات HTML هنا</p><input type="file" accept=".html,.htm" class="d-none" id="htmlFileInput" multiple="">
-                            </div>
-                        </div>
-                        <div class="mb-4"><label class="form-label" for="urlsFileInput"><i aria-hidden="true" class="bi bi-folder2-open ms-2"></i>استيراد جماعي <span class="badge feature-badge me-5">محسن</span></label>
-                            <div class="input-group"><input class="form-control form-control" type="file" accept=".txt,.json" id="urlsFileInput"><button class="btn btn-outline-secondary me-2" id="importUrlsFileBtn" type="button"><i class="bi bi-download ms-2" aria-hidden="true"></i>استيراد</button></div>
-                        </div>
-                        <div class="mb-3"><label class="form-label" for="urlInput">روابط صفحات موقعك </label><textarea class="form-control url-textarea-drop" dir="ltr" id="urlInput" placeholder="index.html
+                    </div>
+                    <div class="mb-4"><label class="form-label" for="urlsFileInput"><i aria-hidden="true" class="bi bi-folder2-open ms-2"></i>استيراد جماعي <span class="badge feature-badge me-5">محسن</span></label>
+                        <div class="input-group"><input class="form-control" type="file" accept=".txt,.json" id="urlsFileInput"><button class="btn btn-outline-secondary me-2" id="importUrlsFileBtn" type="button"><i class="bi bi-download ms-2" aria-hidden="true"></i>استيراد</button></div>
+                    </div>
+                    <div class="mb-3"><label class="form-label" for="urlInput">روابط صفحات موقعك </label><textarea class="form-control url-textarea-drop" dir="ltr" id="urlInput" placeholder="index.html
 about.html
 services.html" rows="6"></textarea></div>
-                        <div class="form-check form-switch mb-3"><input type="checkbox" class="form-check-input" id="manualInput" role="switch"><label class="form-check-label" for="manualInput">إدخال يدوي للصفحات</label></div>
-                        <div class="d-none border rounded p-3 mb-3" id="manualInputSection">
-                            <div class="d-grid gap-2"><input type="text" aria-label="عنوان الصفحة اليدوي" class="form-control" id="pageTitle" placeholder="عنوان الصفحة"><input type="text" aria-label="رابط الصفحة اليدوي" class="form-control" id="pageUrl" placeholder="رابط الصفحة"><input type="text" aria-label="وصف الصفحة اليدوي" class="form-control" id="pageDescription" placeholder="وصف الصفحة"><input type="text" aria-label="فئة الصفحة اليدوية" class="form-control" id="pageCategory" placeholder="فئة الصفحة"><input type="text" aria-label="الكلمات المفتاحية اليدوية" class="form-control" id="pageTags" placeholder="الكلمات المفتاحية (مفصولة بفواصل)"><button class="btn btn-success btn-sm" id="addManualPageBtn">إضافة صفحة</button></div>
-                        </div><button class="btn btn-primary w-100" id="generateIndexBtn" type="button"><i class="bi bi-rocket-takeoff-fill ms-2" aria-hidden="true"></i>توليد فهرس البحث</button>
-                        <div class="mt-4 border-top pt-3">
-                            <h3 class="h6"><i class="bi bi-folder-symlink-fill me-2" aria-hidden="true"></i>إدارة المشاريع</h3>
-                            <div class="input-group mb-2"><select class="form-select form-select" aria-label="اختر مشروع" id="projectSelector" title="اختر مشروعًا محفوظًا لتحميله">
-                                    <option value="">-- اختر مشروعًا --</option>
-                                </select><button class="btn btn-outline-danger me-2" id="deleteProjectBtn" title="حذف المشروع المختار" aria-label="حذف المشروع"><i class="bi bi-trash3-fill" aria-hidden="true"></i></button></div>
-                            <div class="input-group"><input class="form-control form-control" type="text" aria-label="اسم المشروع" id="projectNameInput" placeholder="اسم المشروع الحالي أو الجديد"><button class="btn btn-success me-2" id="saveProjectBtn" title="حفظ المشروع" type="button"><i class="bi bi-save-fill ms-2" aria-hidden="true"></i>حفظ</button></div>
-                            <div class="d-flex justify-content-center mt-2"><button class="btn btn-link btn-sm text-decoration-none" id="clearFormBtn" title="تحذير: سيؤدي هذا إلى مسح جميع البيانات المدخلة والنتائج الحالية في هذا المشروع."><i class="bi bi-sparkles me-1" aria-hidden="true"></i>البدء من جديد (مسح الكل)</button></div>
-                        </div>
+                    <div class="form-check form-switch mb-3"><input type="checkbox" class="form-check-input" id="manualInput" role="switch"><label class="form-check-label" for="manualInput">إدخال يدوي للصفحات</label></div>
+                    <div class="d-none border rounded p-3 mb-3" id="manualInputSection">
+                        <div class="d-grid gap-2"><input type="text" aria-label="عنوان الصفحة اليدوي" class="form-control" id="pageTitle" placeholder="عنوان الصفحة"><input type="text" aria-label="رابط الصفحة اليدوي" class="form-control" id="pageUrl" placeholder="رابط الصفحة"><input type="text" aria-label="وصف الصفحة اليدوي" class="form-control" id="pageDescription" placeholder="وصف الصفحة"><input type="text" aria-label="فئة الصفحة اليدوية" class="form-control" id="pageCategory" placeholder="فئة الصفحة"><input type="text" aria-label="الكلمات المفتاحية اليدوية" class="form-control" id="pageTags" placeholder="الكلمات المفتاحية (مفصولة بفواصل)"><button class="btn btn-success btn-sm" id="addManualPageBtn">إضافة صفحة</button></div>
+                    </div><button class="btn btn-primary w-100" id="generateIndexBtn" type="button"><i class="bi bi-rocket-takeoff-fill ms-2" aria-hidden="true"></i>توليد فهرس البحث</button>
+                    <div class="mt-4 border-top pt-3">
+                        <h3 class="h6"><i class="bi bi-folder-symlink-fill me-2" aria-hidden="true"></i>إدارة المشاريع</h3>
+                        <div class="input-group mb-2"><select class="form-select" aria-label="اختر مشروع" id="projectSelector" title="اختر مشروعًا محفوظًا لتحميله">
+                                <option value="">-- اختر مشروعًا --</option>
+                            </select><button class="btn btn-outline-danger me-2" id="deleteProjectBtn" title="حذف المشروع المختار" aria-label="حذف المشروع"><i class="bi bi-trash3-fill" aria-hidden="true"></i></button></div>
+                        <div class="input-group"><input class="form-control" type="text" aria-label="اسم المشروع" id="projectNameInput" placeholder="اسم المشروع الحالي أو الجديد"><button class="btn btn-success me-2" id="saveProjectBtn" title="حفظ المشروع" type="button"><i class="bi bi-save-fill ms-2" aria-hidden="true"></i>حفظ</button></div>
+                        <div class="d-flex justify-content-center mt-2"><button class="btn btn-link btn-sm text-decoration-none" id="clearFormBtn" title="تحذير: سيؤدي هذا إلى مسح جميع البيانات المدخلة والنتائج الحالية في هذا المشروع."><i class="bi bi-sparkles me-1" aria-hidden="true"></i>البدء من جديد (مسح الكل)</button></div>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-6">
-                <div class="card h-100 shadow-sm">
-                    <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
-                        <h2 class="h5 mb-0"><i class="bi bi-bar-chart-steps ms-2" aria-hidden="true"></i>النتائج <span class="badge pro-badge me-3">قابل للتحرير</span></h2>
-                        <!-- ✅ UX FIX: Added a dedicated button for the analytics dashboard -->
-                        <button class="btn btn-outline-primary btn-sm d-none" id="showAnalyticsBtn" data-bs-toggle="modal" data-bs-target="#analyticsModal"><i class="bi bi-bar-chart-line-fill ms-2"></i>عرض التحليلات</button>
+        </div>
+        <div class="col-lg-6">
+            <div class="card h-100 shadow-sm d-flex flex-column">
+                <div class="card-header bg-transparent">
+                    <ul class="nav nav-tabs card-header-tabs" id="resultsTab" role="tablist">
+                        <li class="nav-item" role="presentation"><button class="nav-link active" id="results-tab-btn" data-bs-toggle="tab" data-bs-target="#results-panel" type="button" role="tab" aria-controls="results-panel" aria-selected="true"><i class="bi bi-bar-chart-steps ms-2"></i>النتائج </button></li>
+                        <li class="nav-item" role="presentation"><button class="nav-link" id="advisor-tab-btn" data-bs-toggle="tab" data-bs-target="#advisor-panel" type="button" role="tab" aria-controls="advisor-panel" aria-selected="false"><i class="bi bi-lightbulb-fill ms-2"></i>التوصيات الذكية <span class="badge rounded-pill bg-danger d-none" id="advisor-count"></span></button></li>
+                        <li class="nav-item ms-auto" role="presentation"><button class="btn btn-outline-primary btn-sm d-none" id="showAnalyticsBtn" data-bs-toggle="modal" data-bs-target="#analyticsModal"><i class="bi bi-bar-chart-line-fill ms-2"></i>عرض التحليلات</button></li>
+                    </ul>
+                </div>
+                <div class="card-body d-flex flex-column flex-grow-1">
+                    <div class="tab-content flex-grow-1 d-flex flex-column" id="resultsTabContent">
+                        <div class="tab-pane fade show active d-flex flex-column" id="results-panel" role="tabpanel" aria-labelledby="results-tab-btn">
+                            <div class="bg-body-secondary d-none border rounded-3 p-3 my-3" id="filterSection">
+                                <h3 class="h6 mb-2"><i class="bi bi-funnel-fill ms-2" aria-hidden="true"></i>تصفية النتائج</h3>
+                                <div class="d-flex flex-wrap gap-3">
+                                    <div class="input-group flex-grow-1"><select class="form-select" aria-label="تصفية حسب الفئة" id="categoryFilter">
+                                            <option value="">جميع الفئات</option>
+                                        </select><input class="form-control" type="text" aria-label="بحث بالكلمة المفتاحية" id="keywordFilter" placeholder="بحث بالكلمة المفتاحية"></div>
+                                    <div class="form-check form-switch align-self-center"><input type="checkbox" class="form-check-input" id="orphanFilter" role="switch"><label class="form-check-label" for="orphanFilter">الصفحات المعزولة فقط</label></div>
+                                </div>
+                            </div>
+                            <div class="bg-body-tertiary d-none d-flex justify-content-between align-items-center p-2 rounded-top-2 border-bottom" id="selectionControls">
+                                <div class="d-flex gap-2"><button class="btn btn-outline-primary btn-sm" id="selectAllBtn"><i class="bi bi-check-all ms-2" aria-hidden="true"></i>تحديد الكل</button><button class="btn btn-outline-secondary btn-sm" id="deselectAllBtn"><i class="bi bi-x-lg ms-2" aria-hidden="true"></i>إلغاء تحديد الكل</button></div><span class="text-muted small">تم تحديد: <strong id="selectionCounter">0</strong></span>
+                            </div>
+                            <div class="bg-body-secondary flex-grow-1 p-1 rounded-bottom-2 overflow-y-auto" id="results" style="min-height:200px;">
+                                <div class="accordion accordion-flush" id="resultsAccordion">
+                                    <p class="text-center text-body-secondary p-3" id="resultsPlaceholder">أدخل روابط الصفحات أو ارفع الملفات واضغط "توليد فهرس البحث"</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade d-flex flex-column" id="advisor-panel" role="tabpanel" aria-labelledby="advisor-tab-btn" style="min-height:200px;">
+                            <div class="flex-grow-1 overflow-y-auto">
+                                <p class="text-center text-body-secondary p-3" id="advisorPlaceholder">قم بتحليل موقعك أولاً للحصول على توصيات ذكية.</p>
+                                <div class="list-group list-group-flush" id="advisor-list"></div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="card-body d-flex flex-column">
-                        <div class="bg-body-secondary d-none border rounded-3 p-3 my-3" id="filterSection">
-                            <h3 class="h6 mb-2"><i class="bi bi-funnel-fill ms-2" aria-hidden="true"></i>تصفية النتائج</h3>
-                            <div class="d-flex flex-wrap gap-3">
-                                <div class="input-group flex-grow-1"><select class="form-select" aria-label="تصفية حسب الفئة" id="categoryFilter">
-                                        <option value="">جميع الفئات</option>
-                                    </select><input class="form-control" type="text" aria-label="بحث بالكلمة المفتاحية" id="keywordFilter" placeholder="بحث بالكلمة المفتاحية"></div>
-                                <div class="form-check form-switch align-self-center"><input type="checkbox" class="form-check-input" id="orphanFilter" role="switch"><label class="form-check-label" for="orphanFilter">الصفحات المعزولة فقط</label></div>
-                            </div>
-                        </div>
-                        <div class="bg-body-tertiary d-none d-flex justify-content-between align-items-center d-flex p-2 rounded-top-2 border-bottom" id="selectionControls">
-                            <div class="d-flex gap-2"><button class="btn btn-outline-primary btn-sm" id="selectAllBtn"><i class="bi bi-check-all ms-2" aria-hidden="true"></i>تحديد الكل</button><button class="btn btn-outline-secondary btn-sm" id="deselectAllBtn"><i class="bi bi-x-lg ms-2" aria-hidden="true"></i>إلغاء تحديد الكل</button></div><span class="text-muted small">تم تحديد: <strong id="selectionCounter">0</strong></span>
-                        </div>
-                        <div class="bg-body-secondary flex-grow-1 p-1 rounded-bottom-2 overflow-y-auto" id="results" style="min-height:200px;max-height:500px;">
-                            <div class="accordion accordion-flush" id="resultsAccordion">
-                                <p class="text-center text-body-secondary p-3" id="resultsPlaceholder">أدخل روابط الصفحات أو ارفع الملفات واضغط "توليد فهرس البحث"</p>
-                            </div>
-                        </div>
-                        <div class="d-none d-flex flex-wrap d-flex gap-2 mt-3" id="exportButtons"><button class="btn btn-success flex-grow-1" id="downloadJsonBtn" title="تصدير النتائج المحددة كملف JSON"><i class="bi bi-filetype-json ms-2" aria-hidden="true"></i>JSON</button><button class="btn btn-info flex-grow-1" id="downloadCsvBtn" title="تصدير النتائج المحددة كملف CSV"><i class="bi bi-filetype-csv ms-2" aria-hidden="true"></i>CSV</button><button class="btn btn-warning flex-grow-1" id="downloadZipBtn" title="تصدير حزمة JSON و HTML"><i class="bi bi-file-zip-fill ms-2" aria-hidden="true"></i>ZIP</button><button class="btn btn-secondary flex-grow-1" id="toggleCopyBtn" title="إظهار خيارات النسخ"><i class="bi bi-clipboard-fill ms-2" aria-hidden="true"></i>نسخ</button><button class="btn btn-primary flex-grow-1" id="exportReportBtn" title="تصدير تقرير ملخص عن حالة الموقع"><i class="bi bi-file-earmark-bar-graph-fill ms-2"></i>تقرير</button></div>
+                    <div class="mt-auto">
+                        <div class="d-none d-flex flex-wrap gap-2 mt-3" id="exportButtons"><button class="btn btn-success flex-grow-1" id="downloadJsonBtn" title="تصدير النتائج المحددة كملف JSON"><i class="bi bi-filetype-json ms-2" aria-hidden="true"></i>JSON</button><button class="btn btn-info flex-grow-1" id="downloadCsvBtn" title="تصدير النتائج المحددة كملف CSV"><i class="bi bi-filetype-csv ms-2" aria-hidden="true"></i>CSV</button><button class="btn btn-warning flex-grow-1" id="downloadZipBtn" title="تصدير حزمة JSON و HTML"><i class="bi bi-file-zip-fill ms-2" aria-hidden="true"></i>ZIP</button><button class="btn btn-secondary flex-grow-1" id="toggleCopyBtn" title="إظهار خيارات النسخ"><i class="bi bi-clipboard-fill ms-2" aria-hidden="true"></i>نسخ</button><button class="btn btn-primary flex-grow-1" id="exportReportBtn" title="تصدير تقرير ملخص عن حالة الموقع"><i class="bi bi-file-earmark-bar-graph-fill ms-2"></i>تقرير</button></div>
                         <div class="d-none mt-2" id="zipProgress">
                             <div class="progress" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="تقدم إنشاء ZIP">
                                 <div class="progress-bar progress-bar-striped progress-bar-animated" id="zipProgressBar" style="width:0%;"></div>
@@ -205,235 +217,138 @@ services.html" rows="6"></textarea></div>
                         </div>
                         <div class="d-none border rounded p-3 mt-3" id="schemaGeneratorSection">
                             <h3 class="h6 mb-3"><i class="bi bi-diagram-3-fill ms-2"></i>مولد بيانات Schema المنظمة <span class="badge feature-badge me-3">جديد</span></h3>
-                            <div class="mb-3"><label class="form-label small" for="schemaBaseUrl">رابط الموقع الأساسي (مطلوب)</label><input class="form-control-sm form-control" type="url" dir="ltr" id="schemaBaseUrl" placeholder="https://example.com" title="الرابط الأساسي لموقعك (e.g., https://example.com) لتوليد روابط صحيحة في السكيما."></div>
-                            <div class="mb-3"><label class="form-label small" for="schemaPageType">نوع السكيما للصفحات</label><select class="form-select-sm form-select" id="schemaPageType" title="اختر نوع السكيما الافتراضي الذي سيتم تطبيقه على كل صفحة.">
+                            <div class="mb-3"><label class="form-label small" for="schemaBaseUrl">رابط الموقع الأساسي (مطلوب)</label><input class="form-control form-control-sm" type="url" dir="ltr" id="schemaBaseUrl" placeholder="https://example.com" title="الرابط الأساسي لموقعك (e.g., https://example.com) لتوليد روابط صحيحة في السكيما."></div>
+                            <div class="mb-3"><label class="form-label small" for="schemaPageType">نوع السكيما للصفحات</label><select class="form-select form-select-sm" id="schemaPageType" title="اختر نوع السكيما الافتراضي الذي سيتم تطبيقه على كل صفحة.">
                                     <option value="WebPage" selected="">WebPage</option>
                                     <option value="Article">Article</option>
                                     <option value="Product">Product</option>
                                     <option value="Service">Service</option>
                                 </select></div>
-                            <div class="mb-3"><label class="form-label small" for="schemaBaseEditor">السكيما الأساسية (Organization/WebSite)</label><textarea class="form-control-sm form-control" dir="ltr" id="schemaBaseEditor" rows="8" title="تحرير السكيما الأساسية لموقعك (Organization/WebSite). سيتم ربط كل صفحة بها."></textarea></div><button class="btn btn-primary w-100" id="generateSchemaBtn"><i class="bi bi-file-earmark-zip-fill ms-2"></i>توليد وتحميل حزمة السكيما (ZIP) </button>
+                            <div class="mb-3"><label class="form-label small" for="schemaBaseEditor">السكيما الأساسية (Organization/WebSite)</label><textarea class="form-control form-control-sm" dir="ltr" id="schemaBaseEditor" rows="8" title="تحرير السكيما الأساسية لموقعك (Organization/WebSite). سيتم ربط كل صفحة بها."></textarea></div><button class="btn btn-primary w-100" id="generateSchemaBtn"><i class="bi bi-file-earmark-zip-fill ms-2"></i>توليد وتحميل حزمة السكيما (ZIP) </button>
                         </div>
                     </div>
-                </div>
-            </div>
-        </section>
-        <section class="mt-5 mb-4 pb-4">
-            <div class="row justify-content-center">
-                <div class="col-lg-10">
-                    <div class="text-center mb-5">
-                        <h2 class="display-6 fw-bold" data-aos="fade-up">أطلق العنان لقوة موقعك الحقيقية</h2>
-                        <p class="fs-5 text-muted" data-aos="fade-up" data-aos-delay="100">الأداة التي تمنحك رؤى تحليل SEO التقني العميقة، ببساطة لا تجدها في الأدوات الأخرى. <strong>يتم كل التحليل مباشرة في متصفحك، مما يضمن بقاء بياناتك وخصوصيتك تحت سيطرتك الكاملة.</strong></p>
-                    </div>
-                    <div class="accordion accordion-flush" id="howToUseAccordion">
-                        <div data-aos="fade-up" data-aos-delay="200" data-aos-once="true" class="accordion-item">
-                            <h3 class="accordion-header" id="headingOne"><button class="accordion-button fs-5 fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne"><span class="badge text-primary-emphasis bg-primary-subtle border-primary-subtle border ms-3">1</span>جمع البيانات: نقطة البداية لكل تحليل ناجح</button></h3>
-                            <div class="accordion-collapse collapse show" id="collapseOne" aria-labelledby="headingOne" data-bs-parent="#howToUseAccordion">
-                                <div class="accordion-body">
-                                    <p class="mb-4">كل تحليل SEO عظيم يبدأ ببيانات دقيقة. اختر الطريقة التي تناسب سير عملك:</p>
-                                    <div class="row g-4">
-                                        <div class="col-md-4">
-                                            <div class="bg-body-secondary p-3 rounded-3 h-100">
-                                                <h4 class="fw-bold h6"><i class="text-primary bi bi-robot ms-2" aria-hidden="true"></i>ابدأ بالزحف الفوري</h4>
-                                                <p class="text-muted small mb-2">زاحف المواقع المدمج لدينا يحلل موقعك بذكاء.</p><a class="fw-bold text-decoration-none link-body-emphasis small" href="#!"><i class="bi bi-book-half ms-1" aria-hidden="true"></i>تعلم أفضل ممارسات الزحف <i class="bi bi-arrow-left-short" aria-hidden="true"></i></a>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="bg-body-secondary p-3 rounded-3 h-100">
-                                                <h4 class="fw-bold h6"><i class="text-success bi bi-file-earmark-arrow-up-fill ms-2" aria-hidden="true"></i>استورد بياناتك الحالية</h4>
-                                                <p class="text-muted small mb-2">هل لديك `Sitemap.xml` أو ملفات HTML؟ استوردها لتسريع التحليل.</p><a class="fw-bold text-decoration-none link-body-emphasis small" href="#!"><i class="bi bi-book-half ms-1" aria-hidden="true"></i>لماذا خريطة الموقع مهمة؟ <i class="bi bi-arrow-left-short" aria-hidden="true"></i></a>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="bg-body-secondary p-3 rounded-3 h-100">
-                                                <h4 class="fw-bold h6"><i class="text-info bi bi-keyboard-fill ms-2" aria-hidden="true"></i>تحكم يدوي كامل</h4>
-                                                <p class="text-muted small mb-2">أضف روابط محددة. مثالي لاختبار صفحات الهبوط الجديدة.</p><a class="fw-bold text-decoration-none link-body-emphasis small" href="#!"><i class="bi bi-book-half ms-1" aria-hidden="true"></i>دليل تدقيق الصفحات يدوياً <i class="bi bi-arrow-left-short" aria-hidden="true"></i></a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div data-aos="fade-up" data-aos-delay="300" data-aos-once="true" class="accordion-item">
-                            <h3 class="accordion-header" id="headingTwo"><button class="accordion-button collapsed fs-5 fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo"><span class="badge text-primary-emphasis bg-primary-subtle border-primary-subtle border ms-3">2</span>التحليل والإدارة: حوّل البيانات إلى قرارات</button></h3>
-                            <div class="accordion-collapse collapse" id="collapseTwo" aria-labelledby="headingTwo" data-bs-parent="#howToUseAccordion">
-                                <div class="accordion-body">
-                                    <ul class="list-unstyled">
-                                        <li class="mb-3"><i class="text-success bi bi-pencil-fill ms-3" aria-hidden="true"></i><strong>حسّن صفحاتك لجذب النقرات:</strong> عدّل العناوين والأوصاف مباشرة وشاهد كيف يمكن أن يؤثر ذلك على نسبة النقر إلى الظهور (CTR). <br><a class="fw-bold text-decoration-none link-body-emphasis d-inline-block small mt-1" href="#!"><i class="bi bi-book-half ms-1" aria-hidden="true"></i>دليل كتابة العناوين والأوصاف الفعالة <i class="bi bi-arrow-left-short" aria-hidden="true"></i></a></li>
-                                        <li class="mb-0"><i class="text-info bi bi-folder-symlink-fill ms-3" aria-hidden="true"></i><strong>تتبع تقدمك بمرور الوقت:</strong> استخدم "إدارة المشاريع" لحفظ لقطات من تحليل موقعك. قارن النتائج قبل وبعد التغييرات لترى أثر عملك. <br><a class="fw-bold text-decoration-none link-body-emphasis d-inline-block small mt-1" href="#!"><i class="bi bi-book-half ms-1" aria-hidden="true"></i>أهمية تتبع تغييرات الـ SEO <i class="bi bi-arrow-left-short" aria-hidden="true"></i></a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                        <div data-aos="fade-up" data-aos-delay="400" data-aos-once="true" class="accordion-item">
-                            <h3 class="accordion-header" id="headingThree"><button class="accordion-button collapsed fs-5 fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree"><span class="badge text-primary-emphasis bg-primary-subtle border-primary-subtle border ms-3">3</span>التصدير والمشاركة: اجعل بياناتك قابلة للتنفيذ</button></h3>
-                            <div class="accordion-collapse collapse" id="collapseThree" aria-labelledby="headingThree" data-bs-parent="#howToUseAccordion">
-                                <div class="accordion-body">
-                                    <p class="mb-3">أصبحت رؤيتك التحليلية جاهزة للاستخدام في تقاريرك، أو لمشاركتها مع فريقك. اختر التنسيق الذي تحتاجه:</p>
-                                    <div class="d-flex justify-content-center flex-wrap gap-4"><span class="fw-bold"><i class="text-warning bi bi-filetype-json ms-2" aria-hidden="true"></i>JSON للمطورين</span><span class="fw-bold"><i class="text-success bi bi-filetype-csv ms-2" aria-hidden="true"></i>CSV للمحللين</span><span class="fw-bold"><i class="text-secondary bi bi-file-zip-fill ms-2" aria-hidden="true"></i>ZIP للتقارير</span><span class="fw-bold"><i class="text-primary bi bi-clipboard-check-fill ms-2" aria-hidden="true"></i>نسخ مباشر للسرعة</span></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-        <section class="mt-5 mb-5 overflow-hidden pt-5">
-            <div class="row align-items-center">
-                <div class="col-md-5 text-center" data-aos="fade-left">
-                    <lottie-player class="img-fluid" src="https://assets9.lottiefiles.com/packages/lf20_PBgNop.json" style="max-width:400px;margin:auto;" loop="" autoplay="" preload="metadata" tabindex="0" role="img" aria-label="رسم متحرك يوضح فكرة التحليل والارتقاء"></lottie-player>
-                </div>
-                <div class="col-md-7 text-center text-md-end" data-aos="fade-right">
-                    <h2 class="display-5 fw-bold pb-2"><i class="text-primary bi bi-gem ms-3" aria-hidden="true"></i>ارتقِ بموقعك إلى مستوى متقدم</h2>
-                    <p class="fs-5 text-muted">استفد من أدوات إضافية وفرص حصرية لتكون في الصدارة.</p>
-                </div>
-            </div>
-        </section>
-        <section class="mb-5">
-            <div class="row">
-                <div class="col-lg-7 mb-4" data-aos="fade-up" data-aos-delay="100">
-                    <div class="card h-100 border-primary border-2 shadow-sm">
-                        <div class="card-body text-center d-flex flex-column justify-content-center p-lg-5 p-4"><span class="text-primary display-4"><i class="bi bi-envelope-paper-heart-fill" aria-hidden="true"></i></span>
-                            <h3 class="card-title mt-2">انضم إلى مجتمعنا</h3>
-                            <p class="text-muted mt-2">في <strong>ai8v.com</strong>، نؤمن بأن أفضل النتائج تأتي من الدمج بين العقل البشري وقوة الآلة. أنت تأتي بالاستراتيجية (Mind)، ونحن نوفر لك الآلة (Machine) لتحويل رؤيتك إلى واقع.</p>
-                            <form class="mt-4" action="#" method="POST">
-                                <div class="input-group"><input class="form-control form-control-lg form-control" type="email" aria-label="البريد الإلكتروني للاشتراك" dir="ltr" placeholder="your-email@example.com" required=""><button class="btn btn-primary" type="submit"><i class="bi bi-send-check-fill ms-2" aria-hidden="true"></i>انضم الان</button></div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-5 mb-4" data-aos="fade-up" data-aos-delay="200">
-                    <div class="card h-100 shadow-sm">
-                        <div class="card-body p-4">
-                            <h3 class="card-title h4 mb-3"><i class="text-success bi bi-person-check-fill ms-2" aria-hidden="true"></i>هل تحتاج لمساعدة خبير؟</h3>
-                            <p class="text-muted small">قد تكون الأداة رائعة، لكن العين الخبيرة ترى ما لا تراه الأدوات. احصل على تدقيق احترافي لموقعك.</p><a class="btn btn-outline-info w-100 mb-4" role="button" href="mailto:your-email@example.com?subject=طلب تدقيق احترافي للموقع">اطلب تدقيقاً احترافياً</a>
-                            <h3 class="card-title h5 mb-3"><i class="text-info bi bi-share-fill ms-2" aria-hidden="true"></i>ادعم المشروع وانشره</h3>
-                            <p class="text-muted small">مشاركتك هي أكبر دعم. ساعدنا في الوصول إلى المزيد من المستخدمين.</p>
-                            <div class="d-flex gap-2"><a class="btn btn-outline-info flex-fill" role="button" href="https://twitter.com/intent/tweet?text=اكتشفت%20هذه%20الأداة%20الرائعة%20لتحليل%20المواقع%20وإنشاء%20فهرس%20بحث%20متطور&url=https://ai8v.com" target="_blank" aria-label="شارك على تويتر"><i class="bi bi-twitter" aria-hidden="true"></i></a><a class="btn btn-outline-info flex-fill" role="button" href="https://www.linkedin.com/shareArticle?mini=true&url=https://ai8v.com&title=أداة%20فهرس%20البحث%20المتطور" target="_blank" aria-label="شارك على لينكدإن"><i class="bi bi-linkedin" aria-hidden="true"></i></a><a class="btn btn-outline-info flex-fill" role="button" href="https://github.com/ai8v/search-index-json" target="_blank" aria-label="ادعمنا بنجمة على جيت هاب"><i class="bi bi-github h5" aria-hidden="true"></i> Star us</a></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
-    <div class="bg-body-tertiary shadow-lg d-none position-fixed bottom-0 end-0 m-3 p-3 rounded-3" id="crawlerStatus" style="z-index:1100;width:350px;">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-            <h4 class="fw-bold h6 mb-0"><i class="bi bi-robot ms-2" aria-hidden="true"></i>جاري الزحف...</h4><button class="btn-close" type="button" id="hideCrawlerStatusBtn" aria-label="Close"></button>
-        </div>
-        <div class="text-muted small mb-1" id="crawlerCurrentUrl"><span>بدء العملية...</span></div>
-        <div class="progress" role="progressbar" style="height:10px;" aria-label="تقدم الزحف">
-            <div class="progress-bar progress-bar-striped progress-bar-animated" id="crawlerProgressBar" style="width:0%;"></div>
-        </div>
-        <div class="text-muted d-flex justify-content-between small mt-1"><span id="crawlerQueueCount">في الانتظار: 0</span><span id="crawlerProgressText">0/0</span></div>
-    </div>
-    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index:1100;"></div>
-    <div class="modal fade" role="dialog" tabindex="-1" id="serpPreviewModal" aria-labelledby="serpPreviewModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="serpPreviewModalLabel"><i class="bi bi-google ms-2"></i> معاينة في بحث جوجل</h5><button class="btn-close me-auto ms-0" aria-label="Close" data-bs-dismiss="modal" type="button"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="serp-preview">
-                        <div class="serp-url" dir="ltr" id="previewUrl"><span>/example/path/to/page.html</span></div>
-                        <h3 class="text-start serp-title" id="previewTitle">هذا هو عنوان صفحتك كما سيظهر في جوجل</h3>
-                        <p class="text-start serp-description" id="previewDescription">وهنا يظهر وصف الميتا الخاص بالصفحة. يجب أن يكون جذابًا وواضحًا لتشجيع المستخدمين على النقر والوصول إلى موقعك...</p>
-                    </div>
-                    <div class="text-muted d-flex justify-content-between small mt-3"><span>العنوان: <span id="titleCharCount">0</span> حرف</span><span>الوصف: <span id="descCharCount">0</span> حرف</span></div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="modal fade" role="dialog" tabindex="-1" id="reportModal" aria-labelledby="reportModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="reportModalLabel"><i class="bi bi-file-earmark-text-fill ms-2"></i> تقرير ملخص عن حالة الموقع</h5><button class="btn-close me-auto ms-0" aria-label="Close" data-bs-dismiss="modal" type="button"></button>
+</main>
+<div class="bg-body-tertiary shadow-lg d-none d-print-none position-fixed bottom-0 end-0 m-3 p-3 rounded-3" id="crawlerStatus" style="z-index:1100;width:350px;">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h4 class="fw-bold h6 mb-0"><i class="bi bi-robot ms-2" aria-hidden="true"></i>جاري الزحف...</h4><button class="btn-close" type="button" id="hideCrawlerStatusBtn" aria-label="Close"></button>
+    </div>
+    <div class="text-muted small mb-1" id="crawlerCurrentUrl"><span>بدء العملية...</span></div>
+    <div class="progress" role="progressbar" style="height:10px;" aria-label="تقدم الزحف">
+        <div class="progress-bar progress-bar-striped progress-bar-animated" id="crawlerProgressBar" style="width:0%;"></div>
+    </div>
+    <div class="text-muted d-flex justify-content-between small mt-1"><span id="crawlerQueueCount">في الانتظار: 0</span><span id="crawlerProgressText">0/0</span></div>
+</div>
+<div class="toast-container d-print-none position-fixed top-0 end-0 p-3" style="z-index:1100;"></div>
+<div class="modal fade d-print-none" role="dialog" tabindex="-1" id="serpPreviewModal" aria-labelledby="serpPreviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="serpPreviewModalLabel"><i class="bi bi-google ms-2"></i> معاينة في بحث جوجل</h5><button class="btn-close me-auto ms-0" aria-label="Close" data-bs-dismiss="modal" type="button"></button>
+            </div>
+            <div class="modal-body">
+                <div class="serp-preview">
+                    <div class="serp-url" dir="ltr" id="previewUrl"><span>/example/path/to/page.html</span></div>
+                    <h3 class="text-start serp-title" id="previewTitle">هذا هو عنوان صفحتك كما سيظهر في جوجل</h3>
+                    <p class="text-start serp-description" id="previewDescription">وهنا يظهر وصف الميتا الخاص بالصفحة. يجب أن يكون جذابًا وواضحًا لتشجيع المستخدمين على النقر والوصول إلى موقعك...</p>
                 </div>
-                <div class="modal-body report-content" id="reportModalBody">
-                    <!-- Report content will be injected here -->
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">إغلاق</button>
-                    <button class="btn btn-primary" id="printReportBtn" type="button"><i class="bi bi-printer-fill ms-2"></i>طباعة التقرير</button>
-                </div>
+                <div class="text-muted d-flex justify-content-between small mt-3"><span>العنوان: <span id="titleCharCount">0</span> حرف</span><span>الوصف: <span id="descCharCount">0</span> حرف</span></div>
             </div>
         </div>
     </div>
-
-    <!-- ✅ UX FIX: New Modal for Analytics Dashboard -->
-    <div class="modal fade" role="dialog" tabindex="-1" id="analyticsModal" aria-labelledby="analyticsModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3 class="modal-title" id="analyticsModalLabel"><i class="bi bi-bar-chart-line-fill ms-2"></i>لوحة معلومات تحليلية متقدمة</h5>
-                    <button class="btn-close me-auto ms-0" aria-label="Close" data-bs-dismiss="modal" type="button"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row align-items-stretch g-4">
-                        <div class="col-md-4">
-                            <h4 class="fw-normal text-center h6 small mb-2">توزيع المصادر</h4>
-                            <div class="bg-body-tertiary p-2 rounded-2"><canvas id="sourceDistributionChart"></canvas></div>
-                        </div>
-                        <div class="col-md-4">
-                            <h4 class="fw-normal text-center h6 small mb-2">أهم الكلمات</h4>
-                            <div class="bg-body-tertiary p-2 rounded-2"><canvas id="topKeywordsChart"></canvas></div>
-                        </div>
-                        <div class="col-md-4 d-flex flex-column justify-content-between">
-                            <div class="text-center">
-                                <h4 class="fw-normal h6 small mb-2">متوسط تقييم SEO</h4>
-                                <div class="mx-auto" style="max-width:150px; position:relative;"><canvas id="averageSeoScoreChart"></canvas>
-                                    <div class="fs-4 fw-bold position-absolute top-50 start-50 translate-middle" id="seoScoreText" style="pointer-events:none;"><span>0%</span></div>
-                                </div>
+</div>
+<div class="modal fade" role="dialog" tabindex="-1" id="reportModal" aria-labelledby="reportModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header d-print-none">
+                <h5 class="modal-title" id="reportModalLabel"><i class="bi bi-file-earmark-text-fill ms-2"></i> تقرير ملخص عن حالة الموقع</h5><button class="btn-close me-auto ms-0" aria-label="Close" data-bs-dismiss="modal" type="button"></button>
+            </div>
+            <div class="modal-body report-content" id="reportModalBody"></div>
+            <div class="modal-footer d-print-none"><button class="btn btn-secondary" data-bs-dismiss="modal" type="button">إغلاق</button><button class="btn btn-primary" id="printReportBtn" type="button"><i class="bi bi-printer-fill ms-2"></i>طباعة التقرير</button></div>
+        </div>
+    </div>
+</div>
+<div class="modal fade d-print-none" role="dialog" tabindex="-1" id="analyticsModal" aria-labelledby="analyticsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="analyticsModalLabel"><i class="bi bi-bar-chart-line-fill ms-2"></i>لوحة معلومات تحليلية متقدمة</h3><button class="btn-close me-auto ms-0" aria-label="Close" data-bs-dismiss="modal" type="button"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row align-items-stretch g-4">
+                    <div class="col-md-4">
+                        <h4 class="fw-normal text-center h6 small mb-2">توزيع المصادر</h4>
+                        <div class="bg-body-tertiary p-2 rounded-2"><canvas id="sourceDistributionChart"></canvas></div>
+                    </div>
+                    <div class="col-md-4">
+                        <h4 class="fw-normal text-center h6 small mb-2">أهم الكلمات</h4>
+                        <div class="bg-body-tertiary p-2 rounded-2"><canvas id="topKeywordsChart"></canvas></div>
+                    </div>
+                    <div class="col-md-4 d-flex flex-column justify-content-between">
+                        <div class="text-center">
+                            <h4 class="fw-normal h6 small mb-2">متوسط تقييم SEO</h4>
+                            <div class="mx-auto" style="max-width:150px;position:relative;"><canvas id="averageSeoScoreChart"></canvas>
+                                <div class="fs-4 fw-bold position-absolute top-50 start-50 translate-middle" id="seoScoreText" style="pointer-events:none;"><span>0%</span></div>
                             </div>
-                            <div id="orphanPagesCard" class="d-none text-center bg-warning-subtle text-warning-emphasis rounded p-2 mt-3">
-                                <h4 class="fw-normal h6 small mb-1">صفحات معزولة</h4>
-                                <p class="fs-4 fw-bold mb-1" id="orphanPagesCount">0</p><button class="btn btn-sm btn-warning" id="viewOrphanPagesBtn">عرض التقرير</button>
-                            </div>
+                        </div>
+                        <div class="text-center text-warning-emphasis bg-warning-subtle d-none rounded p-2 mt-3" id="orphanPagesCard">
+                            <h4 class="fw-normal h6 small mb-1">صفحات معزولة</h4>
+                            <p class="fs-4 fw-bold mb-1" id="orphanPagesCount">0</p><button class="btn btn-warning btn-sm" id="viewOrphanPagesBtn">عرض الصفحات</button>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">إغلاق</button>
-                </div>
             </div>
+            <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal" type="button">إغلاق</button></div>
         </div>
     </div>
-
-    <template id="resultItemTemplate">
-        <div class="result-item bg-body border rounded-2 p-3 my-2" data-id="">
-            <div class="result-item-header">
-                <div class="flex-grow-1 d-flex align-items-center">
-                    <input type="checkbox" class="form-check-input ms-3 flex-shrink-0 item-select-checkbox" aria-label="Select item">
-                    <span class="seo-score-dot ms-2" title=""></span>
-                    <span class="page-title text-primary fw-bold editable-content" data-field="title"></span>
-                    <span class="badge bg-danger ms-2 d-none no-index-badge" title="هذه الصفحة مستبعدة من الفهرسة (noindex)">لا للفهرسة</span>
-                   <span class="badge bg-warning text-dark ms-2 d-none orphan-page-badge" title="هذه الصفحة معزولة، لا توجد روابط داخلية تشير إليها">صفحة معزولة</span>
-                </div>
-                <div class="d-flex gap-2">
-                    <button class="btn btn-outline-info btn-sm btn-preview" data-bs-toggle="modal" data-bs-target="#serpPreviewModal">معاينة</button>
-                    <button class="btn btn-outline-secondary btn-sm btn-edit">تحرير</button>
-                    <button class="btn btn-outline-danger btn-sm btn-delete"><i class="bi bi-trash3-fill"></i></button>
-                </div>
+</div>
+<template id="resultItemTemplate" class="d-print-none">
+    <div class="result-item bg-body border rounded-2 p-3 my-2" data-id="">
+        <div class="result-item-header">
+            <div class="flex-grow-1 d-flex align-items-center">
+                <input type="checkbox" class="form-check-input ms-3 flex-shrink-0 item-select-checkbox" aria-label="Select item">
+                <span class="seo-score-dot ms-2" title=""></span>
+                <span class="page-title text-primary fw-bold editable-content" data-field="title"></span>
+                <span class="badge bg-danger ms-2 d-none no-index-badge" title="هذه الصفحة مستبعدة من الفهرسة (noindex)">لا للفهرسة</span>
+                <span class="badge bg-warning text-dark ms-2 d-none orphan-page-badge" title="هذه الصفحة معزولة، لا توجد روابط داخلية تشير إليها">صفحة معزولة</span>
             </div>
-            <div class="result-item-url-bar">
-                <span class="text-break" data-populate="url"></span>
-                <span data-populate="loadTime"></span>
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-info btn-sm btn-preview" data-bs-toggle="modal" data-bs-target="#serpPreviewModal">معاينة</button>
+                <button class="btn btn-outline-secondary btn-sm btn-edit">تحرير</button>
+                <button class="btn btn-outline-danger btn-sm btn-delete"><i class="bi bi-trash3-fill"></i></button>
             </div>
-            <div class="text-muted editable-content mt-1" data-field="description"></div>
-            <div class="mt-2 small"><span class="text-info">الفئة:</span> <span class="editable-content" data-field="category"></span></div>
-            <div class="mt-1 small"><span class="text-success">الكلمات:</span> <span class="editable-content" data-field="tags"></span></div>
-            <div class="d-none orphan-page-prompt mt-2 text-muted"> <i class="bi bi-lightbulb-fill ms-2"></i> قرار استراتيجي: هل يجب ربط هذه الصفحة أم حذفها/إعادة توجيهها؟ </div>
-            <div class="seo-summary-container"></div>
         </div>
-    </template>
-    <script src="assets/bootstrap/js/bootstrap.min.js" defer></script>
-    <script src="assets/js/aos.min.js" defer></script>
-    <script src="assets/js/lottie-player.min.js" defer></script>
-    <script src="assets/js/bs-init.js" defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
-    <script src="assets/js/script.js" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+        <div class="result-item-url-bar">
+            <span class="text-break" data-populate="url"></span>
+            <span data-populate="loadTime"></span>
+        </div>
+        <div class="text-muted editable-content mt-1" data-field="description"></div>
+        <div class="mt-2 small"><span class="text-info">الفئة:</span> <span class="editable-content" data-field="category"></span></div>
+        <div class="mt-1 small"><span class="text-success">الكلمات:</span> <span class="editable-content" data-field="tags"></span></div>
+        <div class="d-none orphan-page-prompt mt-2 text-muted"> <i class="bi bi-lightbulb-fill ms-2"></i> قرار استراتيجي: هل يجب ربط هذه الصفحة أم حذفها/إعادة توجيهها؟ </div>
+        <div class="seo-summary-container"></div>
+    </div>
+</template>
+<script src="assets/bootstrap/js/bootstrap.min.js" defer></script>
+<script src="assets/js/aos.min.js" defer></script>
+<script src="assets/js/lottie-player.min.js" defer></script>
+<script src="assets/js/bs-init.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+<script src="assets/js/advisor.js" defer></script>
+<script src="assets/js/script.js" defer></script>
+<script>
+        (function() {
+            // Load Bootstrap Icons dynamically to avoid blocking rendering
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css';
+            document.head.appendChild(link);
+        })();
+    </script>
 </body>
 
 </html>

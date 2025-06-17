@@ -1,9 +1,3 @@
-/* --- START OF FILE styles.css --- */
-
-/* CSS is now significantly simplified, relying on Bootstrap variables and utilities */
-
-/* Custom properties for reusable gradients */
-
 :root {
   --gradient-sitemap: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   --gradient-robots: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
@@ -249,34 +243,37 @@
 }
 
 
-/* NEW: Report Modal & Print Styles */
-.report-content .list-group-item {
-  background-color: transparent;
-  padding: 0.5rem 0.25rem;
-}
-
-.report-content .list-group-item:not(:last-child) {
-  border-bottom: 1px solid var(--bs-border-color-translucent);
-}
-
+/* ✅ PRINT FIX: Robust and corrected print styles */
 @media print {
-  body * {
-    visibility: hidden;
+  /* Hide everything in the body by default */
+  body > *:not(.modal) {
+    display: none !important;
   }
-
-  .report-content, .report-content * {
-    visibility: visible;
+  
+  /* Make the modal itself fill the page and behave like normal content */
+  .modal {
+    position: static !important;
+    display: block !important;
+    overflow-y: visible !important;
   }
-
-  .report-content {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-  }
-
   .modal-dialog {
     max-width: 100% !important;
+    margin: 0 !important;
+  }
+  .modal-content {
+     border: 0 !important;
+     box-shadow: none !important;
+  }
+  
+  /* The crucial part: allow the report body to expand and break across pages */
+  .modal-body.report-content {
+    height: auto !important;
+    overflow-y: visible !important;
+  }
+  
+  /* Also hide elements inside the modal specifically marked as non-printable */
+  .d-print-none {
+    display: none !important;
   }
 }
 
