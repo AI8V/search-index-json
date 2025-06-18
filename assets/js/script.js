@@ -1,59 +1,1442 @@
-const exportedModules=function(){"use strict";const e=(()=>{const e={searchIndex:[],manualPages:[],analyzedFiles:[],sitemapUrls:[],robotsUrls:[],manifestData:{},filteredResults:[],selectedItemIds:new Set,schemaConfig:{baseUrl:"",pageSchemaType:"WebPage",baseSchema:'{"@context":"https://schema.org","@type":["WebSite","Organization"],"@id":"https://example.com/#website","name":"Your Organization Name","url":"https://example.com","logo":"https://example.com/logo.png","sameAs":["https://www.facebook.com/your-profile","https://twitter.com/your-profile"],"potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://example.com/search?q={search_term_string}"},"query-input":"required name=search_term_string"}}'}},t={PROJECTS_MASTER_KEY:"searchIndexGenerator_projects",LAST_PROJECT_KEY:"searchIndexGenerator_lastProject",VIRTUAL_SCROLL_CHUNK_SIZE:15},o=JSON.stringify({ "@context": "https://schema.org", "@type": ["WebSite", "Organization"], "@id": "https://example.com/#website", name: "Your Organization Name", url: "https://example.com", logo: "https://example.com/logo.png", sameAs: ["https://www.facebook.com/your-profile", "https://twitter.com/your-profile"], potentialAction: { "@type": "SearchAction", target: { "@type": "EntryPoint", urlTemplate: "https://example.com/search?q={search_term_string}" }, "query-input": "required name=search_term_string" } },null,2);function a(){Object.assign(e,{searchIndex:[],manualPages:[],analyzedFiles:[],sitemapUrls:[],robotsUrls:[],manifestData:{},filteredResults:[],schemaConfig:{baseUrl:"",pageSchemaType:"WebPage",baseSchema:o}}),e.selectedItemIds.clear()}return{appState:e,CONSTANTS:t,DEFAULT_BASE_SCHEMA_STR:o,resetAppState:a}})(),t=(()=>{const e={},t=["darkModeToggle","liveCounter","counterValue","seoCrawlerUrl","seoCrawlerDepth","seoCrawlerConcurrency","seoCrawlerDelay","seoCrawlerNoSaveHtml","customProxyUrl","urlInput","manualInput","manualInputSection","projectSelector","projectNameInput","showAnalyticsBtn","analyticsModal","sourceDistributionChart","topKeywordsChart","averageSeoScoreChart","seoScoreText","orphanPagesCard","orphanPagesCount","viewOrphanPagesBtn","filterSection","categoryFilter","keywordFilter","orphanFilter","selectionControls","selectionCounter","results","resultsAccordion","resultsPlaceholder","exportButtons","downloadJsonBtn","downloadCsvBtn","downloadZipBtn","toggleCopyBtn","exportReportBtn","zipProgress","zipProgressBar","copyOptions","schemaGeneratorSection","schemaBaseUrl","schemaPageType","schemaBaseEditor","crawlerStatus","crawlerCurrentUrl","crawlerProgressBar","crawlerProgressText","crawlerQueueCount","urlsFileInput","resultItemTemplate","robotsDropZone","robotsFileInput","manifestDropZone","manifestFileInput","sitemapDropZone","sitemapFileInput","fileDropZone","htmlFileInput","reportModal","reportModalBody","printReportBtn","startCrawlerBtn","importUrlsFileBtn","addManualPageBtn","generateIndexBtn","saveProjectBtn","deleteProjectBtn","clearFormBtn","selectAllBtn","deselectAllBtn","hideCrawlerStatusBtn","generateSchemaBtn","advisor-list","advisorPlaceholder","advisor-count"],o=e=>document.getElementById(e);return{init:function(){t.forEach(t=>{const a=o(t);a&&(e[t]=a)})},dom:e,getEl:o}})(),o=(e=>({showNotification:function(t,o="info",a=5e3){const n=document.querySelector(".toast-container");if(!n)return;const r={info:"bg-info text-white",success:"bg-success text-white",warning:"bg-warning text-dark",danger:"bg-danger text-white"},s=Object.assign(document.createElement("div"),{id:"toast-"+Date.now(),className:`toast align-items-center ${r[o]} border-0`,role:"alert","aria-live":"assertive","aria-atomic":"true"});s.innerHTML=`<div class="d-flex align-items-center"><div class="toast-body flex-grow-1">${t}</div><button type="button" class="btn-close ${"warning"===o?"btn-close-dark":"btn-close-white"} ms-2" data-bs-dismiss="toast" aria-label="Close"></button></div>`,n.appendChild(s);const l=new bootstrap.Toast(s,{delay:a});l.show(),s.addEventListener("hidden.bs.toast",()=>s.remove())},getProxyUrl:function(t){const o=e.dom.customProxyUrl&&e.dom.customProxyUrl.value.trim();return o?o.replace("{url}",encodeURIComponent(t)):`https://api.allorigins.win/raw?url=${encodeURIComponent(t)}`},downloadFile:(e,t)=>{const o=document.createElement("a");o.href=URL.createObjectURL(e),o.download=t,document.body.appendChild(o),o.click(),o.remove(),URL.revokeObjectURL(o.href)},readFileContent:e=>new Promise((t,o)=>{const a=new FileReader;a.onload=e=>t(e.target.result),a.onerror=o,a.readAsText(e)})}))(t),a=(()=>{function e(e,t,o={}){const a=new DOMParser().parseFromString(e,"text/html"),n=t.startsWith("http"),r=n?new URL(t):null,s=n?r.pathname.split("/").pop()||"index.html":t;let l="generic";const d=t.toLowerCase();d.includes("/blog/")||d.includes("/article/")?l="article":d.includes("/product")?l="product":d.includes("/contact")?l="contact":d.includes("/about")?l="about":"index.html"===s||"/"===r?.pathname?l="homepage":l="generic";const c=a.querySelector("title")?.textContent.trim()||s.replace(/\.(html?|htm)$/i,"").replace(/[-_]/g," ").replace(/\b\w/g,e=>e.toUpperCase()),i=a.querySelector('meta[name="description"]')?.getAttribute("content")||a.querySelector('meta[property="og:description"]')?.getAttribute("content"),p=i||`صفحة ${c}`,m=a.body?.textContent.trim()||"",u=m.split(/\s+/).filter(Boolean),g=m.match(/[^.!?]+[.!?]+/g)||[],h=r?.hostname||window.location.hostname;let f=0,b=0;a.querySelectorAll("a[href]").forEach(e=>{const o=e.getAttribute("href");if(!o||o.startsWith("#")||o.startsWith("mailto:")||o.startsWith("tel:"))return;try{const e=new URL(o,t);e.hostname===h?f++:e.protocol.startsWith("http")&&b++}catch(e){/^(https?:)?\/\//.test(o)||f++}});const w=u.reduce((e,t)=>e+(t.match(/[aeiouy]{1,2}/gi)||[]).length,0),v={h1:a.querySelector("h1")?.textContent.trim()||null,lang:a.documentElement.getAttribute("lang")||null,canonical:a.querySelector('link[rel="canonical"]')?.getAttribute("href")||null,imageAltInfo:{total:a.images.length,missing:[...a.images].filter(e=>!e.alt?.trim()).length},brokenLinksOnPage:[],loadTime:o.loadTime||null,isNoIndex:/noindex/i.test(a.querySelector('meta[name="robots"]')?.content),isOrphan:!1,isDefaultDescription:!i,internalLinkEquity:0,ogTitle:a.querySelector('meta[property="og:title"]')?.content||null,ogImage:a.querySelector('meta[property="og:image"]')?.content||null,hasStructuredData:!!a.querySelector('script[type="application/ld+json"]'),wordCount:u.length,pageTypeHint:l,contentAnalysis:{internalLinks:f,externalLinks:b,readabilityScore:g.length>0&&u.length>0?Math.max(0,206.835-1.015*(u.length/g.length)-84.6*(w/u.length)).toFixed(1):null},performance:{pageSizeKB:(e.length/1024).toFixed(1),resourceCounts:{js:a.scripts.length,css:a.querySelectorAll('link[rel="stylesheet"]').length,images:a.images.length}},accessibility:{formLabels:{total:a.querySelectorAll("input, textarea, select").length,missing:[...a.querySelectorAll("input:not([type=hidden]), textarea, select")].filter(e=>!e.id||!a.querySelector(`label[for="${e.id}"]`)).length},semanticHeaders:!!a.querySelector("header"),semanticNav:!!a.querySelector("nav"),semanticMain:!!a.querySelector("main")}};const y={filename:s,title:c,description:p,keywords:a.querySelector('meta[name="keywords"]')?.content?.split(",").map(e=>e.trim()).filter(Boolean)||[],url:n?r.pathname:"/"+s,source:n?"seo_crawler":"html_analysis",seo:v};return o.saveHtmlContent&&(y.content=e),y}function t(e){if(!e)return{score:0,maxScore:9,color:"#6c757d",level:"غير متوفر"};let t=0;const o=9;e.h1&&t++,e.canonical&&t++,e.imageAltInfo?.total>0&&0===e.imageAltInfo.missing&&t++,0===e.brokenLinksOnPage?.length&&t++,e.isNoIndex||t++,e.lang&&t++,e.ogTitle&&e.ogImage&&t++,e.hasStructuredData&&t++;const a={article:500,product:250,homepage:250,about:50,contact:50,generic:300};e.wordCount>=(a[e.pageTypeHint]||a.generic)&&t++;const n=t/o*100;return n>=80?{score:t,maxScore:o,color:"#198754",level:"ممتاز"}:n>=50?{score:t,maxScore:o,color:"#ffc107",level:"جيد"}:{score:t,maxScore:o,color:"#dc3545",level:"يحتاج لمراجعة"}}function o(e){if(!e)return[];if("/"===e)return["الرئيسية"];try{const t=new URL(e,e.startsWith("http")?void 0:"http://dummy.com").pathname,o=t.split("/").filter(Boolean),a=o.flatMap(e=>e.replace(/\.[^/.]+$/,"").split(/[-_\s]+/)).filter(e=>e.length>2),n={index:"الرئيسية",home:"الرئيسية",about:"من نحن",contact:"اتصل بنا",services:"خدمات",products:"منتجات",blog:"مدونة",news:"أخبار",portfolio:"أعمال",team:"فريق",pricing:"أسعار",faq:"أسئلة شائعة"};return a.forEach(e=>{n[e.toLowerCase()]&&a.push(n[e.toLowerCase()])}),[...new Set(a.map(e=>e.toLowerCase()))]}catch(t){return console.error("URL tag extraction failed:",e,t),[]}}return{analyzeHtmlContent:e,calculateSeoScore:t,extractTagsFromUrl:o}})(),n=(e,t,a,o)=>{let n,r,s,l;const d=()=>t.dom.projectNameInput.value.trim(),c=()=>t.dom.projectSelector.value,i=()=>({baseUrl:t.dom.seoCrawlerUrl.value.trim(),maxDepth:parseInt(t.dom.seoCrawlerDepth.value,10)||0,concurrency:parseInt(t.dom.seoCrawlerConcurrency.value,10)||3,crawlDelay:parseInt(t.dom.seoCrawlerDelay.value,10)||100,saveHtmlContent:!t.dom.seoCrawlerNoSaveHtml.checked}),p=()=>t.dom.urlInput.value.trim(),m=()=>t.dom.customProxyUrl.value.trim(),u=()=>({title:t.getEl("pageTitle").value.trim(),url:t.getEl("pageUrl").value.trim(),description:t.getEl("pageDescription").value.trim(),category:t.getEl("pageCategory").value.trim(),tags:t.getEl("pageTags").value.split(",").map(e=>e.trim()).filter(Boolean)}),g=()=>({category:t.dom.categoryFilter?t.dom.categoryFilter.value:"",keyword:t.dom.keywordFilter?t.dom.keywordFilter.value.toLowerCase():"",isOrphan:!!t.dom.orphanFilter&&t.dom.orphanFilter.checked}),h=()=>({baseUrl:t.dom.schemaBaseUrl.value.trim(),pageSchemaType:t.dom.schemaPageType.value,baseSchema:t.dom.schemaBaseEditor.value}),f=()=>t.dom.manualInput.checked,b=(a)=>{t.dom.urlInput.value=a.urlInput||"",t.dom.customProxyUrl.value=a.customProxyUrl||"",t.dom.projectNameInput.value=a.name||"",t.dom.orphanFilter.checked=!1;const o=a.schemaConfig||{};t.dom.schemaBaseUrl.value=o.baseUrl||"",t.dom.schemaPageType.value=o.pageSchemaType||"WebPage",t.dom.schemaBaseEditor.value=o.baseSchema||e.DEFAULT_BASE_SCHEMA_STR},w=()=>["pageTitle","pageUrl","pageDescription","pageCategory","pageTags"].forEach(e=>t.getEl(e).value=""),v=()=>{t.dom.keywordFilter.value="",t.dom.categoryFilter.value="",t.dom.orphanFilter.checked=!1},y=(e)=>{localStorage.setItem("darkMode",String(e)),document.documentElement.setAttribute("data-bs-theme",e?"dark":"light"),S()},S=()=>{if(!t.dom.darkModeToggle)return;const e="dark"===document.documentElement.getAttribute("data-bs-theme");t.dom.darkModeToggle.innerHTML=e?`<i class="bi bi-sun-fill"></i> <span class="d-none d-sm-inline">الوضع النهاري</span>`:`<i class="bi bi-moon-stars-fill"></i> <span class="d-none d-sm-inline">الوضع الليلي</span>`},A=()=>{const e="dark"!==document.documentElement.getAttribute("data-bs-theme");y(e);const t=e?"الليلي":"النهاري",a=e?"bi-moon-stars-fill":"bi-sun-fill";o.showNotification(`<i class="bi ${a} ms-2"></i> تم تفعيل الوضع ${t}`,"info")};function C(e,t){if(!e)return"";const o=(e,t,o="")=>`<span class="badge bg-${t}" title="${o}">${e}</span>`,a={generic:"عامة",article:"مقالة",product:"منتج",contact:"اتصال",about:"من نحن",homepage:"رئيسية"};let n="";if("number"==typeof e.internalLinkEquity){let t="secondary";e.internalLinkEquity>10?t="warning text-dark":e.internalLinkEquity>3&&(t="info"),n=`<div class="seo-summary-item"><strong>قوة الصفحة:</strong> ${o(e.internalLinkEquity,t,"قوة الربط الداخلي: عدد الروابط الداخلية التي تشير لهذه الصفحة.")}</div>`}const r=`<div class="mt-2 pt-2 border-top border-opacity-10"><strong class="small text-body-secondary d-block mb-1">SEO أساسي:</strong><div class="seo-summary-item"><strong>نوع الصفحة:</strong> ${o(a[e.pageTypeHint]||"غير محدد","primary")}</div>${n}<div class="seo-summary-item"><strong>H1:</strong> ${o(e.h1?"موجود":"مفقود",e.h1?"success":"danger")}</div><div class="seo-summary-item"><strong>Lang:</strong> ${o(e.lang||"مفقود",e.lang?"success":"danger")}</div><div class="seo-summary-item"><strong>Canonical:</strong> ${o(e.canonical?"موجود":"مفقود",e.canonical?"success":"danger")}</div><div class="seo-summary-item"><strong>Img Alt:</strong> ${0===e.imageAltInfo.total?o("لا يوجد","secondary"):o(`${e.imageAltInfo.total-e.imageAltInfo.missing}/${e.imageAltInfo.total}`,0===e.imageAltInfo.missing?"success":"warning")}</div><div class="seo-summary-item"><strong>روابط مكسورة:</strong> ${e.brokenLinksOnPage?.length>0?`<span class="badge bg-danger cursor-pointer" data-bs-toggle="collapse" href="#brokenLinks-${t}">${e.brokenLinksOnPage.length}</span><div class="collapse mt-2" id="brokenLinks-${t}"><ul class="list-group list-group-flush small">${e.brokenLinksOnPage.map(e=>`<li class="list-group-item list-group-item-danger py-1 px-2 text-break">${e}</li>`).join("")}</ul></div>`:o("0","success")}</div><div class="seo-summary-item"><strong>OG Tags:</strong> ${o(e.ogTitle&&e.ogImage?"موجود":"ناقص",e.ogTitle&&e.ogImage?"success":"warning","OG:Title/Image")}</div><div class="seo-summary-item"><strong>بيانات منظمة:</strong> ${o(e.hasStructuredData?"موجود":"مفقود",e.hasStructuredData?"success":"secondary")}</div><div class="seo-summary-item"><strong>عدد الكلمات:</strong> ${o(e.wordCount,e.wordCount>300?"success":"warning")}</div></div>`;let s="",l="",d="";if(e.contentAnalysis){const {readabilityScore:t,internalLinks:a,externalLinks:n}=e.contentAnalysis;let r=o("N/A","secondary");null!==t&&(t>=60?r=o(t,"success","سهل القراءة"):t>=30?r=o(t,"warning","صعب القراءة قليلاً"):r=o(t,"danger","صعب القراءة جداً")),s=`<div class="mt-2 pt-2 border-top border-opacity-10"><strong class="small text-body-secondary d-block mb-1">تحليل المحتوى:</strong><div class="seo-summary-item"><strong>سهولة القراءة:</strong> ${r}</div><div class="seo-summary-item"><strong>روابط داخلية:</strong> ${o(a,"info")}</div><div class="seo-summary-item"><strong>روابط خارجية:</strong> ${o(n,"info")}</div></div>`}if(e.performance)l=`<div class="mt-2 pt-2 border-top border-opacity-10"><strong class="small text-body-secondary d-block mb-1">مقاييس الأداء:</strong><div class="seo-summary-item"><strong>حجم الصفحة:</strong> ${o(`${e.performance.pageSizeKB} KB`,e.performance.pageSizeKB>500?"warning":"success")}</div><div class="seo-summary-item" title="JS / CSS / Images"><strong>الموارد:</strong> ${o(`${e.performance.resourceCounts.js}/${e.performance.resourceCounts.css}/${e.performance.resourceCounts.images}`,"secondary")}</div></div>`;if(e.accessibility){const {formLabels:t,semanticHeaders:a,semanticNav:n,semanticMain:r}=e.accessibility,s=0===t.total?o("لا يوجد","secondary"):o(0===t.missing?"ممتاز":`${t.missing} خطأ`,0===t.missing?"success":"danger",`${t.missing} عنصر بدون label`),l=[a,n,r].filter(Boolean).length;d=`<div class="mt-2 pt-2 border-top border-opacity-10"><strong class="small text-body-secondary d-block mb-1">إمكانية الوصول (a11y):</strong><div class="seo-summary-item"><strong>Labels للنماذج:</strong> ${s}</div><div class="seo-summary-item"><strong>بنية دلالية:</strong> ${o(3===l?"ممتاز":l>0?"ناقص":"مفقود",3===l?"success":l>0?"warning":"danger")}</div></div>`}return r+s+l+d}const P=e=>{e.forEach(e=>{if(e.isIntersecting){const t=e.target;l.unobserve(t),D(t)}})};function k(o,n,r){const s=document.createDocumentFragment(),d=n.slice(r,r+e.CONSTANTS.VIRTUAL_SCROLL_CHUNK_SIZE);d.forEach(o=>{const {id:n,title:r,url:d,description:c,category:i,tags:p,seo:m}=o,u=t.dom.resultItemTemplate.content.cloneNode(!0),g=a.calculateSeoScore(m),h=u.querySelector(".result-item");h.dataset.id=n,h.classList.toggle("selected",e.appState.selectedItemIds.has(n));const f=u.querySelector(".seo-score-dot");f.style.backgroundColor=g.color,f.title=`تقييم SEO: ${g.level} (${g.score}/${g.maxScore})`,u.querySelector(".item-select-checkbox").checked=e.appState.selectedItemIds.has(n),u.querySelector(".page-title").textContent=r,u.querySelector(".no-index-badge").classList.toggle("d-none",!m?.isNoIndex),u.querySelector(".orphan-page-badge").classList.toggle("d-none",!m?.isOrphan),u.querySelector(".orphan-page-prompt").classList.toggle("d-none",!m?.isOrphan),["preview","edit","delete"].forEach(e=>{const o=u.querySelector(`.btn-${e}`);o&&o.setAttribute("aria-label",`${e}: ${r}`)}),u.querySelector('[data-populate="url"]').textContent=d,u.querySelector('[data-populate="loadTime"]').textContent=m?.loadTime?`${m.loadTime}ms`:"",u.querySelector('[data-field="description"]').textContent=c,u.querySelector('[data-field="category"]').textContent=i||"",u.querySelector('[data-field="tags"]').textContent=(p||[]).join(", "),u.querySelector(".seo-summary-container").innerHTML=C(m,n),s.appendChild(u)});const c=r+d.length;o.dataset.renderedCount=c,c<n.length&&l.observe(Object.assign(document.createElement("div"),{className:"scroll-sentinel"}))}const D=o=>{if(!o)return;const t=o.closest(".accordion-body");if(!t)return;const a=t.dataset.source,n=parseInt(t.dataset.renderedCount,10),r=(g().keyword||g().category||g().isOrphan?e.appState.filteredResults:e.appState.searchIndex).filter(e=>(e.source||"unknown")===a);o.remove(),k(t,r,n)},E=e=>{const o=e.target.querySelector(".accordion-body");if(o&&0===parseInt(o.dataset.renderedCount,10)){const e=o.dataset.source,t=(g().keyword||g().category||g().isOrphan?e.appState.filteredResults:e.appState.searchIndex).filter(t=>(t.source||"unknown")===e);t.length>0&&k(o,t,0)}};function O(e,o,a,n=null){const r={seo_crawler:'<i class="bi bi-robot ms-2"></i>زاحف SEO',html_analysis:'<i class="bi bi-file-earmark-code-fill ms-2"></i>تحليل HTML',manual:'<i class="bi bi-pencil-fill ms-2"></i>إدخال يدوي',url_generation:'<i class="bi bi-link-45deg ms-2"></i>من الروابط',sitemap:'<i class="bi bi-map-fill ms-2"></i>من Sitemap',robots:'<i class="bi bi-robot ms-2"></i>من robots.txt'},s=`collapse-source-${e.replace(/[^a-zA-Z0-9]/g,"-")}-${a}`,l=n?s===n:0===a,d=document.createElement("div");d.className="accordion-item bg-transparent",d.innerHTML=`<h2 class="accordion-header" id="heading-${s}"><button class="accordion-button ${l?"":"collapsed"}" type="button" data-bs-toggle="collapse" data-bs-target="#${s}">${r[e]||e} (${o.length})</button></h2><div id="${s}" class="accordion-collapse collapse ${l?"show":""}" data-bs-parent="#resultsAccordion"><div class="accordion-body" data-source="${e}" data-rendered-count="0"></div></div>`,t.dom.resultsAccordion.appendChild(d)}function B(o=null,a=null){const n=o||e.appState.searchIndex,r=n.length>0,s=e.appState.searchIndex.length>0;t.dom.selectionControls.classList.toggle("d-none",!s),t.dom.exportButtons.classList.toggle("d-none",!s),t.dom.schemaGeneratorSection.classList.toggle("d-none",!s),t.dom.filterSection.classList.toggle("d-none",!s),t.dom.resultsPlaceholder.classList.toggle("d-none",r),l&&t.dom.resultsAccordion&&(t.dom.resultsAccordion.querySelectorAll(".scroll-sentinel").forEach(e=>l.unobserve(e)),t.dom.resultsAccordion.innerHTML=""),r||!s?r||I():I();const d=n.reduce((e,t)=>((e[t.source||"unknown"]=e[t.source||"unknown"]||[]).push(t),e),{});Object.entries(d).forEach(([e,t],o)=>O(e,t,o,a)),I()}const M=()=>{if(!t.dom.categoryFilter)return;const o=t.dom.categoryFilter.value,a=[...new Set(e.appState.searchIndex.map(e=>e.category).filter(Boolean))].sort();t.dom.categoryFilter.innerHTML='<option value="">جميع الفئات</option>',a.forEach(e=>t.dom.categoryFilter.add(new Option(e,e,!1,e===o)))};function _(){const t=g();return t.keyword||t.category||t.isOrphan?e.appState.filteredResults:e.appState.searchIndex}function I(){if(!t.dom.selectionCounter||!t.dom.resultsAccordion)return;t.dom.selectionCounter.textContent=e.appState.selectedItemIds.size,t.dom.resultsAccordion.querySelectorAll(".result-item").forEach(o=>{const a=parseInt(o.dataset.id,10);if(isNaN(a))return;const n=e.appState.selectedItemIds.has(a),r=o.querySelector(".item-select-checkbox");r&&(r.checked=n),o.classList.toggle("selected",n)}),T()}function T(){if(!t.dom.selectAllBtn||!t.dom.deselectAllBtn)return;const o=_();let a=!1;o.length>0&&(a=o.every(t=>e.appState.selectedItemIds.has(t.id))),t.dom.selectAllBtn.disabled=0===o.length||a,t.dom.deselectAllBtn.disabled=0===o.length||!o.some(t=>e.appState.selectedItemIds.has(t.id))}const R=()=>{if(!t.dom.liveCounter||!t.dom.counterValue)return;const o=e.appState.searchIndex.length;t.dom.liveCounter.classList.toggle("d-none",0===o),o>0&&(t.dom.counterValue.textContent=o)},L=(e,t,o)=>{return o.data.labels=Array.isArray(o.data.labels)?o.data.labels:[],Array.isArray(o.data.datasets)?o.data.datasets.forEach(e=>{e.data=Array.isArray(e.data)?e.data:[]}):o.data.datasets=[],e?(e.data.labels=o.data.labels,e.data.datasets=o.data.datasets,e.update(),e):new Chart(t,o)};function q(){const a=["showAnalyticsBtn","sourceDistributionChart","topKeywordsChart","averageSeoScoreChart","seoScoreText","orphanPagesCard","orphanPagesCount","viewOrphanPagesBtn"];for(const e of a)if(!t.dom[e])return;const l=e.appState.searchIndex&&e.appState.searchIndex.length>0;if(t.dom.showAnalyticsBtn.classList.toggle("d-none",!l),!l)return n&&(n.destroy(),n=null),r&&(r.destroy(),r=null),s&&(s.destroy(),s=null),void t.dom.orphanPagesCard.classList.add("d-none");const d="dark"===document.documentElement.getAttribute("data-bs-theme")?"rgba(255, 255, 255, 0.85)":"#495057",c=e.appState.searchIndex.reduce((e,t)=>{const o=t.source||"unknown";return e[o]=(e[o]||0)+1,e},{});const i={seo_crawler:"زاحف SEO",html_analysis:"تحليل HTML",manual:"إدخال يدوي",url_generation:"من الروابط",sitemap:"من Sitemap",robots:"من robots.txt",unknown:"غير معروف"};n=L(n,t.dom.sourceDistributionChart.getContext("2d"),{type:"pie",data:{labels:Object.keys(c).map(e=>i[e]||e),datasets:[{label:"عدد الصفحات",data:Object.values(c),backgroundColor:["#4bc0c0","#ff6384","#ffcd56","#36a2eb","#9966ff","#c9cbcf","#ff9f40"]}]},options:{responsive:!0,plugins:{legend:{position:"bottom",labels:{color:d,boxWidth:12,padding:15}}}}});const p=e.appState.searchIndex.flatMap(e=>e.tags||[]).reduce((e,t)=>{return t&&(e[t]=(e[t]||0)+1),e},{});const m=Object.entries(p).sort((e,t)=>t[1]-e[1]).slice(0,10);r=L(r,t.dom.topKeywordsChart.getContext("2d"),{type:"bar",data:{labels:m.map(e=>e[0]),datasets:[{label:"عدد التكرارات",data:m.map(e=>e[1]),backgroundColor:"rgba(75, 192, 192, 0.6)"}]},options:{indexAxis:"y",plugins:{legend:{display:!1}},scales:{x:{ticks:{color:d}},y:{ticks:{color:d}}}}});let u=0,g=0;e.appState.searchIndex.forEach(e=>{const{score:t,maxScore:o}=Analyzer.calculateSeoScore(e.seo);u+=t,g+=o});const h=g>0?u/g*100:0;t.dom.seoScoreText.textContent=`${Math.round(h)}%`;const f=h>=80?"#4bc0c0":h>=50?"#ffcd56":"#ff6384";s=L(s,t.dom.averageSeoScoreChart.getContext("2d"),{type:"doughnut",data:{datasets:[{data:[h,100-h],backgroundColor:[f,"rgba(128, 128, 128, 0.2)"],circumference:180,rotation:270,cutout:"75%"}]},options:{responsive:!0,maintainAspectRatio:!0,plugins:{tooltip:{enabled:!1}}}});const b=e.appState.searchIndex.filter(e=>e.seo?.isOrphan).length;t.dom.orphanPagesCard.classList.toggle("d-none",0===b),b>0&&(t.dom.orphanPagesCount.textContent=b)}function U(e=null){const o=g(),a=o.keyword||o.category||o.isOrphan?State.appState.filteredResults:State.appState.searchIndex;B(a,e),q(),R(),M(),e&&t.dom.resultsAccordion&&!t.dom.resultsAccordion.querySelector(`#${e}`)?a[0]&&t.dom.resultsAccordion.querySelector(`[data-source="${a[0].source||"unknown"}"]`)?.closest(".accordion-collapse")&&new bootstrap.Collapse(collapseElement,{show:!0}):e&&t.dom.resultsAccordion&&0===parseInt(t.dom.resultsAccordion.querySelector(`#${e} .accordion-body`).dataset.renderedCount,10)&&k(accordionBody,a.filter(e=>(e.source||"unknown")===accordionBody.dataset.source),0)}const x=e=>{const o=State.appState.searchIndex.find(t=>t.id===e);o&&(t.getEl("previewUrl").textContent=o.url,t.getEl("previewTitle").textContent=o.title,t.getEl("previewDescription").textContent=o.description,t.getEl("titleCharCount").textContent=o.title.length,t.getEl("descCharCount").textContent=o.description.length)},F=()=>{const e=t.dom.schemaBaseEditor;try{return JSON.parse(e.value),e.classList.remove("is-invalid"),e.classList.add("is-valid"),!0}catch(e){return e.classList.remove("is-valid"),e.classList.add("is-invalid"),!1}},N=(e,t,a)=>{t.classList.add("is-editing"),t.querySelectorAll(".editable-content").forEach((o,n)=>{const r="description"===o.dataset.field?document.createElement("textarea"):document.createElement("input");"description"===o.dataset.field?r.rows=3:r.type="text",Object.assign(r,{className:"form-control form-control-sm edit-input",value:Array.isArray(e[o.dataset.field])?e[o.dataset.field].join(", "):e[o.dataset.field]}),Object.assign(r.dataset,{editField:o.dataset.field,originalTag:o.tagName.toLowerCase(),originalClasses:o.className}),o.replaceWith(r),0===n&&r.focus()}),a.innerHTML="حفظ",a.classList.replace("btn-outline-secondary","btn-success")},H=(e,t,a,n)=>{const r=t.querySelector('[data-edit-field="title"]');if(!r.value.trim())return o.showNotification("حقل العنوان لا يمكن أن يكون فارغاً!","danger");t.querySelectorAll("[data-edit-field]").forEach(t=>{const o=t.dataset.editField,a=t.value.trim();e[o]="tags"===o?a.split(",").map(e=>e.trim()).filter(Boolean):a;const n=document.createElement(t.dataset.originalTag);Object.assign(n,{className:t.dataset.originalClasses,textContent:a}),n.dataset.field=o,t.replaceWith(n)}),t.classList.remove("is-editing"),a.innerHTML="تحرير",a.classList.replace("btn-success","btn-outline-secondary"),o.showNotification("تم حفظ التعديلات!","success"),q(),n&&n()},W=e=>{if(!t.dom.projectSelector)return;const o=JSON.parse(localStorage.getItem(State.CONSTANTS.PROJECTS_MASTER_KEY)||"[]");t.dom.projectSelector.innerHTML='<option value="">-- اختر مشروعًا --</option>',o.forEach(o=>t.dom.projectSelector.add(new Option(o,o,!1,o===e)))},G=()=>{l&&l.disconnect(),t.dom.results&&(l=new IntersectionObserver(P,{root:t.dom.results,rootMargin:"0px 0px 200px 0px"}))};return{getFilterState:g,updateSelectionUI:I,getProjectName:d,getSelectedProjectName:c,getSeoCrawlerConfig:i,getUrlInput:p,getCustomProxyUrl:m,getManualPageData:u,getSchemaConfigFromDOM:h,isManualInputChecked:f,setFormValues:b,clearManualPageForm:w,clearFilterInputs:v,setDarkMode:y,toggleDarkMode:A,updateAllUI:U,handleAccordionShow:E,showSerpPreview:x,validateSchemaEditor:F,enterEditMode:N,saveEditMode:H,updateProjectListDropdown:W,initObserver:G,updateAnalyticsDashboard:q}},r=(e,t,o)=>{function a(a){const n=new Set(e.appState.searchIndex.map(e=>e.url.endsWith("/")&&e.url.length>1?e.url.slice(0,-1):e.url));let r=e.appState.searchIndex.length>0?Math.max(0,...e.appState.searchIndex.map(e=>e.id))+1:1,s=0;return a.forEach(t=>{const a=t.url.endsWith("/")&&t.url.length>1?t.url.slice(0,-1):t.url;n.has(a)||(t.id=r++,e.appState.searchIndex.push(t),n.add(a),s++)}),s}function n(o,a){const n=[],r=new Set(e.appState.searchIndex.map(e=>e.url.endsWith("/")&&e.url.length>1?e.url.slice(0,-1):e.url)),s=e=>{const t=e.url.endsWith("/")&&e.url.length>1?e.url.slice(0,-1):e.url;r.has(t)||n.push(e)};return(e.appState.analyzedFiles||[]).forEach(e=>s({...e,category:e.category||("seo_crawler"===e.source?"زاحف SEO":"تحليل تلقائي"),tags:e.keywords?.length>0?e.keywords:t.extractTagsFromUrl(e.url),source:e.source||"html_analysis"})),a&&(e.appState.manualPages||[]).forEach(e=>s({...e,source:"manual"})),o.split("\n").filter(Boolean).forEach(o=>{const a=o.trim().startsWith("/")?o.trim():"/"+o.trim(),n=a.endsWith("/")&&a.length>1?a.slice(0,-1):a;if(r.has(n))return;const l=a.split("/").pop().replace(/\.html?$/,""),d=a.split("/").filter(Boolean)[0]||"عام",c={index:"الصفحة الرئيسية",about:"من نحن",contact:"اتصل بنا",services:"خدماتنا",blog:"المدونة"},i=c[l.toLowerCase()]||l.charAt(0).toUpperCase()+l.slice(1).replace(/[-_]/g," ");s({title:i,description:`صفحة ${i}`,url:a,category:d.charAt(0).toUpperCase()+d.slice(1),tags:t.extractTagsFromUrl(a),source:(e.appState.sitemapUrls||[]).includes(a)?"sitemap":(e.appState.robotsUrls||[]).includes(a)?"robots":"url_generation"})}),n}function s(t){e.appState.manualPages||(e.appState.manualPages=[]),e.appState.manualPages.push({...t,url:t.url.startsWith("/")?t.url:"/"+t.url,category:t.category||"عام"})}function l(t,a){const n=e.appState.searchIndex.find(e=>e.id===t);n&&confirm(`هل أنت متأكد من حذف العنصر:\n"${n.title}"`)&&(e.appState.searchIndex=e.appState.searchIndex.filter(e=>e.id!==t),e.appState.filteredResults=e.appState.filteredResults.filter(e=>e.id!==t),e.appState.selectedItemIds.delete(t),a&&a())}function d(){const t=o.getFilterState(),a=t.keyword||t.category||t.isOrphan?e.appState.filteredResults:e.appState.searchIndex;return 0===e.appState.selectedItemIds.size?a:e.appState.searchIndex.filter(t=>e.appState.selectedItemIds.has(t.id))}return{addItemsToIndex:a,generateSearchIndexFromInputs:n,addManualPage:s,deleteItem:l,getSelectedItems:d}})(e,a,n),s=(e,t,o)=>{let a;const n=t=>`${e.CONSTANTS.PROJECTS_MASTER_KEY}_${t}`,r=()=>{try{return JSON.parse(localStorage.getItem(e.CONSTANTS.PROJECTS_MASTER_KEY))||[]}catch(e){return[]}};function s(t,s){if(!t)return;try{localStorage.setItem(n(t),JSON.stringify(s));const a=r();a.includes(t)||a.push(t),localStorage.setItem(e.CONSTANTS.PROJECTS_MASTER_KEY,JSON.stringify(a)),localStorage.setItem(e.CONSTANTS.LAST_PROJECT_KEY,t),UI.updateProjectListDropdown(t)}catch(e){o.showNotification("خطأ في حفظ البيانات: "+e.message,"danger")}}const l=()=>{e.resetAppState(),t.setFormValues({schemaConfig:{baseSchema:e.DEFAULT_BASE_SCHEMA_STR}}),t.clearFilterInputs(),t.validateSchemaEditor(),t.updateAllUI()};function d(a){if(!a)return void l();try{const r=localStorage.getItem(n(a));if(r){e.resetAppState();const n=JSON.parse(r);Object.assign(e.appState,n),e.appState.selectedItemIds=new Set,e.appState.schemaConfig={...StateManager.DEFAULT_BASE_SCHEMA_OBJ,...n.schemaConfig||{}},t.setFormValues({name:a,...n}),t.validateSchemaEditor(),localStorage.setItem(e.CONSTANTS.LAST_PROJECT_KEY,a),t.updateAllUI(),t.updateProjectListDropdown(a),o.showNotification(`تم تحميل مشروع "${a}"! <i class="bi bi-folder2-open ms-2"></i>`,"info")}}catch(e){console.error("Failed to load project:",e),o.showNotification("خطأ في تحميل المشروع: "+e.message,"warning")}}function c(a){localStorage.removeItem(n(a)),localStorage.setItem(e.CONSTANTS.PROJECTS_MASTER_KEY,JSON.stringify(r().filter(e=>e!==a))),t.updateProjectListDropdown(),o.showNotification(`تم حذف المشروع "${a}"!`,"success")}return{debouncedSaveProject:()=>{clearTimeout(a),a=setTimeout(()=>{const o=t.getProjectName(),a={...e.appState,analyzedFiles:(e.appState.analyzedFiles||[]).map(({content:e,...t})=>t),urlInput:t.getUrlInput(),customProxyUrl:t.getCustomProxyUrl(),timestamp:(new Date).toISOString()};s(o,a)},1e3)},clearCurrentState:l,loadProject:d,deleteProject:c,saveProject:s,getProjectList:r}})(e,n,o),l=(e,t,a,n,r,o,s)=>{async function l(l,d){let{baseUrl:c,maxDepth:i,crawlDelay:p,saveHtmlContent:m,concurrency:u}=l;try{/^https?:\/\//i.test(c)||(c="https://"+c),new URL(c)}catch(e){return o.showNotification("رابط الموقع غير صالح","danger"),void(d&&d())}const g=new URL(c).origin;o.showNotification(`<i class="bi bi-rocket-takeoff-fill ms-2"></i> بدء زحف SEO لـ ${g}...`,"info"),t.dom.crawlerStatus.classList.remove("d-none");let h=[{url:c,depth:0}],f=new Set([c]),b=new Map,w=new Set,v=0,y=0,S=1;const A=()=>{const e=S>0?v/S*100:0;t.dom.crawlerProgressBar.style.width=`${e}%`,t.dom.crawlerProgressBar.parentElement.setAttribute("aria-valuenow",e),t.dom.crawlerProgressText.textContent=`${v}/${S}`,t.dom.crawlerQueueCount.textContent=`في الانتظار: ${h.length}`};A();const C=async()=>{for(;;){y++;const e=h.shift();if(!e){if(y--,0===y&&0===h.length)break;await new Promise(e=>setTimeout(e,50));continue}t.dom.crawlerCurrentUrl.textContent=`فحص: ${new URL(e.url).pathname}...`;try{const t=performance.now(),n=await fetch(o.getProxyUrl(e.url));if(!n.ok)throw new Error(`Status ${n.status}`);const r=await n.text(),s=a.analyzeHtmlContent(r,e.url,{loadTime:Math.round(performance.now()-t),saveHtmlContent:m});const l=new Set;(new DOMParser).parseFromString(r,"text/html").querySelectorAll("a[href]").forEach(t=>{const o=t.getAttribute("href");if(!o||o.startsWith("#")||o.startsWith("mailto:")||o.startsWith("tel:"))return;try{const t=new URL(o,e.url).href.split("#")[0];l.add(t),t.startsWith(g)&&!f.has(t)&&e.depth<i&&!/\.(jpg|jpeg|png|gif|svg|css|js|pdf|zip|webp|avif)$/i.test(t)&&(f.add(t),h.push({url:t,depth:e.depth+1}),S++)}catch(e){}}),b.set(e.url,{analysis:s,outgoingLinks:[...l]})}catch(t){console.error(`فشل في جلب ${e.url}:`,t),w.add(e.url);const a=(e,t)=>{if(e.message.includes("Failed to fetch"))return`فشل الشبكة أو مشكلة CORS عند محاولة الوصول إلى: ${t}. تأكد من أن البروكسي يعمل.`;if(e.message.startsWith("Status")){const o=e.message.split(" ")[1];let a="";return"404"===o&&(a=" (لم يتم العثور على الصفحة)"),"403"===o&&(a=" (الوصول مرفوض)"),"500"===o&&(a=" (خطأ في الخادم)"),`فشل الاتصال بـ: ${t} (الحالة: ${o}${a})`}return`فشل الاتصال بـ: ${t} (خطأ غير معروف)`},n=(new URL(e.url)).pathname;o.showNotification(`<i class="bi bi-exclamation-triangle-fill ms-2"></i> ${a(t,n)}`,"warning",6e3)}finally{v++,A(),p>0&&await new Promise(e=>setTimeout(e,p)),y--}}};const P=Array.from({length:u},()=>C());await Promise.all(P),t.dom.crawlerCurrentUrl.innerHTML='<p class="text-center text-success fw-bold">اكتمل الزحف! جاري تحليل البيانات...</p>',t.dom.crawlerProgressBar.style.width="100%",t.dom.crawlerProgressBar.parentElement.setAttribute("aria-valuenow",100);const k=new Set(b.keys()),D=new Set,E=new Map;b.forEach((e,t)=>{e.outgoingLinks.forEach(o=>{const a=o.split("#")[0].split("?")[0];k.has(a)&&(D.add(a),E.set(a,(E.get(a)||0)+1))})}),b.forEach((e,t)=>{e.analysis.seo.isOrphan=!D.has(t)&&t!==c,e.analysis.seo.brokenLinksOnPage=e.outgoingLinks.filter(e=>w.has(e)),e.analysis.seo.internalLinkEquity=E.get(t)||0});const O=[...b.values()].filter(e=>e.analysis.seo.isOrphan).length;O>0&&o.showNotification(`<i class="bi bi-exclamation-diamond-fill ms-2"></i> تم اكتشاف ${O} صفحة معزولة!`,"warning",7e3);const B=Array.from(b.values()).map(({analysis:e})=>({...e,category:"زاحف SEO",tags:(e.keywords||[]).length>0?e.keywords:a.extractTagsFromUrl(e.url),source:"seo_crawler"})),M=n.addItemsToIndex(B);o.showNotification(M>0?`<i class="bi bi-check-circle-fill ms-2"></i> اكتمل الزحف! تمت إضافة ${M} صفحة جديدة.`:b.size>0?"🏁 اكتمل الزحف. جميع الصفحات التي تم العثور عليها موجودة بالفعل.":"❌ فشل الزحف. لم يتم العثور على أي صفحات قابلة للوصول.",M>0?"success":b.size>0?"info":"danger"),w.size>0&&o.showNotification(`<i class="bi bi-exclamation-octagon-fill ms-2"></i> تم العثور على ${w.size} رابط داخلي مكسور.`,"danger",7e3),setTimeout(()=>{t.dom.crawlerStatus&&t.dom.crawlerStatus.classList.add("d-none"),t.dom.crawlerCurrentUrl&&(t.dom.crawlerCurrentUrl.textContent="بدء العملية...")},5e3),d&&d()}async function d(e,t,a,n,r){try{const s=await o.readFileContent(e),l=t(s);l.length>0?(DOM.dom.urlInput.value+=(DOM.dom.urlInput.value?"\n":"")+l.join("\n"),o.showNotification(a(l.length),"success"),s.debouncedSaveProject()):o.showNotification(n,"warning")}catch(e){o.showNotification(r(e.message),"danger")}}async function c(t){let r=0;for(const n of t)if(!(e.appState.analyzedFiles||[]).some(e=>e.filename===n.name))try{const t=a.analyzeHtmlContent(await o.readFileContent(n),n.name,{saveHtmlContent:!0});e.appState.analyzedFiles||(e.appState.analyzedFiles=[]),e.appState.analyzedFiles.push(t),r++}catch(e){console.error("Error processing file:",n.name,e),o.showNotification(`خطأ في معالجة ${n.name}`,"danger")}r>0?(o.showNotification(`تم تحليل ${r} ملف HTML جديد!`,"success"),s.debouncedSaveProject()):o.showNotification("جميع الملفات تم تحليلها مسبقاً","info")}const i=e=>e.map(({id:e,title:t,description:o,url:a,category:n,tags:r,seo:s})=>({id:e,title:t,description:o,url:a,category:n,tags:r,seo:s})),p=()=>{const e=n.getSelectedItems();0!==e.length?(o.downloadFile(new Blob([JSON.stringify(i(e),null,2)],{type:"application/json"}),"search-index.json"),o.showNotification(`تم تحميل ${e.length} عنصر كـ JSON <i class="bi bi-filetype-json ms-2"></i>`,"success")):o.showNotification("لا توجد عناصر للتصدير","warning")},m=()=>{const e=n.getSelectedItems();if(0===e.length)return void o.showNotification("لا توجد عناصر للتصدير","warning");const t=["ID,العنوان,الرابط,الوصف,الفئة,الكلمات المفتاحية",...e.map(e=>[`"${e.id}"`,`"${e.title.replace(/"/g,'""')}"`,`"${e.url}"`,`"${e.description.replace(/"/g,'""')}"`,`"${e.category||""}"`,`"${(e.tags||[]).join(", ")}"`].join(","))].join("\n");o.downloadFile(new Blob(["\ufeff"+t],{type:"text/csv;charset=utf-8;"}),"search-index.csv"),o.showNotification(`تم تحميل ${e.length} عنصر كـ CSV <i class="bi bi-filetype-csv ms-2"></i>`,"success")},u=async()=>{const e=n.getSelectedItems();if(0===e.length)return void o.showNotification("لا توجد عناصر للتصدير","warning");t.dom.zipProgress.classList.remove("d-none");try{const a=new JSZip;a.file("search-index.json",JSON.stringify(i(e),null,2));const r=e.filter(e=>e.content);if(r.length>0){const e=a.folder("html-files");r.forEach(t=>e.file(t.filename,t.content))}const s=await a.generateAsync({type:"blob"},e=>{t.dom.zipProgressBar.style.width=`${e.percent.toFixed(2)}%`});o.downloadFile(s,"search-index-package.zip"),o.showNotification(`تم تحميل ${e.length} عنصر في حزمة ZIP <i class="bi bi-file-zip-fill ms-2"></i>`,"success")}catch(e){o.showNotification("خطأ في إنشاء ZIP: "+e.message,"danger")}finally{setTimeout(()=>t.dom.zipProgress.classList.add("d-none"),2e3)}},g=e=>{const t=n.getSelectedItems();if(0===t.length)return void o.showNotification("لا توجد عناصر للنسخ","warning");const a={all:()=>JSON.stringify(i(t),null,2),titles:()=>t.map(e=>e.title).join("\n"),urls:()=>t.map(e=>e.url).join("\n"),descriptions:()=>t.map(e=>e.description).join("\n")};navigator.clipboard.writeText(a[e]()).then(()=>{o.showNotification(`تم نسخ بيانات ${t.length} عنصر إلى الحافظة! <i class="bi bi-clipboard-check-fill ms-2"></i>`,"success"),t.dom.copyOptions.classList.add("d-none")}).catch(e=>o.showNotification("فشل النسخ!","danger"))},h=e=>e.replace(/^https?:\/\/[^/]+/,"").replace(/^\//,"").replace(/\/$/,"").replace(/\//g,"_").replace(/[?&#=:%]/g,"-").replace(/\.html?$/,"")||"index";async function f(e){const{baseUrl:a,pageSchemaType:r,baseSchema:s}=e,l=n.getSelectedItems();if(0===l.length)return o.showNotification("<strong>خطوة ناقصة:</strong> يجب أولاً توليد قائمة بالصفحات.","warning",7e3),t.dom.results.classList.add("border","border-warning","border-3","shadow"),void setTimeout(()=>t.dom.results.classList.remove("border","border-warning","border-3","shadow"),2500);const d=new JSZip;try{const e=JSON.parse(s);e.url=a,e["@id"]=new URL("#website",a).href,d.file("_schema_base.jsonld",JSON.stringify(e,null,2));const t=e.name||"Your Organization Name",n=e.logo||new URL("/logo.png",a).href;for(const s of l){const l=new URL(s.url,a).href,c={};Object.assign(c,{"@context":"https://schema.org","@type":r,"@id":l,name:s.title,headline:s.title,description:s.description,url:l,isPartOf:{"@id":e["@id"]},primaryImageOfPage:{"@type":"ImageObject",url:s.seo?.ogImage?new URL(s.seo.ogImage,a).href:new URL("/og-image.png",a).href},datePublished:(new Date).toISOString().split("T")[0],dateModified:(new Date).toISOString().split("T")[0]}),["Article","Product","Service"].includes(r)&&(c.author={"@type":"Organization",name:t},c.publisher={"@type":"Organization",name:t,logo:{"@type":"ImageObject",url:n}}),d.file(`${h(s.url)}.jsonld`,JSON.stringify(c,null,2))}const c=await d.generateAsync({type:"blob"});o.downloadFile(c,"schema_package.zip"),o.showNotification(`تم توليد حزمة سكيما لـ ${l.length} صفحة!`,"success")}catch(e){o.showNotification(`فشل في إنشاء حزمة السكيما: ${e.message}`,"danger")}}return{startSeoCrawler:l,processTextualFile:d,processHtmlFiles:c,downloadJson:p,downloadCSV:m,downloadZip:u,copyToClipboard:g,generateAndDownloadSchema:f}})(e,t,a,r,n,o,s);(function(e,t,o,a,r,s,l,d){function c(){const t=p();return(o.getFilterState().keyword||o.getFilterState().category||o.getFilterState().isOrphan?e.appState.filteredResults:e.appState.searchIndex).forEach(e=>t.add(e.id)),o.updateSelectionUI()}function i(){const t=p();(o.getFilterState().keyword||o.getFilterState().category||o.getFilterState().isOrphan?e.appState.filteredResults:e.appState.searchIndex).forEach(e=>t.delete(e.id)),o.updateSelectionUI()}function p(){return e.appState.selectedItemIds}function m(t,a){t.checked?p().add(a):p().delete(a),o.updateSelectionUI()}function u(){const e=t.dom.resultsAccordion?t.dom.resultsAccordion.querySelector(".accordion-collapse.show")?.id:null,a=o.getFilterState();e.appState.filteredResults=e.appState.searchIndex.filter(e=>(!a.category||e.category===a.category)&&(!a.keyword||(e.title+e.description+(e.tags||[]).join(" ")).toLowerCase().includes(a.keyword))&&(!a.isOrphan||e.seo?.isOrphan)),o.updateAllUI(e)}function g(){if(!window.Ai8vPlus||"function"!=typeof window.Ai8vPlus.analyzeAndPrioritize)return;const e=d.analyzeAndPrioritize(State.appState.searchIndex),a=t.dom["advisor-list"],n=t.dom.advisorPlaceholder,r=t.dom["advisor-count"];if(!a||!n||!r)return;a.innerHTML="",0===e.length?(n.classList.remove("d-none"),r.classList.add("d-none")):void 0,n.classList.add("d-none"),r.textContent=e.length,r.classList.remove("d-none");const s=document.createDocumentFragment();e.forEach(e=>{const t=`task-details-${e.id}`,o=document.createElement("div");o.className="list-group-item",o.innerHTML=`
+const exportedModules = (function () { 
+    'use strict';
+
+    // ... (StateManager, DOMManager, Utils, Analyzer كما هي بدون تغيير في هذا السياق) ...
+    const StateManager = (function () {
+        const DEFAULT_BASE_SCHEMA_OBJ = { "@context": "https://schema.org", "@type": ["WebSite", "Organization"], "@id": "https://example.com/#website", name: "Your Organization Name", url: "https://example.com", logo: "https://example.com/logo.png", sameAs: ["https://www.facebook.com/your-profile", "https://twitter.com/your-profile"], potentialAction: { "@type": "SearchAction", target: { "@type": "EntryPoint", urlTemplate: "https://example.com/search?q={search_term_string}" }, "query-input": "required name=search_term_string" } };
+        const DEFAULT_BASE_SCHEMA_STR = JSON.stringify(DEFAULT_BASE_SCHEMA_OBJ, null, 2);
+
+        const appState = {
+            searchIndex: [], manualPages: [], analyzedFiles: [], sitemapUrls: [],
+            robotsUrls: [], manifestData: {}, filteredResults: [],
+            selectedItemIds: new Set(),
+            schemaConfig: { baseUrl: '', pageSchemaType: 'WebPage', baseSchema: DEFAULT_BASE_SCHEMA_STR }
+        };
+
+        const CONSTANTS = {
+            PROJECTS_MASTER_KEY: 'searchIndexGenerator_projects',
+            LAST_PROJECT_KEY: 'searchIndexGenerator_lastProject',
+            VIRTUAL_SCROLL_CHUNK_SIZE: 15
+        };
+
+        function resetAppState() {
+            Object.assign(appState, {
+                searchIndex: [], manualPages: [], analyzedFiles: [], sitemapUrls: [],
+                robotsUrls: [], manifestData: {}, filteredResults: [],
+                schemaConfig: { baseUrl: '', pageSchemaType: 'WebPage', baseSchema: DEFAULT_BASE_SCHEMA_STR }
+            });
+            appState.selectedItemIds.clear();
+        }
+
+        return { appState, CONSTANTS, DEFAULT_BASE_SCHEMA_STR, resetAppState };
+    })();
+
+    const DOMManager = (function () {
+        const dom = {};
+        const domIds = ['darkModeToggle', 'liveCounter', 'counterValue', 'seoCrawlerUrl', 'seoCrawlerDepth', 'seoCrawlerConcurrency', 'seoCrawlerDelay', 'seoCrawlerNoSaveHtml', 'customProxyUrl', 'urlInput', 'manualInput', 'manualInputSection', 'projectSelector', 'projectNameInput', 'showAnalyticsBtn', 'analyticsModal', 'sourceDistributionChart', 'topKeywordsChart', 'averageSeoScoreChart', 'seoScoreText', 'orphanPagesCard', 'orphanPagesCount', 'viewOrphanPagesBtn', 'filterSection', 'categoryFilter', 'keywordFilter', 'orphanFilter', 'selectionControls', 'selectionCounter', 'results', 'resultsAccordion', 'resultsPlaceholder', 'exportButtons', 'downloadJsonBtn', 'downloadCsvBtn', 'downloadZipBtn', 'toggleCopyBtn', 'exportReportBtn', 'zipProgress', 'zipProgressBar', 'copyOptions', 'schemaGeneratorSection', 'schemaBaseUrl', 'schemaPageType', 'schemaBaseEditor', 'crawlerStatus', 'crawlerCurrentUrl', 'crawlerProgressBar', 'crawlerProgressText', 'crawlerQueueCount', 'urlsFileInput', 'resultItemTemplate', 'robotsDropZone', 'robotsFileInput', 'manifestDropZone', 'manifestFileInput', 'sitemapDropZone', 'sitemapFileInput', 'fileDropZone', 'htmlFileInput', 'reportModal', 'reportModalBody', 'printReportBtn', 'startCrawlerBtn', 'importUrlsFileBtn', 'addManualPageBtn', 'generateIndexBtn', 'saveProjectBtn', 'deleteProjectBtn', 'clearFormBtn', 'selectAllBtn', 'deselectAllBtn', 'hideCrawlerStatusBtn', 'generateSchemaBtn', 'advisor-list', 'advisorPlaceholder', 'advisor-count'];
+        
+        const getEl = (id) => document.getElementById(id);
+        
+        function init() {
+            domIds.forEach(id => {
+                const el = getEl(id);
+                if (el) {
+                    dom[id] = el;
+                }
+            });
+        }
+        
+        return { init, dom, getEl };
+    })();
+
+    const Utils = (function (DOM) {
+        function showNotification(message, type = 'info', duration = 5000) {
+            const container = document.querySelector('.toast-container');
+            if (!container) return; // Robustness check for test env
+            const colors = { info: 'bg-info text-white', success: 'bg-success text-white', warning: 'bg-warning text-dark', danger: 'bg-danger text-white' };
+            const toast = Object.assign(document.createElement('div'), {
+                id: 'toast-' + Date.now(), className: `toast align-items-center ${colors[type]} border-0`,
+                role: 'alert', 'aria-live': 'assertive', 'aria-atomic': 'true'
+            });
+            toast.innerHTML = `<div class="d-flex align-items-center"><div class="toast-body flex-grow-1">${message}</div><button type="button" class="btn-close ${type === 'warning' ? 'btn-close-dark' : 'btn-close-white'} ms-2" data-bs-dismiss="toast" aria-label="Close"></button></div>`;
+            container.appendChild(toast);
+            const bsToast = new bootstrap.Toast(toast, { delay: duration }); bsToast.show();
+            toast.addEventListener('hidden.bs.toast', () => toast.remove());
+        }
+
+        function getProxyUrl(targetUrl) {
+            const customProxy = DOM.dom.customProxyUrl && DOM.dom.customProxyUrl.value.trim(); // Add check for DOM.dom.customProxyUrl
+            return customProxy ? customProxy.replace('{url}', encodeURIComponent(targetUrl)) : `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
+        }
+        
+        const downloadFile = (blob, filename) => { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(a.href); };
+        const readFileContent = (file) => new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = e => resolve(e.target.result); reader.onerror = reject; reader.readAsText(file); });
+        
+        return { showNotification, getProxyUrl, downloadFile, readFileContent };
+    })(DOMManager);
+    
+    const Analyzer = (function () {
+        function analyzeHtmlContent(content, urlOrFilename, options = {}) {
+            const doc = new DOMParser().parseFromString(content, 'text/html');
+            const isUrl = urlOrFilename.startsWith('http');
+            const url = isUrl ? new URL(urlOrFilename) : null;
+            const filename = isUrl ? (url.pathname.split('/').pop() || 'index.html') : urlOrFilename;
+        
+            let pageTypeHint = 'generic';
+            const lowerUrl = urlOrFilename.toLowerCase();
+            if (lowerUrl.includes('/blog/') || lowerUrl.includes('/article/')) pageTypeHint = 'article';
+            else if (lowerUrl.includes('/product')) pageTypeHint = 'product';
+            else if (lowerUrl.includes('/contact')) pageTypeHint = 'contact';
+            else if (lowerUrl.includes('/about')) pageTypeHint = 'about';
+            else if (filename === 'index.html' || url?.pathname === '/') pageTypeHint = 'homepage';
+
+            const title = doc.querySelector('title')?.textContent.trim() || filename.replace(/\.(html?|htm)$/i, '').replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            
+            const descContent = doc.querySelector('meta[name="description"]')?.getAttribute('content') || doc.querySelector('meta[property="og:description"]')?.getAttribute('content');
+            const description = descContent || `صفحة ${title}`;
+            
+            const bodyText = doc.body?.textContent.trim() || '';
+            const words = bodyText.split(/\s+/).filter(Boolean);
+            const sentences = bodyText.match(/[^.!?]+[.!?]+/g) || [];
+            const pageHostname = url?.hostname || window.location.hostname;
+            
+            let internalLinks = 0, externalLinks = 0;
+            doc.querySelectorAll('a[href]').forEach(a => {
+                const href = a.getAttribute('href');
+                if (!href || href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:')) return;
+                try {
+                    const linkUrl = new URL(href, urlOrFilename);
+                    if (linkUrl.hostname === pageHostname) internalLinks++;
+                    else if (linkUrl.protocol.startsWith('http')) externalLinks++;
+                } catch {
+                    if (!/^(https?:)?\/\//.test(href)) internalLinks++;
+                }
+            });
+            
+            const syllableApproximation = words.reduce((acc, word) => acc + (word.match(/[aeiouy]{1,2}/gi) || []).length, 0);
+            
+            const seoData = {
+                h1: doc.querySelector('h1')?.textContent.trim() || null,
+                lang: doc.documentElement.getAttribute('lang') || null,
+                canonical: doc.querySelector('link[rel="canonical"]')?.getAttribute('href') || null,
+                imageAltInfo: { total: doc.images.length, missing: [...doc.images].filter(img => !img.alt?.trim()).length },
+                brokenLinksOnPage: [],
+                loadTime: options.loadTime || null,
+                isNoIndex: /noindex/i.test(doc.querySelector('meta[name="robots"]')?.content),
+                isOrphan: false,
+                isDefaultDescription: !descContent,
+                internalLinkEquity: 0,
+                ogTitle: doc.querySelector('meta[property="og:title"]')?.content || null,
+                ogImage: doc.querySelector('meta[property="og:image"]')?.content || null,
+                hasStructuredData: !!doc.querySelector('script[type="application/ld+json"]'),
+                wordCount: words.length, pageTypeHint,
+                contentAnalysis: { internalLinks, externalLinks, readabilityScore: sentences.length > 0 && words.length > 0 ? Math.max(0, 206.835 - 1.015 * (words.length / sentences.length) - 84.6 * (syllableApproximation / words.length)).toFixed(1) : null },
+                performance: { pageSizeKB: (content.length / 1024).toFixed(1), resourceCounts: { js: doc.scripts.length, css: doc.querySelectorAll('link[rel="stylesheet"]').length, images: doc.images.length } },
+                accessibility: { formLabels: { total: doc.querySelectorAll('input, textarea, select').length, missing: [...doc.querySelectorAll('input:not([type=hidden]), textarea, select')].filter(el => !el.id || !doc.querySelector(`label[for="${el.id}"]`)).length }, semanticHeaders: !!doc.querySelector('header'), semanticNav: !!doc.querySelector('nav'), semanticMain: !!doc.querySelector('main') }
+            };
+
+            const result = { filename, title, description, keywords: doc.querySelector('meta[name="keywords"]')?.content?.split(',').map(k => k.trim()).filter(Boolean) || [], url: isUrl ? url.pathname : '/' + filename, source: isUrl ? 'seo_crawler' : 'html_analysis', seo: seoData };
+            if (options.saveHtmlContent) {
+                result.content = content;
+            }
+            return result;
+        }
+        
+        function calculateSeoScore(seo) {
+            if (!seo) return { score: 0, maxScore: 9, color: '#6c757d', level: 'غير متوفر' };
+            let score = 0; const maxScore = 9;
+            if (seo.h1) score++;
+            if (seo.canonical) score++;
+            if (seo.imageAltInfo?.total > 0 && seo.imageAltInfo.missing === 0) score++;
+            if (seo.brokenLinksOnPage?.length === 0) score++;
+            if (!seo.isNoIndex) score++;
+            if (seo.lang) score++;
+            if (seo.ogTitle && seo.ogImage) score++;
+            if (seo.hasStructuredData) score++;
+            const thresholds = { article: 500, product: 250, homepage: 250, about: 50, contact: 50, generic: 300 };
+            if (seo.wordCount >= (thresholds[seo.pageTypeHint] || thresholds.generic)) score++;
+            const percentage = (score / maxScore) * 100;
+            if (percentage >= 80) return { score, maxScore, color: '#198754', level: 'ممتاز' };
+            if (percentage >= 50) return { score, maxScore, color: '#ffc107', level: 'جيد' };
+            return { score, maxScore, color: '#dc3545', level: 'يحتاج لمراجعة' };
+        }
+
+        function extractTagsFromUrl(url) {
+            if (!url) return [];
+             if (url === '/') return ['الرئيسية']; // <--- تعديل هنا لمعالجة حالة الجذر
+            try {
+                const path = new URL(url, url.startsWith('http') ? undefined : 'http://dummy.com').pathname;
+                const parts = path.split('/').filter(Boolean);
+                const tags = parts.flatMap(p => p.replace(/\.[^/.]+$/, '').split(/[-_\s]+/)).filter(p => p.length > 2);
+                const translations = { 'index': 'الرئيسية', 'home': 'الرئيسية', 'about': 'من نحن', 'contact': 'اتصل بنا', 'services': 'خدمات', 'products': 'منتجات', 'blog': 'مدونة', 'news': 'أخبار', 'portfolio': 'أعمال', 'team': 'فريق', 'pricing': 'أسعار', 'faq': 'أسئلة شائعة' };
+                tags.forEach(tag => { if (translations[tag.toLowerCase()]) tags.push(translations[tag.toLowerCase()]); });
+                return [...new Set(tags.map(t => t.toLowerCase()))];
+            } catch (e) { console.error("URL tag extraction failed:", url, e); return []; }
+        }
+
+        return { analyzeHtmlContent, calculateSeoScore, extractTagsFromUrl };
+    })();
+
+    const UIManager = (function (State, DOM, Analyzer, Utils) {
+        // ... (getProjectName, getSelectedProjectName, إلخ. كما هي) ...
+        let sourceChartInstance, keywordsChartInstance, seoScoreChartInstance, scrollObserver;
+
+        const getProjectName = () => DOM.dom.projectNameInput.value.trim();
+        const getSelectedProjectName = () => DOM.dom.projectSelector.value;
+        const getSeoCrawlerConfig = () => ({ 
+            baseUrl: DOM.dom.seoCrawlerUrl.value.trim(), 
+            maxDepth: parseInt(DOM.dom.seoCrawlerDepth.value, 10) || 0, 
+            concurrency: parseInt(DOM.dom.seoCrawlerConcurrency.value, 10) || 3,
+            crawlDelay: parseInt(DOM.dom.seoCrawlerDelay.value, 10) || 100, 
+            saveHtmlContent: !DOM.dom.seoCrawlerNoSaveHtml.checked 
+        });
+        const getUrlInput = () => DOM.dom.urlInput.value.trim();
+        const getCustomProxyUrl = () => DOM.dom.customProxyUrl.value.trim();
+        const getManualPageData = () => ({ title: DOM.getEl('pageTitle').value.trim(), url: DOM.getEl('pageUrl').value.trim(), description: DOM.getEl('pageDescription').value.trim(), category: DOM.getEl('pageCategory').value.trim(), tags: DOM.getEl('pageTags').value.split(',').map(t => t.trim()).filter(Boolean) });
+        
+        // تعديل: حماية ضد عناصر DOM غير موجودة
+        const getFilterState = () => ({ 
+            category: DOM.dom.categoryFilter ? DOM.dom.categoryFilter.value : '', 
+            keyword: DOM.dom.keywordFilter ? DOM.dom.keywordFilter.value.toLowerCase() : '', 
+            isOrphan: DOM.dom.orphanFilter ? DOM.dom.orphanFilter.checked : false
+        });
+        const getSchemaConfigFromDOM = () => ({ baseUrl: DOM.dom.schemaBaseUrl.value.trim(), pageSchemaType: DOM.dom.schemaPageType.value, baseSchema: DOM.dom.schemaBaseEditor.value });
+        const isManualInputChecked = () => DOM.dom.manualInput.checked;
+
+        const setFormValues = (projectData) => {
+            DOM.dom.urlInput.value = projectData.urlInput || '';
+            DOM.dom.customProxyUrl.value = projectData.customProxyUrl || '';
+            DOM.dom.projectNameInput.value = projectData.name || '';
+            DOM.dom.orphanFilter.checked = false;
+            const schemaConfig = projectData.schemaConfig || {};
+            DOM.dom.schemaBaseUrl.value = schemaConfig.baseUrl || '';
+            DOM.dom.schemaPageType.value = schemaConfig.pageSchemaType || 'WebPage';
+            DOM.dom.schemaBaseEditor.value = schemaConfig.baseSchema || State.DEFAULT_BASE_SCHEMA_STR;
+        };
+        const clearManualPageForm = () => ['pageTitle', 'pageUrl', 'pageDescription', 'pageCategory', 'pageTags'].forEach(id => DOM.getEl(id).value = '');
+        const clearFilterInputs = () => { DOM.dom.keywordFilter.value = ''; DOM.dom.categoryFilter.value = ''; DOM.dom.orphanFilter.checked = false; };
+        const setDarkMode = (isDark) => { localStorage.setItem('darkMode', String(isDark)); document.documentElement.setAttribute('data-bs-theme', isDark ? 'dark' : 'light'); updateDarkModeButton(); };
+        const updateDarkModeButton = () => {
+            if (!DOM.dom.darkModeToggle) return;
+            const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+            DOM.dom.darkModeToggle.innerHTML = isDark ? `<i class="bi bi-sun-fill"></i> <span class="d-none d-sm-inline">الوضع النهاري</span>` : `<i class="bi bi-moon-stars-fill"></i> <span class="d-none d-sm-inline">الوضع الليلي</span>`;
+        };
+        const toggleDarkMode = () => {
+            const newIsDarkMode = document.documentElement.getAttribute('data-bs-theme') !== 'dark';
+            setDarkMode(newIsDarkMode);
+            const modeText = newIsDarkMode ? 'الليلي' : 'النهاري';
+            const icon = newIsDarkMode ? 'bi-moon-stars-fill' : 'bi-sun-fill';
+            Utils.showNotification(`<i class="bi ${icon} ms-2"></i> تم تفعيل الوضع ${modeText}`, 'info');
+        };
+
+        function renderSeoSummary(seo, itemId) {
+            if (!seo) return '';
+            const createBadge = (text, type, title = '') => `<span class="badge bg-${type}" title="${title}">${text}</span>`;
+            const pageTypeLabels = { 'generic': 'عامة', 'article': 'مقالة', 'product': 'منتج', 'contact': 'اتصال', 'about': 'من نحن', 'homepage': 'رئيسية' };
+            let equityBadge = '';
+            if (typeof seo.internalLinkEquity === 'number') {
+                let badgeType = 'secondary';
+                if (seo.internalLinkEquity > 10) badgeType = 'warning text-dark';
+                else if (seo.internalLinkEquity > 3) badgeType = 'info';
+                equityBadge = `<div class="seo-summary-item"><strong>قوة الصفحة:</strong> ${createBadge(seo.internalLinkEquity, badgeType, 'قوة الربط الداخلي: عدد الروابط الداخلية التي تشير لهذه الصفحة.')}</div>`;
+            }
+            const basicSeoHtml = `<div class="mt-2 pt-2 border-top border-opacity-10"><strong class="small text-body-secondary d-block mb-1">SEO أساسي:</strong><div class="seo-summary-item"><strong>نوع الصفحة:</strong> ${createBadge(pageTypeLabels[seo.pageTypeHint] || 'غير محدد', 'primary')}</div>${equityBadge}<div class="seo-summary-item"><strong>H1:</strong> ${createBadge(seo.h1 ? 'موجود' : 'مفقود', seo.h1 ? 'success' : 'danger')}</div><div class="seo-summary-item"><strong>Lang:</strong> ${createBadge(seo.lang || 'مفقود', seo.lang ? 'success' : 'danger')}</div><div class="seo-summary-item"><strong>Canonical:</strong> ${createBadge(seo.canonical ? 'موجود' : 'مفقود', seo.canonical ? 'success' : 'danger')}</div><div class="seo-summary-item"><strong>Img Alt:</strong> ${seo.imageAltInfo.total === 0 ? createBadge('لا يوجد', 'secondary') : createBadge(`${seo.imageAltInfo.total - seo.imageAltInfo.missing}/${seo.imageAltInfo.total}`, seo.imageAltInfo.missing === 0 ? 'success' : 'warning')}</div><div class="seo-summary-item"><strong>روابط مكسورة:</strong> ${seo.brokenLinksOnPage?.length > 0 ? `<span class="badge bg-danger cursor-pointer" data-bs-toggle="collapse" href="#brokenLinks-${itemId}">${seo.brokenLinksOnPage.length}</span><div class="collapse mt-2" id="brokenLinks-${itemId}"><ul class="list-group list-group-flush small">${seo.brokenLinksOnPage.map(l => `<li class="list-group-item list-group-item-danger py-1 px-2 text-break">${l}</li>`).join('')}</ul></div>` : createBadge('0', 'success')}</div><div class="seo-summary-item"><strong>OG Tags:</strong> ${createBadge(seo.ogTitle && seo.ogImage ? 'موجود' : 'ناقص', seo.ogTitle && seo.ogImage ? 'success' : 'warning', 'OG:Title/Image')}</div><div class="seo-summary-item"><strong>بيانات منظمة:</strong> ${createBadge(seo.hasStructuredData ? 'موجود' : 'مفقود', seo.hasStructuredData ? 'success' : 'secondary')}</div><div class="seo-summary-item"><strong>عدد الكلمات:</strong> ${createBadge(seo.wordCount, seo.wordCount > 300 ? 'success' : 'warning')}</div></div>`;
+            let contentHtml = '', performanceHtml = '', a11yHtml = '';
+            if (seo.contentAnalysis) {
+                const { readabilityScore, internalLinks, externalLinks } = seo.contentAnalysis;
+                let readabilityBadge = createBadge('N/A', 'secondary');
+                if (readabilityScore !== null) { if (readabilityScore >= 60) readabilityBadge = createBadge(readabilityScore, 'success', 'سهل القراءة'); else if (readabilityScore >= 30) readabilityBadge = createBadge(readabilityScore, 'warning', 'صعب القراءة قليلاً'); else readabilityBadge = createBadge(readabilityScore, 'danger', 'صعب القراءة جداً'); }
+                contentHtml = `<div class="mt-2 pt-2 border-top border-opacity-10"><strong class="small text-body-secondary d-block mb-1">تحليل المحتوى:</strong><div class="seo-summary-item"><strong>سهولة القراءة:</strong> ${readabilityBadge}</div><div class="seo-summary-item"><strong>روابط داخلية:</strong> ${createBadge(internalLinks, 'info')}</div><div class="seo-summary-item"><strong>روابط خارجية:</strong> ${createBadge(externalLinks, 'info')}</div></div>`;
+            }
+            if (seo.performance) performanceHtml = `<div class="mt-2 pt-2 border-top border-opacity-10"><strong class="small text-body-secondary d-block mb-1">مقاييس الأداء:</strong><div class="seo-summary-item"><strong>حجم الصفحة:</strong> ${createBadge(`${seo.performance.pageSizeKB} KB`, seo.performance.pageSizeKB > 500 ? 'warning' : 'success')}</div><div class="seo-summary-item" title="JS / CSS / Images"><strong>الموارد:</strong> ${createBadge(`${seo.performance.resourceCounts.js}/${seo.performance.resourceCounts.css}/${seo.performance.resourceCounts.images}`, 'secondary')}</div></div>`;
+            if (seo.accessibility) {
+                const { formLabels, semanticHeaders, semanticNav, semanticMain } = seo.accessibility;
+                const formLabelsBadge = formLabels.total === 0 ? createBadge('لا يوجد', 'secondary') : createBadge(formLabels.missing === 0 ? 'ممتاز' : `${formLabels.missing} خطأ`, formLabels.missing === 0 ? 'success' : 'danger', `${formLabels.missing} عنصر بدون label`);
+                const semanticsScore = [semanticHeaders, semanticNav, semanticMain].filter(Boolean).length;
+                const semanticsBadge = createBadge(semanticsScore === 3 ? 'ممتاز' : (semanticsScore > 0 ? 'ناقص' : 'مفقود'), semanticsScore === 3 ? 'success' : (semanticsScore > 0 ? 'warning' : 'danger'));
+                a11yHtml = `<div class="mt-2 pt-2 border-top border-opacity-10"><strong class="small text-body-secondary d-block mb-1">إمكانية الوصول (a11y):</strong><div class="seo-summary-item"><strong>Labels للنماذج:</strong> ${formLabelsBadge}</div><div class="seo-summary-item"><strong>بنية دلالية:</strong> ${semanticsBadge}</div></div>`;
+            }
+            return basicSeoHtml + contentHtml + performanceHtml + a11yHtml;
+        }
+
+        const handleIntersection = (entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const sentinel = entry.target;
+                    scrollObserver.unobserve(sentinel); 
+                    handleLoadMore(sentinel);
+                }
+            });
+        };
+
+        function renderItemChunk(container, items, offset) {
+            const fragment = document.createDocumentFragment();
+            const itemsToRender = items.slice(offset, offset + State.CONSTANTS.VIRTUAL_SCROLL_CHUNK_SIZE);
+            itemsToRender.forEach(item => {
+                const { id, title, url, description, category, tags, seo } = item;
+                const itemClone = DOM.dom.resultItemTemplate.content.cloneNode(true);
+                const seoScore = Analyzer.calculateSeoScore(seo);
+                const resultItemEl = itemClone.querySelector('.result-item');
+                resultItemEl.dataset.id = id;
+                resultItemEl.classList.toggle('selected', State.appState.selectedItemIds.has(id));
+                const seoDot = itemClone.querySelector('.seo-score-dot');
+                seoDot.style.backgroundColor = seoScore.color;
+                seoDot.title = `تقييم SEO: ${seoScore.level} (${seoScore.score}/${seoScore.maxScore})`;
+                itemClone.querySelector('.item-select-checkbox').checked = State.appState.selectedItemIds.has(id);
+                itemClone.querySelector('.page-title').textContent = title;
+                itemClone.querySelector('.no-index-badge').classList.toggle('d-none', !seo?.isNoIndex);
+                itemClone.querySelector('.orphan-page-badge').classList.toggle('d-none', !seo?.isOrphan);
+                itemClone.querySelector('.orphan-page-prompt').classList.toggle('d-none', !seo?.isOrphan);
+                ['preview', 'edit', 'delete'].forEach(action => {
+                    const btn = itemClone.querySelector(`.btn-${action}`);
+                    if (btn) btn.setAttribute('aria-label', `${action}: ${title}`);
+                });
+                itemClone.querySelector('[data-populate="url"]').textContent = url;
+                itemClone.querySelector('[data-populate="loadTime"]').textContent = seo?.loadTime ? `${seo.loadTime}ms` : '';
+                itemClone.querySelector('[data-field="description"]').textContent = description;
+                itemClone.querySelector('[data-field="category"]').textContent = category || '';
+                itemClone.querySelector('[data-field="tags"]').textContent = (tags || []).join(', ');
+                itemClone.querySelector('.seo-summary-container').innerHTML = renderSeoSummary(seo, id);
+                fragment.appendChild(itemClone);
+            });
+            container.appendChild(fragment);
+            const newRenderedCount = offset + itemsToRender.length;
+            container.dataset.renderedCount = newRenderedCount;
+            if (newRenderedCount < items.length) {
+                const sentinel = Object.assign(document.createElement('div'), { className: 'scroll-sentinel' });
+                container.appendChild(sentinel);
+                scrollObserver.observe(sentinel);
+            }
+        }
+        
+        const handleLoadMore = (sentinel) => {
+            const accordionBody = sentinel.closest('.accordion-body');
+            if (!accordionBody) return;
+            const source = accordionBody.dataset.source;
+            const offset = parseInt(accordionBody.dataset.renderedCount, 10);
+            const items = (getFilterState().keyword || getFilterState().category || getFilterState().isOrphan ? State.appState.filteredResults : State.appState.searchIndex).filter(item => (item.source || 'unknown') === source);
+            sentinel.remove();
+            renderItemChunk(accordionBody, items, offset);
+        };
+
+        const handleAccordionShow = (event) => {
+            const accordionBody = event.target.querySelector('.accordion-body');
+            if (accordionBody && parseInt(accordionBody.dataset.renderedCount, 10) === 0) {
+                const source = accordionBody.dataset.source;
+                const items = (getFilterState().keyword || getFilterState().category || getFilterState().isOrphan ? State.appState.filteredResults : State.appState.searchIndex).filter(item => (item.source || 'unknown') === source);
+                if(items.length > 0) renderItemChunk(accordionBody, items, 0);
+            }
+        };
+
+        function renderAccordionGroup(source, items, index, openAccordionId = null) {
+            const sourceLabels = { 'seo_crawler': `<i class="bi bi-robot ms-2"></i>زاحف SEO`, 'html_analysis': `<i class="bi bi-file-earmark-code-fill ms-2"></i>تحليل HTML`, 'manual': `<i class="bi bi-pencil-fill ms-2"></i>إدخال يدوي`, 'url_generation': `<i class="bi bi-link-45deg ms-2"></i>من الروابط`, 'sitemap': `<i class="bi bi-map-fill ms-2"></i>من Sitemap`, 'robots': `<i class="bi bi-robot ms-2"></i>من robots.txt`};
+            const collapseId = `collapse-source-${source.replace(/[^a-zA-Z0-9]/g, '-')}-${index}`;
+            const shouldBeOpen = openAccordionId ? (collapseId === openAccordionId) : index === 0;
+            const accordionItem = document.createElement('div');
+            accordionItem.className = 'accordion-item bg-transparent';
+            accordionItem.innerHTML = `<h2 class="accordion-header" id="heading-${collapseId}"><button class="accordion-button ${shouldBeOpen ? '' : 'collapsed'}" type="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}">${sourceLabels[source] || source} (${items.length})</button></h2><div id="${collapseId}" class="accordion-collapse collapse ${shouldBeOpen ? 'show' : ''}" data-bs-parent="#resultsAccordion"><div class="accordion-body" data-source="${source}" data-rendered-count="0"></div></div>`;
+            DOM.dom.resultsAccordion.appendChild(accordionItem);
+        }
+
+        function displayResults(resultsToShow = null, openAccordionId = null) {
+            const results = resultsToShow || State.appState.searchIndex;
+            const hasResults = results.length > 0;
+            
+            // Toggle visibility of controls based on whether there are *any* results in searchIndex
+            const anyResultsAtAll = State.appState.searchIndex.length > 0;
+            DOM.dom.selectionControls.classList.toggle('d-none', !anyResultsAtAll);
+            DOM.dom.exportButtons.classList.toggle('d-none', !anyResultsAtAll);
+            DOM.dom.schemaGeneratorSection.classList.toggle('d-none', !anyResultsAtAll);
+            DOM.dom.filterSection.classList.toggle('d-none', !anyResultsAtAll);
+
+            DOM.dom.resultsPlaceholder.classList.toggle('d-none', hasResults); // Placeholder based on current `resultsToShow`
+            
+            if(scrollObserver && DOM.dom.resultsAccordion) { // Add null check for resultsAccordion
+                DOM.dom.resultsAccordion.querySelectorAll('.scroll-sentinel').forEach(el => scrollObserver.unobserve(el));
+            }
+            
+            if (DOM.dom.resultsAccordion) DOM.dom.resultsAccordion.innerHTML = ''; // Clear previous results
+            if (!hasResults && anyResultsAtAll) { 
+                //  If no results to show (e.g. filter yields nothing) but there are items in searchIndex,
+                //  we still want to update the selection UI to show 0 selected.
+                updateSelectionUI();
+                return;
+            }
+            if (!hasResults) { // No results at all
+                 updateSelectionUI(); // Ensure counter shows 0
+                 return;
+            }
+
+            const grouped = results.reduce((acc, item) => { (acc[item.source || 'unknown'] = acc[item.source || 'unknown'] || []).push(item); return acc; }, {});
+            Object.entries(grouped).forEach(([source, items], index) => renderAccordionGroup(source, items, index, openAccordionId));
+            updateSelectionUI(); // تحديث حالة التحديد بعد عرض النتائج
+        }
+
+        const updateFilterOptions = () => {
+            if (!DOM.dom.categoryFilter) return; // حماية
+            const currentCategory = DOM.dom.categoryFilter.value;
+            const categories = [...new Set(State.appState.searchIndex.map(item => item.category).filter(Boolean))].sort();
+            DOM.dom.categoryFilter.innerHTML = '<option value="">جميع الفئات</option>';
+            categories.forEach(cat => DOM.dom.categoryFilter.add(new Option(cat, cat, false, cat === currentCategory)));
+        };
+        
+        // دالة مساعدة جديدة للحصول على العناصر النشطة حاليًا (إما المفلترة أو كل شيء)
+        function getCurrentActiveItemsList() {
+            const filters = getFilterState();
+            if (filters.keyword || filters.category || filters.isOrphan) {
+                return State.appState.filteredResults;
+            }
+            return State.appState.searchIndex;
+        }
+
+        function updateSelectionUI() {
+            if (!DOM.dom.selectionCounter || !DOM.dom.resultsAccordion) return; 
+
+            const selectedCount = State.appState.selectedItemIds.size;
+            DOM.dom.selectionCounter.textContent = selectedCount;
+
+            // تحديث مربعات الاختيار للعناصر المرئية في DOM
+            DOM.dom.resultsAccordion.querySelectorAll('.result-item').forEach(itemDiv => {
+                const itemId = parseInt(itemDiv.dataset.id, 10);
+                if (isNaN(itemId)) return;
+
+                const isSelected = State.appState.selectedItemIds.has(itemId);
+                const checkbox = itemDiv.querySelector('.item-select-checkbox');
+                
+                if (checkbox) {
+                    checkbox.checked = isSelected;
+                }
+                itemDiv.classList.toggle('selected', isSelected);
+            });
+            updateSelectAllDeselectAllButtonsState();
+        }
+        
+        function updateSelectAllDeselectAllButtonsState() {
+            if (!DOM.dom.selectAllBtn || !DOM.dom.deselectAllBtn) return;
+
+            const activeItems = getCurrentActiveItemsList(); // استخدم الدالة المساعدة
+            const selectedCount = State.appState.selectedItemIds.size;
+            
+            let allCurrentlyVisibleOrFilteredAreSelected = false;
+            if (activeItems.length > 0) {
+                // تحقق مما إذا كانت جميع العناصر النشطة (المفلترة أو المعروضة) محددة بالفعل
+                 allCurrentlyVisibleOrFilteredAreSelected = activeItems.every(item => State.appState.selectedItemIds.has(item.id));
+            }
+
+            DOM.dom.selectAllBtn.disabled = activeItems.length === 0 || allCurrentlyVisibleOrFilteredAreSelected;
+            
+            // هل هناك أي عناصر نشطة محددة حاليًا؟
+            const anyActiveItemSelected = activeItems.some(item => State.appState.selectedItemIds.has(item.id));
+            DOM.dom.deselectAllBtn.disabled = activeItems.length === 0 || !anyActiveItemSelected;
+        }
+
+
+        const updateLiveCounter = () => {
+            if (!DOM.dom.liveCounter || !DOM.dom.counterValue) return; // حماية
+            const count = State.appState.searchIndex.length;
+            DOM.dom.liveCounter.classList.toggle('d-none', count === 0);
+            if (count > 0) DOM.dom.counterValue.textContent = count;
+        };
+                const renderChart = (chartInstance, context, config) => {
+
+                    if (!config || !config.data) {
+                console.error('RenderChart: Invalid chart configuration provided.', config);
+                if (chartInstance) {
+                    try {
+                        chartInstance.destroy();
+                    } catch (e) { console.error("Error destroying chart instance on invalid config:", e); }
+                }
+                return null; 
+            }
+
+            config.data.labels = Array.isArray(config.data.labels) ? config.data.labels : [];
+
+            if (Array.isArray(config.data.datasets)) {
+                config.data.datasets.forEach(dataset => {
+                    dataset.data = Array.isArray(dataset.data) ? dataset.data : [];
+                });
+            } else {
+                config.data.datasets = [];
+            }
+            
+            if (chartInstance) {
+                chartInstance.data.labels = config.data.labels;
+                chartInstance.data.datasets = config.data.datasets;
+                try {
+                    chartInstance.update();
+                } catch (e) {
+                    console.error("RenderChart: Error updating chart:", e, { chartId: chartInstance.canvas.id, data: config.data });
+                }
+                return chartInstance;
+            }
+            
+            try {
+                if (!context) {
+                    console.error("RenderChart: Canvas context is null or undefined.");
+                    return null;
+                }
+                return new Chart(context, config);
+            } catch (e) {
+                console.error("RenderChart: Error creating new chart:", e, { canvasId: context && context.canvas ? context.canvas.id : 'unknown', data: config.data });
+                return null;
+            }
+        };
+        
+        function updateAnalyticsDashboard() {
+            // This guard clause is now robust enough.
+            const requiredElements = ['showAnalyticsBtn', 'sourceDistributionChart', 'topKeywordsChart', 'averageSeoScoreChart', 'seoScoreText', 'orphanPagesCard', 'orphanPagesCount', 'viewOrphanPagesBtn'];
+            for (const id of requiredElements) {
+                if (!DOM.dom[id]) {
+                    return;
+                }
+            }
+            
+            const hasData = State.appState.searchIndex && State.appState.searchIndex.length > 0;
+            DOM.dom.showAnalyticsBtn.classList.toggle('d-none', !hasData);
+
+            if (!hasData) {
+                if (sourceChartInstance) { try { sourceChartInstance.destroy(); } catch(e){} sourceChartInstance = null; }
+                if (keywordsChartInstance) { try { keywordsChartInstance.destroy(); } catch(e){} keywordsChartInstance = null; }
+                if (seoScoreChartInstance) { try { seoScoreChartInstance.destroy(); } catch(e){} seoScoreChartInstance = null; }
+                DOM.dom.orphanPagesCard.classList.add('d-none');
+                return;
+            }
+
+            const lightColor = '#495057';
+            const darkColor = 'rgba(255, 255, 255, 0.85)';
+            const themeColor = document.documentElement.getAttribute('data-bs-theme') === 'dark' ? darkColor : lightColor;
+
+            const sourceCounts = State.appState.searchIndex.reduce((acc, item) => {
+                const source = item.source || 'unknown';
+                acc[source] = (acc[source] || 0) + 1;
+                return acc;
+            }, {});
+            const sourceLabelsMap = { 'seo_crawler': `زاحف SEO`, 'html_analysis': `تحليل HTML`, 'manual': `إدخال يدوي`, 'url_generation': `من الروابط`, 'sitemap': `من Sitemap`, 'robots': `من robots.txt`, 'unknown': 'غير معروف' };
+            const sourceLabels = Object.keys(sourceCounts).map(l => sourceLabelsMap[l] || l) || [];
+            const sourceData = Object.values(sourceCounts) || [];
+            
+            sourceChartInstance = renderChart(sourceChartInstance, DOM.dom.sourceDistributionChart.getContext('2d'), {
+                type: 'pie',
+                data: {
+                    labels: sourceLabels,
+                    datasets: [{
+                        label: 'عدد الصفحات',
+                        data: sourceData,
+                        backgroundColor: ['#4bc0c0', '#ff6384', '#ffcd56', '#36a2eb', '#9966ff', '#c9cbcf', '#ff9f40']
+                    }]
+                },
+                options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: themeColor, boxWidth: 12, padding: 15 } } } }
+            });
+
+            const allKeywords = State.appState.searchIndex.flatMap(item => item.tags || []);
+            const keywordCount = allKeywords.reduce((acc, keyword) => { if (keyword) acc[keyword] = (acc[keyword] || 0) + 1; return acc; }, {});
+            const sortedKeywords = Object.entries(keywordCount).sort((a, b) => b[1] - a[1]).slice(0, 10);
+            const keywordLabels = sortedKeywords.map(e => e[0]) || [];
+            const keywordData = sortedKeywords.map(e => e[1]) || [];
+
+            keywordsChartInstance = renderChart(keywordsChartInstance, DOM.dom.topKeywordsChart.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: keywordLabels,
+                    datasets: [{
+                        label: 'عدد التكرارات',
+                        data: keywordData,
+                        backgroundColor: 'rgba(75, 192, 192, 0.6)'
+                    }]
+                },
+                options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { ticks: { color: themeColor } }, y: { ticks: { color: themeColor } } } }
+            });
+
+            let totalScore = 0, maxPossibleScore = 0;
+            State.appState.searchIndex.forEach(item => { const { score, maxScore } = Analyzer.calculateSeoScore(item.seo); totalScore += score; maxPossibleScore += maxScore; });
+            const avgPercentage = maxPossibleScore > 0 ? (totalScore / maxPossibleScore) * 100 : 0;
+            
+            DOM.dom.seoScoreText.textContent = `${Math.round(avgPercentage)}%`;
+            const scoreColor = avgPercentage >= 80 ? '#4bc0c0' : avgPercentage >= 50 ? '#ffcd56' : '#ff6384';
+            
+            seoScoreChartInstance = renderChart(seoScoreChartInstance, DOM.dom.averageSeoScoreChart.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: [avgPercentage, 100 - avgPercentage], // هذه دائمًا مصفوفة من رقمين
+                        backgroundColor: [scoreColor, 'rgba(128, 128, 128, 0.2)'],
+                        circumference: 180,
+                        rotation: 270,
+                        cutout: '75%'
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: true, plugins: { tooltip: { enabled: false } } }
+            });
+            
+            const orphanCount = State.appState.searchIndex.filter(item => item.seo?.isOrphan).length;
+            DOM.dom.orphanPagesCard.classList.toggle('d-none', orphanCount === 0);
+            if(orphanCount > 0) DOM.dom.orphanPagesCount.textContent = orphanCount;
+        }
+
+        function updateAllUI(openAccordionId = null) {
+            const filters = getFilterState();
+            const results = (filters.keyword || filters.category || filters.isOrphan) ? State.appState.filteredResults : State.appState.searchIndex;
+            
+            displayResults(results, openAccordionId);
+            
+            // ✅ THE FINAL FIX: Remove the problematic `if` condition. We trust our environment now.
+            updateAnalyticsDashboard();
+            
+            updateLiveCounter();
+            updateFilterOptions();
+
+            // The rest of the function for handling accordion state
+            if (openAccordionId && DOM.dom.resultsAccordion && !DOM.dom.resultsAccordion.querySelector(`#${openAccordionId}`)) {
+                const firstResult = results[0];
+                if (firstResult) {
+                    const source = firstResult.source || 'unknown';
+                    const firstGroup = DOM.dom.resultsAccordion.querySelector(`[data-source="${source}"]`);
+                    if(firstGroup) { const collapseElement = firstGroup.closest('.accordion-collapse'); if (collapseElement) new bootstrap.Collapse(collapseElement, {show: true}); }
+                }
+            } else if (openAccordionId && DOM.dom.resultsAccordion) {
+                const accordionBody = DOM.dom.resultsAccordion.querySelector(`#${openAccordionId} .accordion-body`);
+                if (accordionBody && parseInt(accordionBody.dataset.renderedCount, 10) === 0) {
+                    const source = accordionBody.dataset.source;
+                    const items = results.filter(item => (item.source || 'unknown') === source);
+                    if (items.length > 0) renderItemChunk(accordionBody, items, 0);
+                }
+            }
+        }
+
+        const showSerpPreview = (itemId) => {
+            const item = State.appState.searchIndex.find(i => i.id === itemId);
+            if (!item) return;
+            DOM.getEl('previewUrl').textContent = item.url; DOM.getEl('previewTitle').textContent = item.title;
+            DOM.getEl('previewDescription').textContent = item.description; DOM.getEl('titleCharCount').textContent = item.title.length;
+            DOM.getEl('descCharCount').textContent = item.description.length;
+        };
+
+        const validateSchemaEditor = () => {
+            const editor = DOM.dom.schemaBaseEditor;
+            try { JSON.parse(editor.value); editor.classList.remove('is-invalid'); editor.classList.add('is-valid'); return true; } 
+            catch { editor.classList.remove('is-valid'); editor.classList.add('is-invalid'); return false; }
+        };
+
+        const enterEditMode = (item, pageItem, editBtn) => {
+            pageItem.classList.add('is-editing');
+            pageItem.querySelectorAll('.editable-content').forEach((el, index) => {
+                const field = el.dataset.field;
+                const input = field === 'description' ? document.createElement('textarea') : document.createElement('input');
+                if(field === 'description') input.rows = 3; else input.type = 'text';
+                Object.assign(input, { className: 'form-control form-control-sm edit-input', value: Array.isArray(item[field]) ? item[field].join(', ') : item[field] });
+                Object.assign(input.dataset, { editField: field, originalTag: el.tagName.toLowerCase(), originalClasses: el.className });
+                el.replaceWith(input);
+                if (index === 0) input.focus();
+            });
+            editBtn.innerHTML = 'حفظ';
+            editBtn.classList.replace('btn-outline-secondary', 'btn-success');
+        };
+
+        const saveEditMode = (item, pageItem, editBtn, onSave) => {
+            const titleInput = pageItem.querySelector('[data-edit-field="title"]');
+            if (!titleInput.value.trim()) return Utils.showNotification('حقل العنوان لا يمكن أن يكون فارغاً!', 'danger');
+            pageItem.querySelectorAll('[data-edit-field]').forEach(input => {
+                const field = input.dataset.editField; const value = input.value.trim();
+                item[field] = field === 'tags' ? value.split(',').map(t => t.trim()).filter(Boolean) : value;
+                const staticEl = document.createElement(input.dataset.originalTag);
+                Object.assign(staticEl, { className: input.dataset.originalClasses, textContent: value });
+                staticEl.dataset.field = field; input.replaceWith(staticEl);
+            });
+            pageItem.classList.remove('is-editing');
+            editBtn.innerHTML = 'تحرير';
+            editBtn.classList.replace('btn-success', 'btn-outline-secondary');
+            Utils.showNotification('تم حفظ التعديلات!', 'success');
+            updateAnalyticsDashboard();
+            if(onSave) onSave();
+        };
+
+        const updateProjectListDropdown = (currentProjectName) => {
+            if(!DOM.dom.projectSelector) return;
+            const projects = JSON.parse(localStorage.getItem(State.CONSTANTS.PROJECTS_MASTER_KEY) || '[]');
+            DOM.dom.projectSelector.innerHTML = '<option value="">-- اختر مشروعًا --</option>';
+            projects.forEach(p => DOM.dom.projectSelector.add(new Option(p, p, false, p === currentProjectName)));
+        };
+
+        const initObserver = () => {
+            if (scrollObserver) scrollObserver.disconnect();
+            if (!DOM.dom.results) return; // حماية
+            scrollObserver = new IntersectionObserver(handleIntersection, {
+                root: DOM.dom.results, 
+                rootMargin: '0px 0px 200px 0px' 
+            });
+        };
+        
+        return {
+            getFilterState, // تأكد من تصدير هذه
+            updateSelectionUI, // تأكد من تصدير هذه
+            // ... بقية الصادرات
+            getProjectName, getSelectedProjectName, getSeoCrawlerConfig, getUrlInput, getCustomProxyUrl,
+            getManualPageData, getSchemaConfigFromDOM, isManualInputChecked,
+            setFormValues, clearManualPageForm, clearFilterInputs,
+            setDarkMode, toggleDarkMode, updateAllUI, handleAccordionShow, showSerpPreview, validateSchemaEditor,
+            enterEditMode, saveEditMode, updateProjectListDropdown, initObserver, updateAnalyticsDashboard
+        };
+    })(StateManager, DOMManager, Analyzer, Utils);
+
+    // ... (DataHandler, ProjectManager, CoreFeatures كما هي في ردك السابق، مع التأكد من تمرير UIManager كـ UI) ...
+    const DataHandler = (function (State, Analyzer, UI) { // UI هو UIManager
+        function addItemsToIndex(itemsToAdd) {
+            const existingUrls = new Set(State.appState.searchIndex.map(item => (item.url.endsWith('/') && item.url.length > 1 ? item.url.slice(0, -1) : item.url)));
+            let idCounter = State.appState.searchIndex.length > 0 ? Math.max(0, ...State.appState.searchIndex.map(item => item.id)) + 1 : 1;
+            let addedCount = 0;
+            itemsToAdd.forEach(item => {
+                const urlKey = item.url.endsWith('/') && item.url.length > 1 ? item.url.slice(0, -1) : item.url;
+                if (!existingUrls.has(urlKey)) { item.id = idCounter++; State.appState.searchIndex.push(item); existingUrls.add(urlKey); addedCount++; }
+            });
+            return addedCount;
+        }
+
+        function generateSearchIndexFromInputs(urlInputValue, isManualChecked) {
+            const newItems = [];
+            const existingUrls = new Set(State.appState.searchIndex.map(item => (item.url.endsWith('/') && item.url.length > 1 ? item.url.slice(0, -1) : item.url)));
+            const addItem = (item) => {
+                const urlKey = item.url.endsWith('/') && item.url.length > 1 ? item.url.slice(0, -1) : item.url;
+                if (!existingUrls.has(urlKey)) newItems.push(item);
+            };
+            (State.appState.analyzedFiles || []).forEach(file => addItem({ ...file, category: file.category || (file.source === 'seo_crawler' ? 'زاحف SEO' : 'تحليل تلقائي'), tags: file.keywords?.length > 0 ? file.keywords : Analyzer.extractTagsFromUrl(file.url), source: file.source || 'html_analysis' }));
+            if (isManualChecked) (State.appState.manualPages || []).forEach(page => addItem({ ...page, source: 'manual' }));
+            urlInputValue.split('\n').filter(Boolean).forEach(urlStr => {
+                const url = urlStr.trim().startsWith('/') ? urlStr.trim() : '/' + urlStr.trim();
+                const urlKey = url.endsWith('/') && url.length > 1 ? url.slice(0, -1) : url;
+                if (existingUrls.has(urlKey)) return;
+                const fileName = url.split('/').pop().replace(/\.html?$/, '');
+                const category = url.split('/').filter(Boolean)[0] || 'عام';
+                const titleMap = { 'index': 'الصفحة الرئيسية', 'about': 'من نحن', 'contact': 'اتصل بنا', 'services': 'خدماتنا', 'blog': 'المدونة' };
+                const title = titleMap[fileName.toLowerCase()] || (fileName.charAt(0).toUpperCase() + fileName.slice(1).replace(/[-_]/g, ' '));
+                const source = (State.appState.sitemapUrls || []).includes(url) ? 'sitemap' : (State.appState.robotsUrls || []).includes(url) ? 'robots' : 'url_generation';
+                addItem({ title, description: `صفحة ${title}`, url, category: category.charAt(0).toUpperCase() + category.slice(1), tags: Analyzer.extractTagsFromUrl(url), source });
+            });
+            return newItems;
+        }
+
+        function addManualPage(pageData) {
+             if (!State.appState.manualPages) State.appState.manualPages = [];
+            State.appState.manualPages.push({ ...pageData, url: pageData.url.startsWith('/') ? pageData.url : '/' + pageData.url, category: pageData.category || 'عام' });
+        }
+        
+        function deleteItem(itemId, onComplete) {
+            const item = State.appState.searchIndex.find(i => i.id === itemId);
+            if (!item) return;
+            if (confirm(`هل أنت متأكد من حذف العنصر:\n"${item.title}"`)) {
+                State.appState.searchIndex = State.appState.searchIndex.filter(i => i.id !== itemId);
+                State.appState.filteredResults = State.appState.filteredResults.filter(i => i.id !== itemId);
+                State.appState.selectedItemIds.delete(itemId);
+                if (onComplete) onComplete();
+            }
+        }
+        
+        function getSelectedItems() {
+            const filters = UI.getFilterState();
+            const baseList = (filters.keyword || filters.category || filters.isOrphan) ? State.appState.filteredResults : State.appState.searchIndex;
+            return State.appState.selectedItemIds.size === 0 
+                ? baseList
+                : State.appState.searchIndex.filter(item => State.appState.selectedItemIds.has(item.id));
+        }
+
+        return { addItemsToIndex, generateSearchIndexFromInputs, addManualPage, deleteItem, getSelectedItems };
+    })(StateManager, Analyzer, UIManager);
+
+    const ProjectManager = (function (State, UI, Utils) {
+        let saveTimeout;
+
+        const getProjectStorageKey = (name) => `${State.CONSTANTS.PROJECTS_MASTER_KEY}_${name}`;
+        const getProjectList = () => { try { return JSON.parse(localStorage.getItem(State.CONSTANTS.PROJECTS_MASTER_KEY)) || []; } catch { return []; } };
+
+        function saveProject(projectName, dataToSave) {
+            if (!projectName) return;
+            try {
+                localStorage.setItem(getProjectStorageKey(projectName), JSON.stringify(dataToSave));
+                const projects = getProjectList();
+                if (!projects.includes(projectName)) { projects.push(projectName); localStorage.setItem(State.CONSTANTS.PROJECTS_MASTER_KEY, JSON.stringify(projects)); }
+                localStorage.setItem(State.CONSTANTS.LAST_PROJECT_KEY, projectName);
+                UI.updateProjectListDropdown(projectName);
+            } catch (e) { Utils.showNotification('خطأ في حفظ البيانات: ' + e.message, 'danger'); }
+        }
+
+        const debouncedSaveProject = () => {
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+                const projectName = UI.getProjectName();
+                const data = { ...State.appState, analyzedFiles: (State.appState.analyzedFiles || []).map(({ content, ...rest }) => rest), urlInput: UI.getUrlInput(), customProxyUrl: UI.getCustomProxyUrl(), timestamp: new Date().toISOString() };
+                saveProject(projectName, data);
+            }, 1000);
+        };
+        
+        const clearCurrentState = () => {
+            State.resetAppState();
+            UI.setFormValues({ schemaConfig: { baseSchema: State.DEFAULT_BASE_SCHEMA_STR } });
+            UI.clearFilterInputs();
+            UI.validateSchemaEditor();
+            UI.updateAllUI();
+        };
+
+        function loadProject(name) {
+            if (!name) { clearCurrentState(); return; }
+            try {
+                const saved = localStorage.getItem(getProjectStorageKey(name));
+                if (saved) {
+                    
+                    State.resetAppState(); 
+                    const data = JSON.parse(saved);
+                    Object.assign(State.appState, data);                    
+                    State.appState.selectedItemIds = new Set();
+                    State.appState.schemaConfig = { ...StateManager.DEFAULT_BASE_SCHEMA_OBJ, ...(data.schemaConfig || {}) };
+                    UI.setFormValues({ name, ...data });
+                    UI.validateSchemaEditor();
+                    localStorage.setItem(State.CONSTANTS.LAST_PROJECT_KEY, name);
+                    UI.updateAllUI(); 
+                    UI.updateProjectListDropdown(name);
+                    Utils.showNotification(`تم تحميل مشروع "${name}"! <i class="bi bi-folder2-open ms-2"></i>`, 'info');
+                }
+            } catch (e) { 
+                console.error("Failed to load project:", e);
+                Utils.showNotification('خطأ في تحميل المشروع: ' + e.message, 'warning');
+            }
+        }
+
+        function deleteProject(name) {
+            localStorage.removeItem(getProjectStorageKey(name));
+            localStorage.setItem(State.CONSTANTS.PROJECTS_MASTER_KEY, JSON.stringify(getProjectList().filter(p => p !== name)));
+            UI.updateProjectListDropdown();
+            Utils.showNotification(`تم حذف المشروع "${name}"!`, 'success');
+        }
+
+        return { debouncedSaveProject, clearCurrentState, loadProject, deleteProject, saveProject, getProjectList };
+    })(StateManager, UIManager, Utils);
+
+    const CoreFeatures = (function (State, DOM, Analyzer, DataHandler, UI, Utils, ProjectManager) {
+        
+        async function startSeoCrawler(config, onComplete) {
+            let { baseUrl, maxDepth, crawlDelay, saveHtmlContent, concurrency } = config;
+            try {
+                if (!/^https?:\/\//i.test(baseUrl)) { baseUrl = 'https://' + baseUrl; }
+                new URL(baseUrl);
+            } catch (e) {
+                Utils.showNotification('رابط الموقع غير صالح', 'danger');
+                if (onComplete) onComplete();
+                return;
+            }
+
+            const origin = new URL(baseUrl).origin;
+            Utils.showNotification(`<i class="bi bi-rocket-takeoff-fill ms-2"></i> بدء زحف SEO لـ ${origin}...`, 'info');
+            DOM.dom.crawlerStatus.classList.remove('d-none');
+
+            let queue = [{ url: baseUrl, depth: 0 }];
+            let visited = new Set([baseUrl]);
+            let crawledData = new Map();
+            let brokenLinks = new Set();
+            let processedCount = 0;
+            let activeWorkers = 0;
+            let totalToProcess = 1;
+
+            const updateCrawlerUI = () => {
+                const percentage = totalToProcess > 0 ? (processedCount / totalToProcess) * 100 : 0;
+                DOM.dom.crawlerProgressBar.style.width = `${percentage}%`;
+                DOM.dom.crawlerProgressBar.parentElement.setAttribute('aria-valuenow', percentage);
+                DOM.dom.crawlerProgressText.textContent = `${processedCount}/${totalToProcess}`;
+                DOM.dom.crawlerQueueCount.textContent = `في الانتظار: ${queue.length}`;
+            };
+            
+            updateCrawlerUI();
+
+            const worker = async () => {
+                while (true) {
+                    activeWorkers++;
+                    const task = queue.shift();
+
+                    if (!task) {
+                        activeWorkers--;
+                        if (activeWorkers === 0 && queue.length === 0) break;
+                        await new Promise(r => setTimeout(r, 50));
+                        continue;
+                    }
+                    
+                    DOM.dom.crawlerCurrentUrl.textContent = `فحص: ${new URL(task.url).pathname}...`;
+
+                    try {
+                        const startTime = performance.now();
+                        const response = await fetch(Utils.getProxyUrl(task.url));
+                        if (!response.ok) throw new Error(`Status ${response.status}`);
+                        const html = await response.text();
+                        const analysis = Analyzer.analyzeHtmlContent(html, task.url, { loadTime: Math.round(performance.now() - startTime), saveHtmlContent });
+
+                        const linksOnPage = new Set();
+                        new DOMParser().parseFromString(html, 'text/html').querySelectorAll('a[href]').forEach(link => {
+                            const href = link.getAttribute('href');
+                            if (!href || href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:')) return;
+                            try {
+                                const absoluteUrl = new URL(href, task.url).href.split('#')[0];
+                                linksOnPage.add(absoluteUrl);
+                                if (absoluteUrl.startsWith(origin) && !visited.has(absoluteUrl) && task.depth < maxDepth && !/\.(jpg|jpeg|png|gif|svg|css|js|pdf|zip|webp|avif)$/i.test(absoluteUrl)) {
+                                    visited.add(absoluteUrl);
+                                    queue.push({ url: absoluteUrl, depth: task.depth + 1 });
+                                    totalToProcess++;
+                                }
+                            } catch (e) {}
+                        });
+                        crawledData.set(task.url, { analysis, outgoingLinks: [...linksOnPage] });
+                    } catch (error) { // تم تحسين هذا الجزء في الخطوات السابقة للاختبار
+                        console.error(`فشل في جلب ${task.url}:`, error);
+                        brokenLinks.add(task.url);
+                        const getDetailedFetchError = (err, urlPath) => { // دالة مساعدة من اقتراح سابق
+                            if (err.message.includes('Failed to fetch')) {
+                                return `فشل الشبكة أو مشكلة CORS عند محاولة الوصول إلى: ${urlPath}. تأكد من أن البروكسي يعمل.`;
+                            }
+                            if (err.message.startsWith('Status')) {
+                                const status = err.message.split(' ')[1];
+                                let reason = '';
+                                if (status === '404') reason = ' (لم يتم العثور على الصفحة)';
+                                if (status === '403') reason = ' (الوصول مرفوض)';
+                                if (status === '500') reason = ' (خطأ في الخادم)';
+                                return `فشل الاتصال بـ: ${urlPath} (الحالة: ${status}${reason})`;
+                            }
+                            return `فشل الاتصال بـ: ${urlPath} (خطأ غير معروف)`;
+                        };
+                        const pathname = new URL(task.url).pathname;
+                        const userMessage = getDetailedFetchError(error, pathname);
+                        Utils.showNotification(`<i class="bi bi-exclamation-triangle-fill ms-2"></i> ${userMessage}`, 'warning', 6000);
+                    } finally {
+                        processedCount++;
+                        updateCrawlerUI();
+                        if (crawlDelay > 0) await new Promise(r => setTimeout(r, crawlDelay));
+                        activeWorkers--;
+                    }
+                }
+            };
+            
+            const workers = Array.from({ length: concurrency }, () => worker());
+            await Promise.all(workers);
+            
+            DOM.dom.crawlerCurrentUrl.innerHTML = '<p class="text-center text-success fw-bold">اكتمل الزحف! جاري تحليل البيانات...</p>';
+            DOM.dom.crawlerProgressBar.style.width = '100%';
+            DOM.dom.crawlerProgressBar.parentElement.setAttribute('aria-valuenow', 100);
+
+            const allFoundUrls = new Set(crawledData.keys()), allLinkedToUrls = new Set(), linkEquityMap = new Map();
+            crawledData.forEach(data => { data.outgoingLinks.forEach(link => { const cleanLink = link.split('#')[0].split('?')[0]; if (allFoundUrls.has(cleanLink)) { allLinkedToUrls.add(cleanLink); linkEquityMap.set(cleanLink, (linkEquityMap.get(cleanLink) || 0) + 1); } }); });
+            crawledData.forEach((data, url) => { data.analysis.seo.isOrphan = !allLinkedToUrls.has(url) && url !== baseUrl; data.analysis.seo.brokenLinksOnPage = data.outgoingLinks.filter(link => brokenLinks.has(link)); data.analysis.seo.internalLinkEquity = linkEquityMap.get(url) || 0; });
+            const orphanCount = [...crawledData.values()].filter(d => d.analysis.seo.isOrphan).length;
+            if (orphanCount > 0) Utils.showNotification(`<i class="bi bi-exclamation-diamond-fill ms-2"></i> تم اكتشاف ${orphanCount} صفحة معزولة!`, 'warning', 7000);
+            
+            const newItems = Array.from(crawledData.values()).map(({ analysis }) => ({ ...analysis, category: 'زاحف SEO', tags: (analysis.keywords || []).length > 0 ? analysis.keywords : Analyzer.extractTagsFromUrl(analysis.url), source: 'seo_crawler' }));
+            const addedCount = DataHandler.addItemsToIndex(newItems);
+            
+            Utils.showNotification( addedCount > 0 ? `<i class="bi bi-check-circle-fill ms-2"></i> اكتمل الزحف! تمت إضافة ${addedCount} صفحة جديدة.` : crawledData.size > 0 ? '🏁 اكتمل الزحف. جميع الصفحات التي تم العثور عليها موجودة بالفعل.' : '❌ فشل الزحف. لم يتم العثور على أي صفحات قابلة للوصول.', addedCount > 0 ? 'success' : (crawledData.size > 0 ? 'info' : 'danger'));
+            if (brokenLinks.size > 0) Utils.showNotification(`<i class="bi bi-exclamation-octagon-fill ms-2"></i> تم العثور على ${brokenLinks.size} رابط داخلي مكسور.`, 'danger', 7000);
+            setTimeout(() => { if(DOM.dom.crawlerStatus) DOM.dom.crawlerStatus.classList.add('d-none'); if(DOM.dom.crawlerCurrentUrl) DOM.dom.crawlerCurrentUrl.textContent = 'بدء العملية...'; }, 5000);
+            
+            if (onComplete) onComplete();
+        }
+
+        async function processTextualFile(file, urlExtractor, successMsg, noDataMsg, errorMsg) {
+            try {
+                const content = await Utils.readFileContent(file);
+                const urls = urlExtractor(content);
+                if (urls.length > 0) {
+                    DOM.dom.urlInput.value += (DOM.dom.urlInput.value ? '\n' : '') + urls.join('\n');
+                    Utils.showNotification(successMsg(urls.length), 'success');
+                    ProjectManager.debouncedSaveProject();
+                } else Utils.showNotification(noDataMsg, 'warning');
+            } catch (e) { Utils.showNotification(errorMsg(e.message), 'danger'); }
+        }
+        
+        async function processHtmlFiles(files) {
+            let newFilesAnalyzed = 0;
+            for (const file of files) {
+                if (!(State.appState.analyzedFiles || []).some(f => f.filename === file.name)) {
+                    try {
+                        const analysis = Analyzer.analyzeHtmlContent(await Utils.readFileContent(file), file.name, { saveHtmlContent: true });
+                        if (!State.appState.analyzedFiles) State.appState.analyzedFiles = [];
+                        State.appState.analyzedFiles.push(analysis); newFilesAnalyzed++;
+                    } catch (e) { console.error('Error processing file:', file.name, e); Utils.showNotification(`خطأ في معالجة ${file.name}`, 'danger'); }
+                }
+            }
+            if (newFilesAnalyzed > 0) { Utils.showNotification(`تم تحليل ${newFilesAnalyzed} ملف HTML جديد!`, 'success'); ProjectManager.debouncedSaveProject(); }
+            else Utils.showNotification('جميع الملفات تم تحليلها مسبقاً', 'info');
+        }
+
+        const getStrippedIndex = (items) => items.map(({ id, title, description, url, category, tags, seo }) => ({ id, title, description, url, category, tags, seo }));
+        const downloadJson = () => { const items = DataHandler.getSelectedItems(); if (items.length === 0) return Utils.showNotification('لا توجد عناصر للتصدير', 'warning'); Utils.downloadFile(new Blob([JSON.stringify(getStrippedIndex(items), null, 2)], { type: 'application/json' }), 'search-index.json'); Utils.showNotification(`تم تحميل ${items.length} عنصر كـ JSON <i class="bi bi-filetype-json ms-2"></i>`, 'success'); };
+        const downloadCSV = () => { const items = DataHandler.getSelectedItems(); if (items.length === 0) return Utils.showNotification('لا توجد عناصر للتصدير', 'warning'); const csv = ['ID,العنوان,الرابط,الوصف,الفئة,الكلمات المفتاحية', ...items.map(i => [`"${i.id}"`, `"${i.title.replace(/"/g, '""')}"`, `"${i.url}"`, `"${i.description.replace(/"/g, '""')}"`, `"${i.category || ''}"`, `"${(i.tags || []).join(', ')}"`].join(','))].join('\n'); Utils.downloadFile(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' }), 'search-index.csv'); Utils.showNotification(`تم تحميل ${items.length} عنصر كـ CSV <i class="bi bi-filetype-csv ms-2"></i>`, 'success'); };
+        
+        async function downloadZip() {
+            const items = DataHandler.getSelectedItems();
+            if (items.length === 0) return Utils.showNotification('لا توجد عناصر للتصدير', 'warning');
+            DOM.dom.zipProgress.classList.remove('d-none');
+            try {
+                const zip = new JSZip();
+                zip.file('search-index.json', JSON.stringify(getStrippedIndex(items), null, 2));
+                const itemsWithContent = items.filter(item => item.content);
+                
+                if (itemsWithContent.length > 0) { 
+                    const htmlFolder = zip.folder('html-files'); 
+                    itemsWithContent.forEach(f => htmlFolder.file(f.filename, f.content));
+                }
+                const content = await zip.generateAsync({ type: 'blob' }, (metadata) => { DOM.dom.zipProgressBar.style.width = `${metadata.percent.toFixed(2)}%`; });
+                Utils.downloadFile(content, 'search-index-package.zip');
+                Utils.showNotification(`تم تحميل ${items.length} عنصر في حزمة ZIP <i class="bi bi-file-zip-fill ms-2"></i>`, 'success');
+            } catch (error) { Utils.showNotification('خطأ في إنشاء ZIP: ' + error.message, 'danger'); } finally { setTimeout(() => DOM.dom.zipProgress.classList.add('d-none'), 2000); }
+        }
+
+        const copyToClipboard = (type) => {
+            const items = DataHandler.getSelectedItems();
+            if (items.length === 0) return Utils.showNotification('لا توجد عناصر للنسخ', 'warning');
+            const dataMap = { all: () => JSON.stringify(getStrippedIndex(items), null, 2), titles: () => items.map(i => i.title).join('\n'), urls: () => items.map(i => i.url).join('\n'), descriptions: () => items.map(i => i.description).join('\n') };
+            navigator.clipboard.writeText(dataMap[type]()).then(() => { Utils.showNotification(`تم نسخ بيانات ${items.length} عنصر إلى الحافظة! <i class="bi bi-clipboard-check-fill ms-2"></i>`, 'success'); DOM.dom.copyOptions.classList.add('d-none'); }).catch(err => Utils.showNotification('فشل النسخ!', 'danger'));
+        };
+
+        const sanitizeForFilename = (url) => (url.replace(/^https?:\/\/[^/]+/, '').replace(/^\//, '').replace(/\/$/, '').replace(/\//g, '_').replace(/[?&#=:%]/g, '-').replace(/\.html?$/, '') || 'index');
+    
+        async function generateAndDownloadSchema(schemaConfig) {
+            const { baseUrl, pageSchemaType, baseSchema } = schemaConfig;
+            const items = DataHandler.getSelectedItems();
+            if (items.length === 0) {
+                Utils.showNotification('<strong>خطوة ناقصة:</strong> يجب أولاً توليد قائمة بالصفحات.', 'warning', 7000);
+                DOM.dom.results.classList.add('border', 'border-warning', 'border-3', 'shadow');
+                setTimeout(() => DOM.dom.results.classList.remove('border', 'border-warning', 'border-3', 'shadow'), 2500); return;
+            }
+            const zip = new JSZip();
+            try {
+                const baseSchemaObject = JSON.parse(baseSchema);
+                baseSchemaObject.url = baseUrl; baseSchemaObject['@id'] = new URL('#website', baseUrl).href;
+                zip.file('_schema_base.jsonld', JSON.stringify(baseSchemaObject, null, 2));
+                const publisherName = baseSchemaObject.name || "Your Organization Name";
+                const publisherLogoUrl = baseSchemaObject.logo || new URL("/logo.png", baseUrl).href;
+                for (const item of items) {
+                    const pageUrl = new URL(item.url, baseUrl).href;
+                    const pageSchema = { "@context": "https://schema.org", "@type": pageSchemaType, "@id": pageUrl, name: item.title, headline: item.title, description: item.description, url: pageUrl, isPartOf: { "@id": baseSchemaObject['@id'] }, primaryImageOfPage: { "@type": "ImageObject", url: (item.seo?.ogImage) ? new URL(item.seo.ogImage, baseUrl).href : new URL('/og-image.png', baseUrl).href }, datePublished: new Date().toISOString().split('T')[0], dateModified: new Date().toISOString().split('T')[0] };
+                    if (['Article', 'Product', 'Service'].includes(pageSchemaType)) { pageSchema.author = { "@type": "Organization", name: publisherName }; pageSchema.publisher = { "@type": "Organization", name: publisherName, logo: { "@type": "ImageObject", url: publisherLogoUrl } }; }
+                    zip.file(`${sanitizeForFilename(item.url)}.jsonld`, JSON.stringify(pageSchema, null, 2));
+                }
+                const content = await zip.generateAsync({ type: 'blob' });
+                Utils.downloadFile(content, 'schema_package.zip');
+                Utils.showNotification(`تم توليد حزمة سكيما لـ ${items.length} صفحة!`, 'success');
+            } catch (e) { Utils.showNotification(`فشل في إنشاء حزمة السكيما: ${e.message}`, 'danger'); }
+        }
+
+        return { startSeoCrawler, processTextualFile, processHtmlFiles, downloadJson, downloadCSV, downloadZip, copyToClipboard, generateAndDownloadSchema };
+    })(StateManager, DOMManager, Analyzer, DataHandler, UIManager, Utils, ProjectManager);
+
+
+    (function (State, DOM, UI, Data, Core, PM, Utils, Ai8vPlus) {
+        
+        // دالة مساعدة للحصول على العناصر النشطة حاليًا (إما المفلترة أو كل شيء)
+        function getCurrentlyDisplayedOrFilteredItems() {
+            const filters = UI.getFilterState(); // UI هو UIManager هنا
+            if (filters.keyword || filters.category || filters.isOrphan) {
+                return State.appState.filteredResults;
+            }
+            return State.appState.searchIndex;
+        }
+
+        function selectAllItems() {
+            const itemsToSelect = getCurrentlyDisplayedOrFilteredItems();
+            itemsToSelect.forEach(item => State.appState.selectedItemIds.add(item.id));
+            UI.updateSelectionUI(); // UI هو UIManager
+        }
+
+        function deselectAllItems() {
+            const itemsToDeselect = getCurrentlyDisplayedOrFilteredItems();
+            itemsToDeselect.forEach(item => State.appState.selectedItemIds.delete(item.id));
+            UI.updateSelectionUI(); // UI هو UIManager
+        }
+        
+        function toggleItemSelection(checkboxElement, itemId) {
+            if (checkboxElement.checked) {
+                State.appState.selectedItemIds.add(itemId);
+            } else {
+                State.appState.selectedItemIds.delete(itemId);
+            }
+            UI.updateSelectionUI(); // UI هو UIManager
+        }
+
+        function applyFilters() {
+            const openAccordionId = DOM.dom.resultsAccordion ? DOM.dom.resultsAccordion.querySelector('.accordion-collapse.show')?.id : null;
+            const filters = UI.getFilterState(); // UI هو UIManager
+            State.appState.filteredResults = State.appState.searchIndex.filter(item => 
+                (!filters.category || item.category === filters.category) &&
+                (!filters.keyword || (item.title + item.description + (item.tags || []).join(' ')).toLowerCase().includes(filters.keyword)) &&
+                (!filters.isOrphan || item.seo?.isOrphan)
+            );
+            UI.updateAllUI(openAccordionId); // UI هو UIManager
+        }
+        
+        function updateAdvisorTasks() {
+            if (!window.Ai8vPlus || typeof window.Ai8vPlus.analyzeAndPrioritize !== 'function') {
+                return; 
+            }
+            const tasks = Ai8vPlus.analyzeAndPrioritize(State.appState.searchIndex);
+            const advisorList = DOM.dom['advisor-list']; // من DOMManager
+            const advisorPlaceholder = DOM.dom.advisorPlaceholder; // من DOMManager
+            const advisorCountBadge = DOM.dom['advisor-count']; // من DOMManager
+        
+            if (!advisorList || !advisorPlaceholder || !advisorCountBadge) return;
+        
+            advisorList.innerHTML = '';
+            if (tasks.length === 0) {
+                advisorPlaceholder.classList.remove('d-none');
+                advisorCountBadge.classList.add('d-none');
+                return;
+            }
+        
+            advisorPlaceholder.classList.add('d-none');
+            advisorCountBadge.textContent = tasks.length;
+            advisorCountBadge.classList.remove('d-none');
+        
+            const fragment = document.createDocumentFragment();
+            tasks.forEach(task => {
+                const collapseId = `task-details-${task.id}`;
+                const taskElement = document.createElement('div');
+                taskElement.className = 'list-group-item';
+                taskElement.innerHTML = `
                     <div class="d-flex w-100 justify-content-between align-items-center">
-                        <h3 class="mb-1 h6"><i class="bi ${e.priority.icon} ms-2 text-${e.priority.color}"></i> ${e.description}</h5>
-                        <small><span class="badge bg-${e.priority.color}">${e.priority.label}</span></small>
+                        <h3 class="mb-1 h6"><i class="bi ${task.priority.icon} ms-2 text-${task.priority.color}"></i> ${task.description}</h5>
+                        <small><span class="badge bg-${task.priority.color}">${task.priority.label}</span></small>
                     </div>
                     <p class="mb-1 small">
-                        <a class="fw-bold text-decoration-none" data-bs-toggle="collapse" href="#${t}" role="button" aria-expanded="false" aria-controls="${t}">
-                            عرض الصفحات المتأثرة (${e.details.length})
+                        <a class="fw-bold text-decoration-none" data-bs-toggle="collapse" href="#${collapseId}" role="button" aria-expanded="false" aria-controls="${collapseId}">
+                            عرض الصفحات المتأثرة (${task.details.length})
                         </a>
                     </p>
-                    <div class="collapse" id="${t}">
+                    <div class="collapse" id="${collapseId}">
                         <ul class="list-unstyled mt-2 small ps-4">
-    ${e.details.map(e=>`
+    ${task.details.map(d => `
         <li class="d-flex justify-content-between align-items-center gap-3">
-    <span class="flex-grow-1 text-truncate">${e.title}</span>
-    <span class="text-muted text-nowrap" dir="ltr">${e.url}</span>
+    <span class="flex-grow-1 text-truncate">${d.title}</span>
+    <span class="text-muted text-nowrap" dir="ltr">${d.url}</span>
 </li>
-    `).join("")}
+    `).join('')}
 </ul>
                     </div>
-                `,s.appendChild(o)}),a.appendChild(s)}function h(){const t=o.getUrlInput(),n=o.isManualInputChecked(),d=a.generateSearchIndexFromInputs(t,n);if(0===d.length&&0===e.appState.searchIndex.length)return void l.showNotification("يرجى إدخال بيانات أولاً","warning");const c=a.addItemsToIndex(d);l.showNotification(c>0?`تم إضافة ${c} عنصر جديد! الإجمالي: ${e.appState.searchIndex.length}`:"لا توجد عناصر جديدة للإضافة. النتائج محدّثة.",c>0?"success":"info"),o.updateAllUI(),g(),s.debouncedSaveProject()}function f(){const e=o.getManualPageData();e.title&&e.url?(a.addManualPage(e),o.clearManualPageForm(),l.showNotification(`تم إضافة: ${e.title} يدويًا. اضغط "توليد" لإظهارها.`,"success"),s.debouncedSaveProject()):l.showNotification("يرجى إدخال العنوان والرابط على الأقل","warning")}function b(){const t=o.getProjectName();if(!t)return void l.showNotification("يرجى إدخال اسم للمشروع.","warning");o.validateSchemaEditor()?e.appState.schemaConfig=o.getSchemaConfigFromDOM():l.showNotification('تم حفظ المشروع، لكن "السكيما الأساسية" تحتوي على أخطاء.',"warning",6e3);const n={...e.appState,analyzedFiles:(e.appState.analyzedFiles||[]).map(({content:e,...t})=>t),urlInput:o.getUrlInput(),customProxyUrl:o.getCustomProxyUrl(),timestamp:(new Date).toISOString()};s.saveProject(t,n),l.showNotification(`تم حفظ المشروع "${t}"! <i class="bi bi-save-fill ms-2"></i>`,"success")}function w(){const e=o.getSelectedProjectName();e?confirm(`هل أنت متأكد من حذف المشروع "${e}"؟`)&&(s.deleteProject(e),o.getProjectName()===e&&s.clearCurrentState()):l.showNotification("يرجى اختيار مشروع لحذفه.","warning")}async function v(){const e=o.getSeoCrawlerConfig();e.baseUrl?await r.startSeoCrawler(e,()=>{o.updateAllUI(),g(),s.debouncedSaveProject()}):l.showNotification("يرجى إدخال رابط الموقع للزحف","warning")}async function y(){if(!o.validateSchemaEditor())return l.showNotification('يرجى تصحيح الأخطاء في "السكيما الأساسية" قبل المتابعة.',"danger"),void(t.dom.schemaBaseEditor&&t.dom.schemaBaseEditor.focus());const a=o.getSchemaConfigFromDOM();a.baseUrl?(e.appState.schemaConfig=a,await r.generateAndDownloadSchema(a)):l.showNotification("يرجى إدخال رابط الموقع الأساسي.","warning")}function S(){const e=document.title;document.title="Ai8V | SEO Tools | Mind & Machine",window.print(),document.title=e}function A(){const n=e.appState.searchIndex;if(0===n.length)return void l.showNotification("لا توجد بيانات لإنشاء تقرير. يرجى تحليل بعض الصفحات أولاً.","warning");const d=n.length,c=n.filter(e=>e.seo?.isOrphan),i=n.filter(e=>e.seo?.isNoIndex),p=n.filter(e=>e.seo&&!e.seo.h1),m=n.filter(e=>e.seo?.isDefaultDescription),u=n.filter(e=>e.seo?.brokenLinksOnPage?.length>0);let g=0,h=0;n.forEach(e=>{const{score:t,maxScore:o}=Analyzer.calculateSeoScore(e.seo);g+=t,h+=o});const f=h>0?(g/h*100).toFixed(0):0,b=(e,t,o="danger")=>{if(0===t.length)return"";return`
-                    <h4 class="h6 mt-4">${e} <span class="badge bg-${o} ms-2">${t.length}</span></h4>
+                `;
+                fragment.appendChild(taskElement);
+            });
+            advisorList.appendChild(fragment);
+        }
+        
+        function handleGenerateClick() {
+            const urlInput = UI.getUrlInput(); // UI هو UIManager
+            const isManualChecked = UI.isManualInputChecked(); // UI هو UIManager
+            const newItems = Data.generateSearchIndexFromInputs(urlInput, isManualChecked);
+
+            if (newItems.length === 0 && State.appState.searchIndex.length === 0) return Utils.showNotification('يرجى إدخال بيانات أولاً', 'warning');
+            
+            const addedCount = Data.addItemsToIndex(newItems);
+            Utils.showNotification(addedCount > 0 ? `تم إضافة ${addedCount} عنصر جديد! الإجمالي: ${State.appState.searchIndex.length}` : 'لا توجد عناصر جديدة للإضافة. النتائج محدّثة.', addedCount > 0 ? 'success' : 'info');
+            
+            UI.updateAllUI(); // UI هو UIManager
+            updateAdvisorTasks();
+            PM.debouncedSaveProject();
+        }
+
+        function handleAddManualPage() {
+            const pageData = UI.getManualPageData(); // UI هو UIManager
+            if (!pageData.title || !pageData.url) return Utils.showNotification('يرجى إدخال العنوان والرابط على الأقل', 'warning');
+            
+            Data.addManualPage(pageData);
+            UI.clearManualPageForm(); // UI هو UIManager
+            Utils.showNotification(`تم إضافة: ${pageData.title} يدويًا. اضغط "توليد" لإظهارها.`, 'success');
+            PM.debouncedSaveProject();
+        }
+
+        function handleManualSave() {
+            const projectName = UI.getProjectName(); // UI هو UIManager
+            if (!projectName) return Utils.showNotification('يرجى إدخال اسم للمشروع.', 'warning');
+            
+            if (UI.validateSchemaEditor()) { // UI هو UIManager
+                State.appState.schemaConfig = UI.getSchemaConfigFromDOM(); // UI هو UIManager
+            } else {
+                Utils.showNotification('تم حفظ المشروع، لكن "السكيما الأساسية" تحتوي على أخطاء.', 'warning', 6000);
+            }
+            const dataToSave = { ...State.appState, analyzedFiles: (State.appState.analyzedFiles || []).map(({ content, ...rest }) => rest), urlInput: UI.getUrlInput(), customProxyUrl: UI.getCustomProxyUrl(), timestamp: new Date().toISOString() }; // UI هو UIManager
+            PM.saveProject(projectName, dataToSave);
+            Utils.showNotification(`تم حفظ المشروع "${projectName}"! <i class="bi bi-save-fill ms-2"></i>`, 'success');
+        }
+
+        function handleDeleteProject() {
+            const projectName = UI.getSelectedProjectName(); // UI هو UIManager
+            if (!projectName) return Utils.showNotification('يرجى اختيار مشروع لحذفه.', 'warning');
+            if (confirm(`هل أنت متأكد من حذف المشروع "${projectName}"؟`)) {
+                PM.deleteProject(projectName);
+                if (UI.getProjectName() === projectName) PM.clearCurrentState(); // UI هو UIManager
+            }
+        }
+        
+        async function handleStartCrawler() {
+            const config = UI.getSeoCrawlerConfig(); // UI هو UIManager
+            if (!config.baseUrl) return Utils.showNotification('يرجى إدخال رابط الموقع للزحف', 'warning');
+            await Core.startSeoCrawler(config, () => {
+                UI.updateAllUI(); // UI هو UIManager
+                updateAdvisorTasks();
+                PM.debouncedSaveProject();
+            });
+        }
+
+        async function handleGenerateSchema() {
+            if (!UI.validateSchemaEditor()) { // UI هو UIManager
+                Utils.showNotification('يرجى تصحيح الأخطاء في "السكيما الأساسية" قبل المتابعة.', 'danger');
+                if (DOM.dom.schemaBaseEditor) DOM.dom.schemaBaseEditor.focus();
+                return;
+            }
+            const schemaConfig = UI.getSchemaConfigFromDOM(); // UI هو UIManager
+            if (!schemaConfig.baseUrl) return Utils.showNotification('يرجى إدخال رابط الموقع الأساسي.', 'warning');
+            
+            State.appState.schemaConfig = schemaConfig;
+            await Core.generateAndDownloadSchema(schemaConfig);
+        }
+        
+        function handlePrintReport() {
+            const originalTitle = document.title;
+            document.title = "Ai8V | SEO Tools | Mind & Machine";
+            window.print();
+            document.title = originalTitle;
+        }
+
+        function handleExportReport() {
+            const items = State.appState.searchIndex;
+            if (items.length === 0) {
+                return Utils.showNotification('لا توجد بيانات لإنشاء تقرير. يرجى تحليل بعض الصفحات أولاً.', 'warning');
+            }
+
+            const totalPages = items.length;
+            const orphanPages = items.filter(i => i.seo?.isOrphan);
+            const noIndexPages = items.filter(i => i.seo?.isNoIndex);
+            const missingH1 = items.filter(i => i.seo && !i.seo.h1);
+            const missingDesc = items.filter(i => i.seo?.isDefaultDescription);
+            const pagesWithBrokenLinks = items.filter(i => i.seo?.brokenLinksOnPage?.length > 0);
+
+            let totalScore = 0, maxPossibleScore = 0;
+            items.forEach(item => { 
+                const { score, maxScore } = Analyzer.calculateSeoScore(item.seo); 
+                totalScore += score; 
+                maxPossibleScore += maxScore; 
+            });
+            const avgSeoScore = maxPossibleScore > 0 ? ((totalScore / maxPossibleScore) * 100).toFixed(0) : 0;
+            
+            const renderList = (title, pages, badgeClass = 'danger') => {
+                if (pages.length === 0) return '';
+                return `
+                    <h4 class="h6 mt-4">${title} <span class="badge bg-${badgeClass} ms-2">${pages.length}</span></h4>
                     <ul class="list-group list-group-flush">
-                        ${t.map(e=>`<li class="list-group-item small d-flex justify-content-between align-items-center">
-                            <span>${e.title}</span>
-                            <span class="text-muted" dir="ltr">${e.url}</span>
-                        </li>`).join("")}
-                    </ul>`},w=`
+                        ${pages.map(p => `<li class="list-group-item small d-flex justify-content-between align-items-center">
+                            <span>${p.title}</span>
+                            <span class="text-muted" dir="ltr">${p.url}</span>
+                        </li>`).join('')}
+                    </ul>`;
+            };
+
+            const reportHtml = `
                 <div class="container-fluid">
                     <div class="row mb-4 p-3 rounded-3 bg-body-secondary">
                         <div class="col-md-3 text-center border-end">
                             <h3 class="h6 text-muted">إجمالي الصفحات</h3>
-                            <p class="fs-2 fw-bold mb-0">${d}</p>
+                            <p class="fs-2 fw-bold mb-0">${totalPages}</p>
                         </div>
                         <div class="col-md-3 text-center border-end">
                             <h3 class="h6 text-muted">متوسط تقييم SEO</h3>
-                            <p class="fs-2 fw-bold mb-0">${f}%</p>
+                            <p class="fs-2 fw-bold mb-0">${avgSeoScore}%</p>
                         </div>
                         <div class="col-md-3 text-center border-end">
                             <h3 class="h6 text-muted">صفحات معزولة</h3>
-                            <p class="fs-2 fw-bold mb-0 text-warning">${c.length}</p>
+                            <p class="fs-2 fw-bold mb-0 text-warning">${orphanPages.length}</p>
                         </div>
                         <div class="col-md-3 text-center">
                             <h3 class="h6 text-muted">صفحات NoIndex</h3>
-                            <p class="fs-2 fw-bold mb-0 text-danger">${i.length}</p>
+                            <p class="fs-2 fw-bold mb-0 text-danger">${noIndexPages.length}</p>
                         </div>
                     </div>
                     
                     <h3 class="h5 mt-4 mb-3 border-bottom pb-2">ملخص المشاكل والتوصيات</h3>
                     
-                    ${b("صفحات معزولة (Orphan Pages)",c,"warning")}
-                    ${b("صفحات مستبعدة من الفهرسة (NoIndex)",i)}
-                    ${b("صفحات بدون عنوان H1",p)}
-                    ${b("صفحات بدون وصف Meta",m,"info")}
-                    ${b("صفحات بها روابط داخلية مكسورة",u)}
+                    ${renderList('صفحات معزولة (Orphan Pages)', orphanPages, 'warning')}
+                    ${renderList('صفحات مستبعدة من الفهرسة (NoIndex)', noIndexPages)}
+                    ${renderList('صفحات بدون عنوان H1', missingH1)}
+                    ${renderList('صفحات بدون وصف Meta', missingDesc, 'info')}
+                    ${renderList('صفحات بها روابط داخلية مكسورة', pagesWithBrokenLinks)}
 
-                    ${0===c.length+i.length+p.length+m.length+u.length?'<p class="text-center text-success mt-4">✓ رائع! لم يتم العثور على مشاكل حرجة.</p>':""}
+                    ${(orphanPages.length + noIndexPages.length + missingH1.length + missingDesc.length + pagesWithBrokenLinks.length === 0) ? '<p class="text-center text-success mt-4">✓ رائع! لم يتم العثور على مشاكل حرجة.</p>' : ''}
                 </div>
-            `;t.dom.reportModalBody&&(t.dom.reportModalBody.innerHTML=w),t.dom.reportModal&&new bootstrap.Modal(t.dom.reportModal).show()}function C(t){const n=document.querySelector(`.result-item[data-id="${t}"]`);if(!n)return;const r=n.querySelector(".btn-edit"),l=e.appState.searchIndex.find(e=>e.id===t);l&&r&&(n.classList.contains("is-editing")?o.saveEditMode(l,n,r,()=>{s.debouncedSaveProject(),g()}):(o.enterEditMode(l,n,r),o.showSerpPreview(t)))}function P(){const e={darkModeToggle:{click:o.toggleDarkMode},startCrawlerBtn:{click:v},importUrlsFileBtn:{click:()=>{if(!t.dom.urlsFileInput)return;const e=t.dom.urlsFileInput.files[0];e?r.processTextualFile(e,e=>e.split("\n").filter(Boolean),e=>`تم استخراج ${e} رابط من الملف!`,"لم يتم العثور على روابط.",e=>`خطأ: ${e}`):l.showNotification("يرجى اختيار ملف أولاً","warning")}},addManualPageBtn:{click:f},generateIndexBtn:{click:h},downloadJsonBtn:{click:r.downloadJson},downloadCsvBtn:{click:r.downloadCSV},downloadZipBtn:{click:r.downloadZip},toggleCopyBtn:{click:()=>t.dom.copyOptions.classList.toggle("d-none")},saveProjectBtn:{click:b},projectSelector:{change:e=>{s.loadProject(e.target.value),g()}},deleteProjectBtn:{click:w},clearFormBtn:{click:()=>{confirm("هل أنت متأكد من مسح جميع البيانات الحالية؟")&&(s.clearCurrentState(),g(),l.showNotification("تم مسح كل شيء.","info"))}},manualInput:{change:e=>{t.dom.manualInputSection&&t.dom.manualInputSection.classList.toggle("d-none",!e.target.checked)}},hideCrawlerStatusBtn:{click:()=>{t.dom.crawlerStatus&&t.dom.crawlerStatus.classList.add("d-none")}},generateSchemaBtn:{click:y},schemaBaseUrl:{change:s.debouncedSaveProject},schemaPageType:{change:s.debouncedSaveProject},schemaBaseEditor:{input:o.validateSchemaEditor,blur:()=>{o.validateSchemaEditor()&&s.debouncedSaveProject()}},viewOrphanPagesBtn:{click:()=>{if(!t.dom.analyticsModal||!t.dom.orphanFilter||!t.dom.results)return;const e=bootstrap.Modal.getInstance(t.dom.analyticsModal);e&&e.hide(),t.dom.orphanFilter.checked=!0,u(),t.dom.results.scrollIntoView({behavior:"smooth"})}},exportReportBtn:{click:A},printReportBtn:{click:S},analyticsModal:{"show.bs.modal":o.updateAnalyticsDashboard}};for(const a in e){const o=t.getEl(a);if(o)for(const t in e[a])o.addEventListener(t,e[a][t])}t.dom.categoryFilter&&t.dom.categoryFilter.addEventListener("change",u),t.dom.keywordFilter&&t.dom.keywordFilter.addEventListener("input",u),t.dom.orphanFilter&&t.dom.orphanFilter.addEventListener("change",u),t.dom.selectAllBtn&&t.dom.selectAllBtn.addEventListener("click",c),t.dom.deselectAllBtn&&t.dom.deselectAllBtn.addEventListener("click",i),t.dom.results&&t.dom.results.addEventListener("click",e=>{const n=e.target,s=n.closest(".result-item");if(!s)return;const l=parseInt(s.dataset.id,10);if(isNaN(l))return;if(n.classList.contains("item-select-checkbox"))return void m(n,l);const d=n.closest("button");d&&(d.classList.contains("btn-edit")?C(l):d.classList.contains("btn-preview")?o.showSerpPreview(l):d.classList.contains("btn-delete")&&a.deleteItem(l,()=>{o.updateAllUI(),g(),s.debouncedSaveProject()}))}),t.dom.resultsAccordion&&t.dom.resultsAccordion.addEventListener("show.bs.collapse",o.handleAccordionShow),t.dom.copyOptions&&t.dom.copyOptions.addEventListener("click",e=>{const t=e.target.closest('button[data-copy-type]');t&&r.copyToClipboard(t.dataset.copyType)});const n=(e,o,a,n)=>{const s=t.getEl(e),l=t.getEl(o);s&&l&&(s.addEventListener("click",()=>l.click()),["dragover","dragleave","drop"].forEach(e=>s.addEventListener(e,t=>{t.preventDefault(),t.stopPropagation(),s.classList.toggle("dragover","dragover"===e||"drop"===e),"drop"===e&&([...t.dataTransfer.files].filter(e=>a.test(e.name)).length>0&&n(l.multiple?files:files[0]))})),l.addEventListener("change",e=>{e.target.files.length>0&&n(l.multiple?[...e.target.files]:e.target.files[0])}))};const d=(e,t,o,a)=>n=>r.processTextualFile(n,e,t,o,a);n("robotsDropZone","robotsFileInput",/\.txt$/,d(e=>e.split("\n").filter(e=>/^(dis)?allow:/i.test(e.trim())).map(e=>e.split(":")[1]?.trim()).filter(Boolean),e=>`تم استخراج ${e} مسار من robots.txt!`,"لم يتم العثور على مسارات.",e=>`خطأ: ${e}`)),n("manifestDropZone","manifestFileInput",/\.json$/,d(e=>{try{const t=JSON.parse(e);return[...(t.icons?.map(e=>e.src)||[]),...(t.screenshots?.map(e=>e.src)||[]),t.start_url,...(t.shortcuts?.map(e=>e.url)||[])].filter(Boolean)}catch(e){throw new Error("JSON غير صالح")}},e=>`تم استخراج ${e} مسار من manifest.json!`,"لم يتم العثور على مسارات.",e=>`خطأ: ${e.message}`)),n("sitemapDropZone","sitemapFileInput",/\.xml$/,d(e=>{const t=new DOMParser().parseFromString(e,"text/xml");if(t.querySelector("parsererror"))throw new Error("XML غير صالح");return[...t.querySelectorAll("url > loc, sitemap > loc")].map(e=>{try{return new URL(e.textContent.trim()).pathname}catch(t){return e.textContent.trim()}}).filter(Boolean)},e=>`تم استخراج ${e} رابط من Sitemap!`,"لم يتم العثور على روابط.",e=>`خطأ: ${e.message}`)),n("fileDropZone","htmlFileInput",/\.html?$/,r.processHtmlFiles)}function k(){t.init(),o.initObserver();const e=localStorage.getItem("darkMode"),a="true"===e||null===e&&window.matchMedia("(prefers-color-scheme: dark)").matches;o.setDarkMode(a);const n=localStorage.getItem(State.CONSTANTS.LAST_PROJECT_KEY);n?s.loadProject(n):(o.updateProjectListDropdown(),o.validateSchemaEditor()),g(),P(),o.updateAllUI()}window.addEventListener("DOMContentLoaded",k)})(e,t,n,r,l,s,o,window.Ai8vPlus);return{StateManager:e,Analyzer:a,DataHandler:r,UIManager:n,DOMManager:t,Utils:o}}();"undefined"!=typeof module&&module.exports&&(module.exports=exportedModules);
+            `;
+            
+            if (DOM.dom.reportModalBody) DOM.dom.reportModalBody.innerHTML = reportHtml;
+            if (DOM.dom.reportModal) {
+                 const reportModal = new bootstrap.Modal(DOM.dom.reportModal);
+                 reportModal.show();
+            }
+        }
+
+        function toggleEdit(itemId) {
+            const pageItem = document.querySelector(`.result-item[data-id="${itemId}"]`);
+            if (!pageItem) return;
+            const editBtn = pageItem.querySelector('.btn-edit');
+            const item = State.appState.searchIndex.find(i => i.id === itemId);
+            if (!item || !editBtn) return; // Add null check for editBtn
+            if (pageItem.classList.contains('is-editing')) UI.saveEditMode(item, pageItem, editBtn, () => { // UI هو UIManager
+                PM.debouncedSaveProject();
+                updateAdvisorTasks();
+            });
+            else { UI.enterEditMode(item, pageItem, editBtn); UI.showSerpPreview(itemId); } // UI هو UIManager
+        }
+
+
+        function setupEventListeners() {
+            const listeners = {
+                'darkModeToggle': { 'click': UI.toggleDarkMode }, 
+                'startCrawlerBtn': { 'click': handleStartCrawler },
+                'importUrlsFileBtn': { 'click': () => { 
+                    if (!DOM.dom.urlsFileInput) return;
+                    const file = DOM.dom.urlsFileInput.files[0]; 
+                    if(file) Core.processTextualFile(file, c => c.split('\n').filter(Boolean), len => `تم استخراج ${len} رابط من الملف!`, 'لم يتم العثور على روابط.', e => `خطأ: ${e}`); 
+                    else Utils.showNotification('يرجى اختيار ملف أولاً', 'warning'); 
+                } },
+                'addManualPageBtn': { 'click': handleAddManualPage }, 
+                'generateIndexBtn': { 'click': handleGenerateClick },
+                'downloadJsonBtn': { 'click': Core.downloadJson }, 
+                'downloadCsvBtn': { 'click': Core.downloadCSV },
+                'downloadZipBtn': { 'click': Core.downloadZip }, 
+                'toggleCopyBtn': { 'click': () => DOM.dom.copyOptions.classList.toggle('d-none') },
+                'saveProjectBtn': { 'click': handleManualSave }, 
+                'projectSelector': { 'change': (e) => { PM.loadProject(e.target.value); updateAdvisorTasks(); } },
+                'deleteProjectBtn': { 'click': handleDeleteProject }, 
+                'clearFormBtn': { 'click': () => { if (confirm('هل أنت متأكد من مسح جميع البيانات الحالية؟')) { PM.clearCurrentState(); updateAdvisorTasks(); Utils.showNotification('تم مسح كل شيء.', 'info'); } } },
+                'manualInput': { 'change': (e) => { if (DOM.dom.manualInputSection) DOM.dom.manualInputSection.classList.toggle('d-none', !e.target.checked) } },
+                'hideCrawlerStatusBtn': { 'click': () => { if (DOM.dom.crawlerStatus) DOM.dom.crawlerStatus.classList.add('d-none') } },
+                'generateSchemaBtn': { 'click': handleGenerateSchema }, 
+                'schemaBaseUrl': { 'change': PM.debouncedSaveProject },
+                'schemaPageType': { 'change': PM.debouncedSaveProject }, 
+                'schemaBaseEditor': { 'input': UI.validateSchemaEditor, 'blur': () => { if (UI.validateSchemaEditor()) PM.debouncedSaveProject(); } },
+                'viewOrphanPagesBtn': { 'click': () => { 
+                    if (!DOM.dom.analyticsModal || !DOM.dom.orphanFilter || !DOM.dom.results) return;
+                    const analyticsModalEl = DOM.dom.analyticsModal;
+                    const modalInstance = bootstrap.Modal.getInstance(analyticsModalEl);
+                    if (modalInstance) {
+                        modalInstance.hide();
+                    }
+                    DOM.dom.orphanFilter.checked = true; 
+                    applyFilters(); 
+                    DOM.dom.results.scrollIntoView({ behavior: 'smooth' }); 
+                } },
+                'exportReportBtn': { 'click': handleExportReport },
+                'printReportBtn': { 'click': handlePrintReport },
+                'analyticsModal': { 'show.bs.modal': UI.updateAnalyticsDashboard }
+            };
+            for (const id in listeners) { 
+                const el = DOM.getEl(id); // DOMManager.getEl
+                if (el) {
+                    for (const event in listeners[id]) {
+                        el.addEventListener(event, listeners[id][event]);
+                    }
+                }
+            }
+
+            // ربط أحداث الفلترة وأزرار التحديد
+            if (DOM.dom.categoryFilter) DOM.dom.categoryFilter.addEventListener('change', applyFilters); 
+            if (DOM.dom.keywordFilter) DOM.dom.keywordFilter.addEventListener('input', applyFilters); 
+            if (DOM.dom.orphanFilter) DOM.dom.orphanFilter.addEventListener('change', applyFilters);
+            
+            if (DOM.dom.selectAllBtn) DOM.dom.selectAllBtn.addEventListener('click', selectAllItems);
+            if (DOM.dom.deselectAllBtn) DOM.dom.deselectAllBtn.addEventListener('click', deselectAllItems);
+            
+            if (DOM.dom.results) {
+                DOM.dom.results.addEventListener('click', (e) => {
+                    const target = e.target; 
+                    const resultItem = target.closest('.result-item');
+                    if (!resultItem) return;
+
+                    const itemId = parseInt(resultItem.dataset.id, 10);
+                    if (isNaN(itemId)) return;
+
+                    if (target.classList.contains('item-select-checkbox')) {
+                        toggleItemSelection(target, itemId); 
+                        return; 
+                    }
+                    
+                    const buttonTarget = target.closest('button');
+                    if (!buttonTarget) return;
+
+                    if (buttonTarget.classList.contains('btn-edit')) {
+                        toggleEdit(itemId); 
+                    } else if (buttonTarget.classList.contains('btn-preview')) {
+                        UI.showSerpPreview(itemId);
+                    } else if (buttonTarget.classList.contains('btn-delete')) {
+                        Data.deleteItem(itemId, () => { UI.updateAllUI(); updateAdvisorTasks(); PM.debouncedSaveProject(); });
+                    }
+                });
+            }
+
+            if (DOM.dom.resultsAccordion) DOM.dom.resultsAccordion.addEventListener('show.bs.collapse', UI.handleAccordionShow);
+            
+            if (DOM.dom.copyOptions) {
+                DOM.dom.copyOptions.addEventListener('click', e => { 
+                    const btn = e.target.closest('button[data-copy-type]'); 
+                    if (btn) Core.copyToClipboard(btn.dataset.copyType); 
+                });
+            }
+        
+            const setupDragDrop = (dropZoneId, fileInputId, fileTypeRegex, processFunction) => {
+                const dropZone = DOM.getEl(dropZoneId); 
+                const fileInput = DOM.getEl(fileInputId); 
+                if (!dropZone || !fileInput) return;
+                dropZone.addEventListener('click', () => fileInput.click());
+                ['dragover', 'dragleave', 'drop'].forEach(eventName => dropZone.addEventListener(eventName, e => { 
+                    e.preventDefault(); 
+                    e.stopPropagation(); 
+                    dropZone.classList.toggle('dragover', eventName === 'dragover' || eventName === 'drop'); 
+                    if (eventName === 'drop') { 
+                        const files = [...e.dataTransfer.files].filter(f => fileTypeRegex.test(f.name)); 
+                        if (files.length > 0) processFunction(fileInput.multiple ? files : files[0]); 
+                    } 
+                }));
+                fileInput.addEventListener('change', (e) => { 
+                    if (e.target.files.length > 0) processFunction(fileInput.multiple ? [...e.target.files] : e.target.files[0]); 
+                });
+            };
+            
+            const textualFileHandler = (extractor, success, noData, error) => file => Core.processTextualFile(file, extractor, success, noData, error);
+            
+            setupDragDrop('robotsDropZone', 'robotsFileInput', /\.txt$/, textualFileHandler(c => c.split('\n').filter(l => /^(dis)?allow:/i.test(l.trim())).map(l => l.split(':')[1]?.trim()).filter(Boolean), len => `تم استخراج ${len} مسار من robots.txt!`, 'لم يتم العثور على مسارات.', e => `خطأ: ${e}`));
+            setupDragDrop('manifestDropZone', 'manifestFileInput', /\.json$/, textualFileHandler(c => { try { const d = JSON.parse(c); return [...(d.icons?.map(i => i.src) || []), ...(d.screenshots?.map(s => s.src) || []), d.start_url, ...(d.shortcuts?.map(s => s.url) || [])].filter(Boolean); } catch(err) { throw new Error('JSON غير صالح'); } }, len => `تم استخراج ${len} مسار من manifest.json!`, 'لم يتم العثور على مسارات.', e => `خطأ: ${e.message}`));
+            setupDragDrop('sitemapDropZone', 'sitemapFileInput', /\.xml$/, textualFileHandler(c => { const d = new DOMParser().parseFromString(c, 'text/xml'); if (d.querySelector('parsererror')) throw new Error('XML غير صالح'); return [...d.querySelectorAll('url > loc, sitemap > loc')].map(el => { try { return new URL(el.textContent.trim()).pathname; } catch { return el.textContent.trim(); } }).filter(Boolean); }, len => `تم استخراج ${len} رابط من Sitemap!`, 'لم يتم العثور على روابط.', e => `خطأ: ${e.message}`));
+            setupDragDrop('fileDropZone', 'htmlFileInput', /\.html?$/, Core.processHtmlFiles);
+        }
+
+        function init() {
+            DOM.init();
+            UI.initObserver();
+            
+            const initialDarkMode = localStorage.getItem('darkMode') === 'true' || (localStorage.getItem('darkMode') === null && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            UI.setDarkMode(initialDarkMode);
+            const lastProject = localStorage.getItem(State.CONSTANTS.LAST_PROJECT_KEY);
+            if (lastProject) {
+                PM.loadProject(lastProject);
+            } else {
+                UI.updateProjectListDropdown();
+                UI.validateSchemaEditor();
+            }
+            updateAdvisorTasks(); 
+            setupEventListeners();
+            UI.updateAllUI(); // <--- استدعاء updateAllUI هنا لضمان تحديث كل شيء بما في ذلك أزرار التحديد
+        }
+
+        window.addEventListener('DOMContentLoaded', init);
+
+    })(StateManager, DOMManager, UIManager, DataHandler, CoreFeatures, ProjectManager, Utils, window.Ai8vPlus);
+
+    return {
+        StateManager,
+        Analyzer,
+        DataHandler,
+        UIManager, // <--- تأكد من تصدير UIManager
+        DOMManager,
+        Utils
+    };
+    
+})();
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = exportedModules;
+}
