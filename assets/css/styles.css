@@ -307,3 +307,18 @@
 [data-bs-theme="dark"] .text-muted {
     color: var(--bs-tertiary-color) !important;
 }
+
+/* ✅ FIX: Crawler status panel overflow issue */
+#crawlerCurrentUrl {
+  overflow-wrap: break-word; /* Standard property to break long words */
+  word-wrap: break-word;     /* Older property for legacy browser support */
+  word-break: break-all;     /* More aggressive breaking for stubborn cases */
+  
+  /* Improvement: Prevent the element from becoming too large */
+  max-width: 100%;
+  
+  /* Improvement: Use hyphens for better readability on break */
+  -webkit-hyphens: auto;
+  -ms-hyphens: auto;
+  hyphens: auto;
+}
